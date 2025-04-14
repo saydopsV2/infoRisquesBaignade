@@ -9,6 +9,6 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: "/infoBaines",
+  base: "/infoBaines/",
   
 })
