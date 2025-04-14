@@ -1,6 +1,6 @@
 import React from "react";
 
-const Accueil: React.FC = () => {
+const Home: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-slate-800 ">
         <h1 className="text-3xl text-slate-100 font-bold text-center mt-8">
@@ -16,4 +16,4 @@ const Accueil: React.FC = () => {
       </div>
     );
 };
-export default Accueil;
+export default Home;
