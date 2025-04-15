@@ -25,9 +25,9 @@ const Tab: React.FC<TabProps> = ({tabAllDataPlot, tabForecastPlot, tabBeach}) =>
                 </div>
             </div>
             
-            <input type="radio" name="my_tabs_3" className="tab" aria-label="Prévisions" />
+            <input type="radio" name="my_tabs_3" className="tab" aria-label="Previsions sous forme de graphe" />
             <div className="tab-content bg-slate-300 border-base-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <h2 className="text-xl font-bold mb-4 text-slate-950">Previsions</h2>
+                <h2 className="text-xl font-bold mb-4 text-slate-950">Previsions sous forme de graphe</h2>
                 <div className="beach-data w-full overflow-hidden">
                     {/* For forecast */}
                     {(tabBeach === "lette-blanche" || tabBeach === "biscarosse") && (
