@@ -6,7 +6,19 @@ import Home from '../components/home';
 import allDataPlotImg from '/public/img/vue_saison.jpg';
 import forecastPlotImg from '/public/img/vue_semaine.jpg';
 import Footer from '../components/Footer';
+import Beach from '../interface/Beach';
 
+const letteBlanche: Beach = {
+  nom: 'La lette Blanche',
+  latitude: 43.902658,
+  longitude: -1.377651
+};
+
+const biscarosse: Beach = {
+  nom: 'Biscarosse',
+  latitude: 44.446321,
+  longitude: -1.256297
+};
 
 function App() {
   return (
@@ -14,8 +26,8 @@ function App() {
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/lette-blanche" element={<BeachForecast beach="lette-blanche" forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
-        <Route path="/biscarosse" element={<BeachForecast beach="biscarosse" forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg}/>} />
+        <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
+        <Route path="/biscarosse" element={<BeachForecast beach={biscarosse} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
       </Routes>
       <Footer />
     </Router>
