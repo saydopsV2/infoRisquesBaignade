@@ -10,7 +10,7 @@ interface TabProps {
 const Tab: React.FC<TabProps> = ({tabAllDataPlot, tabForecastPlot, tabBeach}) => {
     return (
         <div className="tabs tabs-lift w-full max-w-full">
-            <input type="radio" name="my_tabs_3" className="tab" aria-label="Prévision sous forme de tableau" />
+            <input type="radio" name="my_tabs_3" className="tab" aria-label="Prévision sous forme de tableau" defaultChecked/>
             <div className="tab-content bg-slate-300 border-base-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
                 <h2 className="text-xl font-bold mb-4 text-slate-950">Prévision journalière</h2>
                 <div className="beach-data w-full overflow-hidden">
@@ -18,7 +18,7 @@ const Tab: React.FC<TabProps> = ({tabAllDataPlot, tabForecastPlot, tabBeach}) =>
                     {(tabBeach === "lette-blanche" || tabBeach === "biscarosse") && (
                         <>
                             <div className="mt-4 w-full">
-                                <Table />
+                                <Table  />
                             </div>
                         </>
                     )}
@@ -40,7 +40,7 @@ const Tab: React.FC<TabProps> = ({tabAllDataPlot, tabForecastPlot, tabBeach}) =>
                 </div>
             </div>
 
-            <input type="radio" name="my_tabs_3" className="tab" aria-label="Données de la saison" defaultChecked />
+            <input type="radio" name="my_tabs_3" className="tab" aria-label="Données de la saison"  />
             <div className="tab-content bg-slate-300 border-base-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
                 <h2 className="text-xl font-bold mb-4 text-slate-950">Données de la saison</h2>
                 <div className="beach-data w-full overflow-hidden">
