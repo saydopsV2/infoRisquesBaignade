@@ -5,6 +5,7 @@ import BeachForecast from '../components/BeachForecast';
 import Home from '../components/home';
 import allDataPlotImg from '/public/img/vue_saison.jpg';
 import forecastPlotImg from '/public/img/vue_semaine.jpg';
+import Footer from '../components/Footer';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/lette-blanche" element={<BeachForecast beach="lette-blanche" forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
         <Route path="/biscarosse" element={<BeachForecast beach="biscarosse" forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg}/>} />
       </Routes>
+      <Footer />
     </Router>
   );
 }
