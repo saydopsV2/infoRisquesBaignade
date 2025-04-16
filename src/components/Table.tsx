@@ -45,7 +45,7 @@ const usePrevisionData = () => {
         setIsLoading(true);
         const response = await fetch(`${import.meta.env.BASE_URL}dataModel/prevision.csv`);
         const csvText = await response.text();
-        
+
         Papa.parse<PrevisionData>(csvText, {
           header: true,
           skipEmptyLines: true,
@@ -53,7 +53,7 @@ const usePrevisionData = () => {
             const parsedIndices: number[] = result.data
               .map(row => parseInt(row.valeur, 10))
               .filter(val => !isNaN(val));
-            
+
             setIndices(parsedIndices);
             setIsLoading(false);
           },
@@ -111,7 +111,7 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
   const [temperatures, setTemperatures] = useState<number[]>([]);
   const [uvIndices, setUvIndices] = useState<number[]>([]);
   const [tempUnit, setTempUnit] = useState<string>('°C');
-  
+
   useEffect(() => {
     // Fetch weather data from Open-Meteo API using location coordinates
     const fetchWeatherData = async () => {
@@ -119,38 +119,38 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
         const response = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=temperature_2m,uv_index&timezone=auto&forecast_days=3`
         );
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const data = await response.json() as WeatherData;
         console.log('Weather API Response:', data);
-        
+
         // Get current hour
         const now = new Date();
         now.setMinutes(0, 0, 0);
-        
+
         // Parse the API time strings to Date objects to align with current time
         const apiTimes = data.hourly.time.map(timeStr => new Date(timeStr));
-        
+
         // Generate 24 hours from current time
         const hoursList: Date[] = [];
         const tempsList: number[] = [];
         const uvList: number[] = [];
-        
+
         for (let i = 0; i < 24; i++) {
           const targetHour = new Date(now);
           targetHour.setHours(targetHour.getHours() + i);
           hoursList.push(targetHour);
-          
+
           // Find the closest matching time in the API data
           const closestTimeIndex = apiTimes.findIndex(apiTime => {
-            return apiTime.getHours() === targetHour.getHours() && 
-                   apiTime.getDate() === targetHour.getDate() && 
-                   apiTime.getMonth() === targetHour.getMonth();
+            return apiTime.getHours() === targetHour.getHours() &&
+              apiTime.getDate() === targetHour.getDate() &&
+              apiTime.getMonth() === targetHour.getMonth();
           });
-          
+
           // Add corresponding temperature and UV data
           if (closestTimeIndex !== -1) {
             tempsList.push(data.hourly.temperature_2m[closestTimeIndex]);
@@ -161,14 +161,14 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
             uvList.push(0);
           }
         }
-        
+
         setHours(hoursList);
         setTemperatures(tempsList);
         setUvIndices(uvList);
         setTempUnit(data.hourly_units.temperature_2m);
       } catch (error) {
         console.error('Error fetching weather data:', error);
-        
+
         // Fallback if API fails - generate hours without weather data
         const now = new Date();
         now.setMinutes(0, 0, 0);
@@ -180,7 +180,7 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
         setHours(hoursList);
       }
     };
-    
+
     fetchWeatherData();
   }, [location]);
 
@@ -207,12 +207,12 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
   const safeIndices = indices.length >= 24
     ? indices.slice(0, 24)
     : [...indices, ...Array(24 - indices.length).fill(0)];
-  
+
   // Ensure we have temperature and UV data
   const safeTemperatures = temperatures.length >= 24
     ? temperatures
     : [...temperatures, ...Array(24 - temperatures.length).fill(null)];
-  
+
   const safeUvIndices = uvIndices.length >= 24
     ? uvIndices
     : [...uvIndices, ...Array(24 - uvIndices.length).fill(null)];
@@ -247,8 +247,8 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
             <tr className="bg-blue-100">
               <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indices courant <br /> d'arrachement</td>
               {safeIndices.map((indice, index) => (
-                <td 
-                  key={`indice-${index}`} 
+                <td
+                  key={`indice-${index}`}
                   className={`p-2 text-center border-r ${getIndexColor(indice)} min-w-[50px]`}
                 >
                   {indice}
@@ -266,8 +266,8 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
             <tr className="bg-blue-50">
               <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indice UV</td>
               {safeUvIndices.map((uv, index) => (
-                <td 
-                  key={`uv-${index}`} 
+                <td
+                  key={`uv-${index}`}
                   className={`p-2 text-center border-r ${uv !== null ? getUvIndexColor(uv) : ""} min-w-[50px]`}
                 >
                   {uv !== null ? uv.toFixed(1) : "-"}
@@ -282,7 +282,11 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
                   alt="Graphique de prévision"
                   className="w-full h-50"
                 /> */}
-                <Chart/>
+                <Chart
+                  hours={hours}
+                  temperatures={safeTemperatures}
+                  tempUnit={tempUnit}
+                />
               </td>
             </tr>
           </tbody>
