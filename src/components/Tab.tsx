@@ -1,6 +1,8 @@
 import React from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
+import { StandaloneChart } from "./Chart";
+import { ChartAllData } from "./ChartAllData";
 
 interface TabProps {
     tabAllDataPlot: string;
@@ -27,7 +29,7 @@ const Tab: React.FC<TabProps> = ({tabAllDataPlot, tabForecastPlot, tabBeach}) =>
                 <h2 className="text-xl font-bold mb-4 text-slate-950">Previsions sous forme de graphe</h2>
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex justify-center">
-                        <img src={tabForecastPlot} alt={`Prévisions ${tabBeach.nom}`} className="w-full md:w-3/4 lg:w-2/3 max-w-250" />
+                        <StandaloneChart/>
                     </div>
                 </div>
             </div>
@@ -37,7 +39,7 @@ const Tab: React.FC<TabProps> = ({tabAllDataPlot, tabForecastPlot, tabBeach}) =>
                 <h2 className="text-xl font-bold mb-4 text-slate-950">Données de la saison</h2>
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex justify-center">
-                        <img src={tabAllDataPlot} alt="Prévisions saison" className="w-full md:w-3/4 lg:w-2/3 max-w-250" />
+                        <ChartAllData/>
                     </div>
                 </div>
             </div>
