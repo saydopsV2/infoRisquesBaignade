@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import Beach from '../interface/Beach';
 import { Chart, StandaloneChart } from './Chart';
 import { useWeather } from '../context/WeatherContext';
+import { useWindForecast } from '../context/WindForecastContext';
 
 // Types
 interface TableProps {
@@ -108,9 +109,19 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
     fetchWeatherData 
   } = useWeather();
   
+  // Utilisation du contexte pour obtenir les données de vent
+  const {
+    windForecast,
+    loading: windLoading,
+    error: windError,
+    fetchWindForecast
+  } = useWindForecast();
+
   useEffect(() => {
     // Appel à fetchWeatherData lors du montage du composant
     fetchWeatherData(location);
+    // Appel à fetchWindForecast lors du montage du composant
+    fetchWindForecast(location);
   }, [location]);
 
   const getIndexColor = (indice: number): string => {
@@ -132,6 +143,36 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
     return "bg-purple-700 text-white"; // Extreme
   };
 
+  const getWindDirectionSymbol = (direction: number | null): string => {
+    if (direction === null) return "-";
+    
+    if (direction >= 337.5 || direction < 22.5) return "↓ N";
+    if (direction >= 22.5 && direction < 67.5) return "↙ NE";
+    if (direction >= 67.5 && direction < 112.5) return "← E";
+    if (direction >= 112.5 && direction < 157.5) return "↖ SE";
+    if (direction >= 157.5 && direction < 202.5) return "↑ S";
+    if (direction >= 202.5 && direction < 247.5) return "↗ SO";
+    if (direction >= 247.5 && direction < 292.5) return "→ O";
+    if (direction >= 292.5 && direction < 337.5) return "↘ NO";
+    
+    return direction.toString();
+  };
+
+  const getWindSpeedColor = (speed: number | null): string => {
+    if (speed === null) return "";
+    if (speed < 4) return "bg-cyan-50"; // Calme
+    if (speed < 5) return "bg-cyan-100"; // Calme
+    if (speed < 7) return "bg-cyan-200"; // Vent faible
+    if (speed < 11) return "bg-lime-200"; // Vent léger
+    if (speed < 17) return "bg-lime-500"; // Vent modéré
+    if (speed < 20) return "bg-yellow-300"; // Vent assez fort
+    if (speed < 22) return "bg-orange-400"; // Vent assez fort
+    if (speed < 28) return "bg-rose-500"; // Vent fort
+    if (speed < 34) return "bg-purple-500 text-white"; // Vent très fort
+    if (speed < 41) return "bg-fuchsia-500 text-white"; // Vent violent
+    return "bg-purple-700 text-white"; // Vent très violent
+  };
+
   // Ensure we have exactly 24 values, filling with zeros if needed
   const safeIndices = indices.length >= 24
     ? indices.slice(0, 24)
@@ -146,13 +187,55 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
     ? uvIndices
     : [...uvIndices, ...Array(24 - uvIndices.length).fill(null)];
 
+  // Ensure we have wind data
+  const safeWindDirections = windForecast?.hourly?.wind_direction_10m?.slice(0, 24) || Array(24).fill(null);
+  const safeWindSpeeds = windForecast?.hourly?.wind_speed_10m?.slice(0, 24) || Array(24).fill(null);
+  const safeWindGusts = windForecast?.hourly?.wind_gusts_10m?.slice(0, 24) || Array(24).fill(null);
+
+  // Ensure proper alignment with hours
+  const alignWindDataWithHours = () => {
+    if (!windForecast?.hourly?.time || hours.length === 0) return;
+    
+    const alignedDirections = Array(24).fill(null);
+    const alignedSpeeds = Array(24).fill(null);
+    const alignedGusts = Array(24).fill(null);
+    
+    hours.forEach((hour, hourIndex) => {
+      const hourTime = hour.getHours();
+      
+      // Find matching time in wind forecast data
+      windForecast.hourly.time.forEach((timeStr, windIndex) => {
+        const windTime = new Date(timeStr).getHours();
+        
+        if (hourTime === windTime) {
+          alignedDirections[hourIndex] = windForecast.hourly.wind_direction_10m[windIndex];
+          alignedSpeeds[hourIndex] = windForecast.hourly.wind_speed_10m[windIndex];
+          alignedGusts[hourIndex] = windForecast.hourly.wind_gusts_10m[windIndex];
+        }
+      });
+    });
+    
+    return {
+      directions: alignedDirections,
+      speeds: alignedSpeeds,
+      gusts: alignedGusts
+    };
+  };
+  
+  const alignedWindData = alignWindDataWithHours();
+  
+  // Use aligned data if available, otherwise fall back to just slicing the first 24 values
+  const displayWindDirections = alignedWindData?.directions || safeWindDirections;
+  const displayWindSpeeds = alignedWindData?.speeds || safeWindSpeeds;
+  const displayWindGusts = alignedWindData?.gusts || safeWindGusts;
+
   return (
     <div className="w-full bg-slate-100 text-black rounded">
-      {weatherLoading ? (
-        <div className="p-4 text-center">Chargement des données météo...</div>
-      ) : weatherError ? (
+      {(weatherLoading || windLoading) ? (
+        <div className="p-4 text-center">Chargement des données...</div>
+      ) : (weatherError || windError) ? (
         <div className="p-4 bg-red-100 text-red-700 mb-4 rounded-lg">
-          Erreur météo: {weatherError}
+          Erreur: {weatherError || windError}
         </div>
       ) : (
         <div className="overflow-x-auto w-full">
@@ -200,6 +283,36 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
                     className={`p-2 text-center border-r ${uv !== null ? getUvIndexColor(uv) : ""} min-w-[50px]`}
                   >
                     {uv !== null ? uv.toFixed(1) : "-"}
+                  </td>
+                ))}
+              </tr>
+              <tr className="bg-gray-50">
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Direction du vent</td>
+                {displayWindDirections.map((direction, index) => (
+                  <td key={`windDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
+                    {getWindDirectionSymbol(direction)}
+                  </td>
+                ))}
+              </tr>
+              <tr className="bg-white">
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Vitesse du vent</td>
+                {displayWindSpeeds.map((speed, index) => (
+                  <td 
+                    key={`windSpeed-${index}`} 
+                    className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(speed)}`}
+                  >
+                    {speed !== null ? `${speed} nds` : "-"}
+                  </td>
+                ))}
+              </tr>
+              <tr className="bg-gray-50">
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Rafales de vent</td>
+                {displayWindGusts.map((gust, index) => (
+                  <td 
+                    key={`windGust-${index}`} 
+                    className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(gust)}`}
+                  >
+                    {gust !== null ? `${gust} nds` : "-"}
                   </td>
                 ))}
               </tr>
