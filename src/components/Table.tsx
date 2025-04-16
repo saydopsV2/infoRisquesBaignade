@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import Beach from '../interface/Beach';
+import { Chart } from './Chart';
 
 // Types
 interface TableProps {
@@ -77,7 +78,9 @@ const usePrevisionData = () => {
 const LegendItem: React.FC<{ item: LegendItem }> = ({ item }) => (
   <div className="flex items-center" key={item.label}>
     <div className={`w-5 h-5 sm:w-6 sm:h-6 ${item.class} rounded-lg`}></div>
-    <span className="ml-1 text-xs sm:text-sm">{item.label}</span>
+    <span className="ml-1 text-xs sm:text-sm px-2 py-1 bg-slate-50 rounded-md shadow-sm">
+      {item.label}
+    </span>
   </div>
 );
 
@@ -274,11 +277,12 @@ const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
             <tr>
               <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Graphique</td>
               <td colSpan={24} className="p-0 border-r">
-                <img 
+                {/* <img 
                   src={`${import.meta.env.BASE_URL}img/outputCrowdTest.png`}
                   alt="Graphique de prévision"
                   className="w-full h-50"
-                />
+                /> */}
+                <Chart/>
               </td>
             </tr>
           </tbody>
