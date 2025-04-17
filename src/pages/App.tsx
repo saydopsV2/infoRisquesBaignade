@@ -29,7 +29,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
-          <Route path="/biscarosse" element={<BeachForecast beach={biscarosse} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
+          <Route path="/biscarrosse" element={<BeachForecast beach={biscarosse} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
         </Routes>
         <Footer />
       </Router>
