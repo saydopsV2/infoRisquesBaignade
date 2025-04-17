@@ -14,7 +14,7 @@ const NavBar: React.FC = () => {
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow text-white text-xl">
                         <li><Link to="/">Accueil</Link></li>
                         <li><Link to="/lette-blanche">La lette Blanche</Link></li>
-                        <li><Link to="/biscarosse">Biscarosse</Link></li>
+                        <li><Link to="/biscarrosse">Biscarosse</Link></li>
                     </ul>
                 </div>
             </div>

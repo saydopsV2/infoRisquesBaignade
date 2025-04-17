@@ -15,18 +15,18 @@ const Home: React.FC = () => {
           <span className="block mt-2 mb-4">Vous y retrouverez differentes plages de la côte landaise.</span>
         </p>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 max-w-4xl mx-auto w-full">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 max-w-4xl mx-auto w-full mb-10">
         <TiltedCard 
           imageSrc={`${import.meta.env.BASE_URL}img/La-Lette-Blanche.jpg`}
-          title="La Lette Blanche"
-          description="Découvrez les prévisions pour La Lette Blanche"
+          altText="La Lette Blanche"
+          captionText="La Lette Blanche"
           url="/lette-blanche"
         />
         <TiltedCard 
           imageSrc={`${import.meta.env.BASE_URL}img/Biscarrosse.jpg`}
-          title="Biscarrosse"
-          description="Découvrez les prévisions pour Biscarrosse"
+          altText="Biscarrosse"
+          captionText="Biscarrosse"
           url="/biscarrosse"
         />
       </div>
