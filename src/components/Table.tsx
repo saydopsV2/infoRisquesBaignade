@@ -85,7 +85,7 @@ const TableLegend: React.FC = () => {
 
   return (
     <div className="mt-4 p-2 bg-slate-100 text-black">
-      <h3 className="font-bold mb-2">Légende des indices:</h3>
+      <h3 className="font-bold mb-2">Légende indice Sécurité:</h3>
       <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-center justify-center">
         {legendItems.map((item) => (
           <LegendItem key={item.value} item={item} />
@@ -250,6 +250,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
         </div>
       ) : (
         <div className="overflow-x-auto w-full">
+          <TableLegend />
           <table className="w-full border-collapse bg-slate-100 text-black">
             <thead>
               <tr className="bg-blue-500">
@@ -268,7 +269,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-blue-100">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indices courant <br /> d'arrachement</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indice Sécurité</td>
                 {safeIndices.map((indice, index) => (
                   <td
                     key={`indice-${index}`}
@@ -285,6 +286,12 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                     {temp !== null ? `${temp}${tempUnit}` : "-"}
                   </td>
                 ))}
+              </tr>
+              <tr>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Graphique</td>
+                <td colSpan={24} className="p-0 border-r">
+                  <StandaloneChart/>
+                </td>
               </tr>
               <tr className="bg-blue-50">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indice UV</td>
@@ -327,22 +334,11 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                   </td>
                 ))}
               </tr>
-              <tr>
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Graphique</td>
-                <td colSpan={24} className="p-0 border-r">
-                  {/* <Chart
-                    hours={hours}
-                    temperatures={safeTemperatures}
-                    tempUnit={tempUnit}
-                  /> */}
-                  <StandaloneChart/>
-                </td>
-              </tr>
+              
             </tbody>
           </table>
         </div>
       )}
-      <TableLegend />
     </div>
   );
 };
