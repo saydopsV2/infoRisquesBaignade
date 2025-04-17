@@ -200,19 +200,30 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     const alignedSpeeds = Array(24).fill(null);
     const alignedGusts = Array(24).fill(null);
     
+    const currentDate = new Date();
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
     hours.forEach((hour, hourIndex) => {
-      const hourTime = hour.getHours();
+      const hourValue = hour.getHours();
       
-      // Find matching time in wind forecast data
-      windForecast.hourly.time.forEach((timeStr, windIndex) => {
-        const windTime = new Date(timeStr).getHours();
-        
-        if (hourTime === windTime) {
-          alignedDirections[hourIndex] = windForecast.hourly.wind_direction_10m[windIndex];
-          alignedSpeeds[hourIndex] = windForecast.hourly.wind_speed_10m[windIndex];
-          alignedGusts[hourIndex] = windForecast.hourly.wind_gusts_10m[windIndex];
-        }
+      // Convert API timestamps to Date objects and find matching hours for the current day
+      const matchingIndex = windForecast.hourly.time.findIndex((timeStr) => {
+        const apiDate = new Date(timeStr);
+        return (
+          apiDate.getHours() === hourValue && 
+          apiDate.getDate() === currentDay &&
+          apiDate.getMonth() === currentMonth &&
+          apiDate.getFullYear() === currentYear
+        );
       });
+      
+      if (matchingIndex !== -1) {
+        alignedDirections[hourIndex] = windForecast.hourly.wind_direction_10m[matchingIndex];
+        alignedSpeeds[hourIndex] = windForecast.hourly.wind_speed_10m[matchingIndex];
+        alignedGusts[hourIndex] = windForecast.hourly.wind_gusts_10m[matchingIndex];
+      }
     });
     
     return {
