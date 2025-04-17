@@ -1,18 +1,18 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 interface TiltedCardProps {
-  imageSrc?: string;
+  imageSrc: string;
   altText?: string;
   captionText?: string;
   url?: string;
 }
 
 const TiltedCard: React.FC<TiltedCardProps> = ({
-  imageSrc = `${import.meta.env.BASE_URL}img/La-Lette-Blanche.jpg`,
-  altText = "Plage",
-  captionText = "Plage",
-  url = "/biscarrosse"
+  imageSrc,
+  altText = "Image",
+  captionText = "Card Title",
+  url = "/"
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
