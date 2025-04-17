@@ -13,13 +13,13 @@ interface WaveForecastData {
     time: string;
     wave_height: string;
     wave_direction: string;
-    wave_period: string;
+    swell_wave_peak_period: string;
   };
   hourly: {
     time: string[];
     wave_height: number[];
     wave_direction: number[];
-    wave_period: number[];
+    swell_wave_peak_period: number[];
   };
 }
 
@@ -54,7 +54,7 @@ export const WaveForecastProvider: React.FC<WaveForecastProviderProps> = ({ chil
     setError(null);
     
     try {
-      const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${beach.latitude}&longitude=${beach.longitude}&hourly=wave_height,wave_direction,wave_period&timezone=auto`;
+      const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${beach.latitude}&longitude=${beach.longitude}&hourly=wave_height,wave_direction,swell_wave_peak_period&timezone=auto`;
       
       const response = await fetch(url);
       
