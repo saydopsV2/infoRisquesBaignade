@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import Beach from '../interface/Beach';
-import { Chart, StandaloneChart } from './Chart';
+import {  StandaloneChart } from './Chart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 
@@ -95,7 +95,7 @@ const TableLegend: React.FC = () => {
   );
 };
 
-const Table: React.FC<TableProps> = ({ indices, tableBeach, location }) => {
+const Table: React.FC<TableProps> = ({ indices, location }) => {
   const [currentDate] = useState(new Date());
   
   // Utilisation du contexte pour obtenir les données météo

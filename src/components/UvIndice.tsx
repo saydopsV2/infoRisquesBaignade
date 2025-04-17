@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import  { useEffect, useState } from "react"
 import { TrendingUp, TrendingDown } from "lucide-react"
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
 import { useWeather } from "../context/WeatherContext"

@@ -10,7 +10,7 @@ interface TabProps {
     tabBeach: Beach;
 }
 
-const Tab: React.FC<TabProps> = ({tabAllDataPlot, tabForecastPlot, tabBeach}) => {
+const Tab: React.FC<TabProps> = ({ tabBeach}) => {
     return (
         <div className="tabs tabs-lift w-full max-w-full">
             <input type="radio" name="my_tabs_3" className="tab text-slate-50" aria-label="Prévision sous forme de tableau" defaultChecked/>

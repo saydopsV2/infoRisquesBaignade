@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
   ChartConfig,
