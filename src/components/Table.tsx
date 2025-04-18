@@ -98,18 +98,18 @@ const TableLegend: React.FC = () => {
 
 const Table: React.FC<TableProps> = ({ indices, location }) => {
   const [currentDate] = useState(new Date());
-  
+
   // Utilisation du contexte pour obtenir les données météo
-  const { 
-    hours, 
-    temperatures, 
-    uvIndices, 
-    tempUnit, 
-    isLoading: weatherLoading, 
+  const {
+    hours,
+    temperatures,
+    uvIndices,
+    tempUnit,
+    isLoading: weatherLoading,
     error: weatherError,
-    fetchWeatherData 
+    fetchWeatherData
   } = useWeather();
-  
+
   // Utilisation du contexte pour obtenir les données de vent
   const {
     windForecast,
@@ -117,7 +117,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     error: windError,
     fetchWindForecast
   } = useWindForecast();
-  
+
   // Utilisation du contexte pour obtenir les données de vagues
   const {
     waveForecast,
@@ -156,7 +156,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
 
   const getWindDirectionSymbol = (direction: number | null): string => {
     if (direction === null) return "-";
-    
+
     if (direction >= 337.5 || direction < 22.5) return "↓ N";
     if (direction >= 22.5 && direction < 67.5) return "↙ NE";
     if (direction >= 67.5 && direction < 112.5) return "← E";
@@ -165,7 +165,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     if (direction >= 202.5 && direction < 247.5) return "↗ SO";
     if (direction >= 247.5 && direction < 292.5) return "→ O";
     if (direction >= 292.5 && direction < 337.5) return "↘ NO";
-    
+
     return direction.toString();
   };
 
@@ -201,24 +201,24 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
   // Better approach for aligning data with hours
   const alignDataWithHours = (dataArray: any[] | undefined, timeArray: string[] | undefined) => {
     if (!dataArray || !timeArray || hours.length === 0) return Array(24).fill(null);
-    
+
     const alignedData = Array(24).fill(null);
     const today = new Date();
     const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    
+
     hours.forEach((hour, hourIndex) => {
       const hourValue = hour.getHours();
-      
+
       const matchingIndex = timeArray.findIndex((timeStr) => {
-        return timeStr.startsWith(formattedToday) && 
-               new Date(timeStr).getHours() === hourValue;
+        return timeStr.startsWith(formattedToday) &&
+          new Date(timeStr).getHours() === hourValue;
       });
-      
+
       if (matchingIndex !== -1 && matchingIndex < dataArray.length) {
         alignedData[hourIndex] = dataArray[matchingIndex];
       }
     });
-    
+
     return alignedData;
   };
 
@@ -227,28 +227,28 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     windForecast?.hourly?.wind_direction_10m,
     windForecast?.hourly?.time
   );
-  
+
   const displayWindSpeeds = alignDataWithHours(
     windForecast?.hourly?.wind_speed_10m,
     windForecast?.hourly?.time
   );
-  
+
   const displayWindGusts = alignDataWithHours(
     windForecast?.hourly?.wind_gusts_10m,
     windForecast?.hourly?.time
   );
-  
+
   // Align wave data with displayed hours
   const displayWaveHeights = alignDataWithHours(
     waveForecast?.hourly?.wave_height,
     waveForecast?.hourly?.time
   );
-  
+
   const displayWaveDirections = alignDataWithHours(
     waveForecast?.hourly?.wave_direction,
     waveForecast?.hourly?.time
   );
-  
+
   // Use type assertion to tell TypeScript that swell_wave_peak_period exists
   const displayWavePeriods = alignDataWithHours(
     waveForecast?.hourly?.swell_wave_peak_period,
@@ -260,13 +260,13 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
   //     console.log("-------- Vérification de l'alignement des données --------");
   //     console.log("Date actuelle:", currentDate.toISOString());
   //     console.log("Nombre d'heures affichées:", hours.length);
-      
+
   //     // Log alignement details
   //     if (windForecast?.hourly?.time && windForecast?.hourly?.time.length > 0) {
   //       console.log("Première heure de données de vent:", new Date(windForecast.hourly.time[0]).toISOString());
   //       console.log("Première heure affichée:", hours[0].toISOString());
   //     }
-      
+
   //     // Compare a few samples to verify alignment and log wave period data
   //     for (let i = 0; i < Math.min(hours.length, 5); i++) {
   //       console.log(`Heure[${i}]: ${hours[i].getHours()}:00, Vent: ${displayWindSpeeds[i]} nds, Direction: ${displayWindDirections[i]}°, Période de houle: ${displayWavePeriods[i]}`);
@@ -295,7 +295,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
             </thead>
             <tbody>
               <tr className="border-b">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Heures</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Heures</td>
                 {hours.map((hour, index) => (
                   <td key={`hour-${index}`} className="p-2 text-center border-r min-w-[50px]">
                     {hour.getHours()}:00
@@ -303,7 +303,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-blue-100">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indice Sécurité</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Indice Sécurité</td>
                 {safeIndices.map((indice, index) => (
                   <td
                     key={`indice-${index}`}
@@ -314,7 +314,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Température</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Température</td>
                 {safeTemperatures.map((temp, index) => (
                   <td key={`temp-${index}`} className="p-2 text-center border-r min-w-[50px]">
                     {temp !== null ? `${temp}${tempUnit}` : "-"}
@@ -322,13 +322,13 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr>
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Graphique</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Graphique</td>
                 <td colSpan={24} className="p-0 border-r">
-                  <StandaloneChart/>
+                  <StandaloneChart />
                 </td>
               </tr>
               <tr className="bg-blue-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indice UV</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Indice UV</td>
                 {safeUvIndices.map((uv, index) => (
                   <td
                     key={`uv-${index}`}
@@ -339,7 +339,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Direction du vent</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction du vent</td>
                 {displayWindDirections.map((direction, index) => (
                   <td key={`windDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
                     {getWindDirectionSymbol(direction)}
@@ -347,10 +347,10 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Vitesse du vent</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Vitesse du vent</td>
                 {displayWindSpeeds.map((speed, index) => (
-                  <td 
-                    key={`windSpeed-${index}`} 
+                  <td
+                    key={`windSpeed-${index}`}
                     className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(speed)}`}
                   >
                     {speed !== null ? `${speed} nds` : "-"}
@@ -358,10 +358,10 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Rafales de vent</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Rafales de vent</td>
                 {displayWindGusts.map((gust, index) => (
-                  <td 
-                    key={`windGust-${index}`} 
+                  <td
+                    key={`windGust-${index}`}
                     className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(gust)}`}
                   >
                     {gust !== null ? `${gust} nds` : "-"}
@@ -369,10 +369,10 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Hauteur des vagues</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Hauteur des vagues</td>
                 {displayWaveHeights.map((height, index) => (
-                  <td 
-                    key={`waveHeight-${index}`} 
+                  <td
+                    key={`waveHeight-${index}`}
                     className="p-2 text-center border-r min-w-[50px]"
                   >
                     {height !== null ? `${height.toFixed(1)} m` : "-"}
@@ -380,7 +380,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Direction des vagues</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction des vagues</td>
                 {displayWaveDirections.map((direction, index) => (
                   <td key={`waveDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
                     {getWindDirectionSymbol(direction)}
@@ -388,10 +388,10 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Période des vagues</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Période des vagues</td>
                 {displayWavePeriods.map((period, index) => (
-                  <td 
-                    key={`wavePeriod-${index}`} 
+                  <td
+                    key={`wavePeriod-${index}`}
                     className="p-2 text-center border-r min-w-[50px]"
                   >
                     {period !== null ? `${period.toFixed(1)} s` : "-"}
