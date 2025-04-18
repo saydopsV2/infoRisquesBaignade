@@ -255,24 +255,24 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     waveForecast?.hourly?.time
   );
 
-  useEffect(() => {
-    if (!weatherLoading && !windLoading && !waveLoading && waveForecast && windForecast) {
-      console.log("-------- Vérification de l'alignement des données --------");
-      console.log("Date actuelle:", currentDate.toISOString());
-      console.log("Nombre d'heures affichées:", hours.length);
+  // useEffect(() => {
+  //   if (!weatherLoading && !windLoading && !waveLoading && waveForecast && windForecast) {
+  //     console.log("-------- Vérification de l'alignement des données --------");
+  //     console.log("Date actuelle:", currentDate.toISOString());
+  //     console.log("Nombre d'heures affichées:", hours.length);
       
-      // Log alignement details
-      if (windForecast?.hourly?.time && windForecast?.hourly?.time.length > 0) {
-        console.log("Première heure de données de vent:", new Date(windForecast.hourly.time[0]).toISOString());
-        console.log("Première heure affichée:", hours[0].toISOString());
-      }
+  //     // Log alignement details
+  //     if (windForecast?.hourly?.time && windForecast?.hourly?.time.length > 0) {
+  //       console.log("Première heure de données de vent:", new Date(windForecast.hourly.time[0]).toISOString());
+  //       console.log("Première heure affichée:", hours[0].toISOString());
+  //     }
       
-      // Compare a few samples to verify alignment and log wave period data
-      for (let i = 0; i < Math.min(hours.length, 5); i++) {
-        console.log(`Heure[${i}]: ${hours[i].getHours()}:00, Vent: ${displayWindSpeeds[i]} nds, Direction: ${displayWindDirections[i]}°, Période de houle: ${displayWavePeriods[i]}`);
-      }
-    }
-  }, [weatherLoading, windLoading, waveLoading, hours, displayWindSpeeds, displayWindDirections, displayWavePeriods]);
+  //     // Compare a few samples to verify alignment and log wave period data
+  //     for (let i = 0; i < Math.min(hours.length, 5); i++) {
+  //       console.log(`Heure[${i}]: ${hours[i].getHours()}:00, Vent: ${displayWindSpeeds[i]} nds, Direction: ${displayWindDirections[i]}°, Période de houle: ${displayWavePeriods[i]}`);
+  //     }
+  //   }
+  // }, [weatherLoading, windLoading, waveLoading, hours, displayWindSpeeds, displayWindDirections, displayWavePeriods]);
 
   return (
     <div className="w-full bg-slate-100 text-black rounded">

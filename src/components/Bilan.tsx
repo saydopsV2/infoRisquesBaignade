@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 import Beach from '../interface/Beach';
@@ -7,7 +7,26 @@ interface BilanProps {
   location: Beach;
 }
 
+// Interface pour les données de marées dans resultats.json
+interface TideData {
+  marée: string;
+  coefficient: string;
+  heures: string;
+  durée: string;
+  heure_marée: string;
+  hauteur: string;
+  marnage: string;
+  un_douzieme: string;
+  un_quart: string;
+  demi: string;
+}
+
 const Bilan: React.FC<BilanProps> = ({ location }) => {
+  // State pour les données de marées
+  const [tideData, setTideData] = useState<TideData | null>(null);
+  const [isTideLoading, setIsTideLoading] = useState<boolean>(false);
+  const [tideError, setTideError] = useState<string | null>(null);
+
   // Récupération des données météo
   const {
     hours,
@@ -99,18 +118,89 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     
     return direction.toString();
   };
+
+  // Charger les données de marées
+  useEffect(() => {
+    const fetchTideData = async () => {
+      try {
+        setIsTideLoading(true);
+        const response = await fetch(`${import.meta.env.BASE_URL}dataModel/resultats-Bisca.json`);
+        
+        if (!response.ok) {
+          throw new Error(`Erreur de chargement: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Prendre la première entrée du tableau (les données de marées semblent être générales)
+        if (Array.isArray(data) && data.length > 0) {
+          setTideData(data[0]);
+        } else {
+          setTideData(null);
+        }
+        
+        setIsTideLoading(false);
+      } catch (error) {
+        setTideError(error instanceof Error ? error.message : 'Erreur inconnue');
+        setIsTideLoading(false);
+      }
+    };
+    
+    fetchTideData();
+  }, []);
+
+  // Fonction pour formater les heures de marées
+  const formatTideHours = (hoursString: string): string[] => {
+    const result: string[] = [];
+    for (let i = 0; i < hoursString.length; i += 5) {
+      if (i + 5 <= hoursString.length) {
+        result.push(hoursString.substring(i, i + 5));
+      }
+    }
+    return result;
+  };
+
+  // Fonction pour formater les hauteurs de marées
+  const formatTideHeights = (heightsString: string): string[] => {
+    const result: string[] = [];
+    for (let i = 0; i < heightsString.length; i += 5) {
+      if (i + 5 <= heightsString.length) {
+        result.push(heightsString.substring(i, i + 5));
+      }
+    }
+    return result;
+  };
+  
+  // Fonction pour formater le marnage avec des espaces
+  const formatMarnage = (marnageString: string): string => {
+    // Ajouter des espaces entre les valeurs
+    return marnageString.replace(/(\d,\d+m)(?=\d)/g, '$1 ');
+  };
+  
+  // Fonction pour formater la durée avec des espaces
+  const formatDuree = (dureeString: string): string => {
+    // Découper la chaîne tous les 5 caractères (format "06h07")
+    const result: string[] = [];
+    for (let i = 0; i < dureeString.length; i += 5) {
+      if (i + 5 <= dureeString.length) {
+        result.push(dureeString.substring(i, i + 5));
+      }
+    }
+    // Joindre avec des espaces
+    return result.join(' ');
+  };
   
   // Obtenir les données pour 11h00
   const data11AM = getDataAt11AM();
   
-  if (weatherLoading || windLoading) {
+  if (weatherLoading || windLoading || isTideLoading) {
     return <div className="p-4 text-center">Chargement des données...</div>;
   }
   
-  if (weatherError || windError) {
+  if (weatherError || windError || tideError) {
     return (
       <div className="p-4 bg-red-100 text-red-700 mb-4 rounded-lg">
-        Erreur: {weatherError || windError}
+        Erreur: {weatherError || windError || tideError}
       </div>
     );
   }
@@ -118,6 +208,13 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
   if (!data11AM) {
     return <div className="p-4 text-center">Données pour 11h00 non disponibles</div>;
   }
+
+  // Formater les données de marées pour l'affichage
+  const tideTypes = tideData?.marée ? ['BM', 'PM', 'BM', 'PM'] : [];
+  const tideHours = tideData?.heures ? formatTideHours(tideData.heures) : [];
+  const tideHeights = tideData?.hauteur ? formatTideHeights(tideData.hauteur) : [];
+  const formattedMarnage = tideData?.marnage ? formatMarnage(tideData.marnage) : '';
+  const formattedDuree = tideData?.durée ? formatDuree(tideData.durée) : '';
   
   return (
     <div className="bg-white shadow-md rounded-lg p-5 max-w-md mx-auto">
@@ -157,7 +254,55 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
             </p>
           </div>
         </div>
-      </div>      
+      </div>
+      
+      {/* Affichage des données de marées */}
+      {tideData && (
+        <div className="mt-4 bg-teal-50 p-3 rounded-md">
+          <h3 className="text-lg font-semibold text-teal-800">Marées aujourd'hui</h3>
+          
+          <div className="mt-2">
+            <p className="flex justify-between">
+              <span className="font-medium">Coefficient:</span>
+              <span>{tideData.coefficient}</span>
+            </p>
+            
+            {/* Tableau des marées */}
+            <div className="mt-3 overflow-x-auto">
+              <table className="min-w-full bg-white rounded-md">
+                <thead>
+                  <tr className="bg-teal-100">
+                    <th className="py-2 px-3 text-left text-xs font-medium text-teal-800">Type</th>
+                    <th className="py-2 px-3 text-left text-xs font-medium text-teal-800">Heure</th>
+                    <th className="py-2 px-3 text-left text-xs font-medium text-teal-800">Hauteur</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tideTypes.map((type, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-teal-50' : 'bg-white'}>
+                      <td className="py-2 px-3 text-xs">{type}</td>
+                      <td className="py-2 px-3 text-xs">{tideHours[index] || '-'}</td>
+                      <td className="py-2 px-3 text-xs">{tideHeights[index] || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="mt-3">
+              <p className="flex justify-between mt-1">
+                <span className="font-medium text-sm">Marnage:</span>
+                <span className="text-sm">{formattedMarnage}</span>
+              </p>
+              <p className="flex justify-between mt-1">
+                <span className="font-medium text-sm">Durée:</span>
+                <span className="text-sm">{formattedDuree}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="mt-4 text-center text-sm text-gray-500">
         Données pour {location.nom}
       </div>
