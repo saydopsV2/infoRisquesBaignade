@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import Beach from '../interface/Beach';
-import {  StandaloneChart } from './Chart';
+import { StandaloneChart } from './Chart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
+import { useWaveForecast } from '../context/WaveForecastContext';
 
 // Types
 interface TableProps {
@@ -66,7 +67,7 @@ const usePrevisionData = () => {
 
 // Components
 const LegendItem: React.FC<{ item: LegendItem }> = ({ item }) => (
-  <div className="flex items-center" key={item.label}>
+  <div className="flex items-center">
     <div className={`w-5 h-5 sm:w-6 sm:h-6 ${item.class} rounded-lg`}></div>
     <span className="ml-1 text-xs sm:text-sm px-2 py-1 bg-slate-50 rounded-md shadow-sm">
       {item.label}
@@ -85,7 +86,7 @@ const TableLegend: React.FC = () => {
 
   return (
     <div className="mt-4 p-2 bg-slate-100 text-black">
-      <h3 className="font-bold mb-2">Légende des indices:</h3>
+      <h3 className="font-bold mb-2">Légende indice Sécurité:</h3>
       <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-center justify-center">
         {legendItems.map((item) => (
           <LegendItem key={item.value} item={item} />
@@ -116,12 +117,22 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     error: windError,
     fetchWindForecast
   } = useWindForecast();
+  
+  // Utilisation du contexte pour obtenir les données de vagues
+  const {
+    waveForecast,
+    loading: waveLoading,
+    error: waveError,
+    fetchWaveForecast
+  } = useWaveForecast();
 
   useEffect(() => {
     // Appel à fetchWeatherData lors du montage du composant
     fetchWeatherData(location);
     // Appel à fetchWindForecast lors du montage du composant
     fetchWindForecast(location);
+    // Appel à fetchWaveForecast lors du montage du composant
+    fetchWaveForecast(location);
   }, [location]);
 
   const getIndexColor = (indice: number): string => {
@@ -187,58 +198,93 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     ? uvIndices
     : [...uvIndices, ...Array(24 - uvIndices.length).fill(null)];
 
-  // Ensure we have wind data
-  const safeWindDirections = windForecast?.hourly?.wind_direction_10m?.slice(0, 24) || Array(24).fill(null);
-  const safeWindSpeeds = windForecast?.hourly?.wind_speed_10m?.slice(0, 24) || Array(24).fill(null);
-  const safeWindGusts = windForecast?.hourly?.wind_gusts_10m?.slice(0, 24) || Array(24).fill(null);
-
-  // Ensure proper alignment with hours
-  const alignWindDataWithHours = () => {
-    if (!windForecast?.hourly?.time || hours.length === 0) return;
+  // Better approach for aligning data with hours
+  const alignDataWithHours = (dataArray: any[] | undefined, timeArray: string[] | undefined) => {
+    if (!dataArray || !timeArray || hours.length === 0) return Array(24).fill(null);
     
-    const alignedDirections = Array(24).fill(null);
-    const alignedSpeeds = Array(24).fill(null);
-    const alignedGusts = Array(24).fill(null);
+    const alignedData = Array(24).fill(null);
+    const today = new Date();
+    const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
     hours.forEach((hour, hourIndex) => {
-      const hourTime = hour.getHours();
+      const hourValue = hour.getHours();
       
-      // Find matching time in wind forecast data
-      windForecast.hourly.time.forEach((timeStr, windIndex) => {
-        const windTime = new Date(timeStr).getHours();
-        
-        if (hourTime === windTime) {
-          alignedDirections[hourIndex] = windForecast.hourly.wind_direction_10m[windIndex];
-          alignedSpeeds[hourIndex] = windForecast.hourly.wind_speed_10m[windIndex];
-          alignedGusts[hourIndex] = windForecast.hourly.wind_gusts_10m[windIndex];
-        }
+      const matchingIndex = timeArray.findIndex((timeStr) => {
+        return timeStr.startsWith(formattedToday) && 
+               new Date(timeStr).getHours() === hourValue;
       });
+      
+      if (matchingIndex !== -1 && matchingIndex < dataArray.length) {
+        alignedData[hourIndex] = dataArray[matchingIndex];
+      }
     });
     
-    return {
-      directions: alignedDirections,
-      speeds: alignedSpeeds,
-      gusts: alignedGusts
-    };
+    return alignedData;
   };
+
+  // Align wind data with displayed hours
+  const displayWindDirections = alignDataWithHours(
+    windForecast?.hourly?.wind_direction_10m,
+    windForecast?.hourly?.time
+  );
   
-  const alignedWindData = alignWindDataWithHours();
+  const displayWindSpeeds = alignDataWithHours(
+    windForecast?.hourly?.wind_speed_10m,
+    windForecast?.hourly?.time
+  );
   
-  // Use aligned data if available, otherwise fall back to just slicing the first 24 values
-  const displayWindDirections = alignedWindData?.directions || safeWindDirections;
-  const displayWindSpeeds = alignedWindData?.speeds || safeWindSpeeds;
-  const displayWindGusts = alignedWindData?.gusts || safeWindGusts;
+  const displayWindGusts = alignDataWithHours(
+    windForecast?.hourly?.wind_gusts_10m,
+    windForecast?.hourly?.time
+  );
+  
+  // Align wave data with displayed hours
+  const displayWaveHeights = alignDataWithHours(
+    waveForecast?.hourly?.wave_height,
+    waveForecast?.hourly?.time
+  );
+  
+  const displayWaveDirections = alignDataWithHours(
+    waveForecast?.hourly?.wave_direction,
+    waveForecast?.hourly?.time
+  );
+  
+  // Use type assertion to tell TypeScript that swell_wave_peak_period exists
+  const displayWavePeriods = alignDataWithHours(
+    waveForecast?.hourly?.swell_wave_peak_period,
+    waveForecast?.hourly?.time
+  );
+
+  useEffect(() => {
+    if (!weatherLoading && !windLoading && !waveLoading && waveForecast && windForecast) {
+      console.log("-------- Vérification de l'alignement des données --------");
+      console.log("Date actuelle:", currentDate.toISOString());
+      console.log("Nombre d'heures affichées:", hours.length);
+      
+      // Log alignement details
+      if (windForecast?.hourly?.time && windForecast?.hourly?.time.length > 0) {
+        console.log("Première heure de données de vent:", new Date(windForecast.hourly.time[0]).toISOString());
+        console.log("Première heure affichée:", hours[0].toISOString());
+      }
+      
+      // Compare a few samples to verify alignment and log wave period data
+      for (let i = 0; i < Math.min(hours.length, 5); i++) {
+        console.log(`Heure[${i}]: ${hours[i].getHours()}:00, Vent: ${displayWindSpeeds[i]} nds, Direction: ${displayWindDirections[i]}°, Période de houle: ${displayWavePeriods[i]}`);
+      }
+    }
+  }, [weatherLoading, windLoading, waveLoading, hours, displayWindSpeeds, displayWindDirections, displayWavePeriods]);
 
   return (
     <div className="w-full bg-slate-100 text-black rounded">
-      {(weatherLoading || windLoading) ? (
+      {(weatherLoading || windLoading || waveLoading) ? (
         <div className="p-4 text-center">Chargement des données...</div>
-      ) : (weatherError || windError) ? (
+      ) : (weatherError || windError || waveError) ? (
         <div className="p-4 bg-red-100 text-red-700 mb-4 rounded-lg">
-          Erreur: {weatherError || windError}
+          Erreur: {weatherError || windError || waveError}
         </div>
       ) : (
         <div className="overflow-x-auto w-full">
+          <TableLegend />
           <table className="w-full border-collapse bg-slate-100 text-black">
             <thead>
               <tr className="bg-blue-500">
@@ -257,7 +303,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr className="bg-blue-100">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indices courant <br /> d'arrachement</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indice Sécurité</td>
                 {safeIndices.map((indice, index) => (
                   <td
                     key={`indice-${index}`}
@@ -274,6 +320,12 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                     {temp !== null ? `${temp}${tempUnit}` : "-"}
                   </td>
                 ))}
+              </tr>
+              <tr>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Graphique</td>
+                <td colSpan={24} className="p-0 border-r">
+                  <StandaloneChart/>
+                </td>
               </tr>
               <tr className="bg-blue-50">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Indice UV</td>
@@ -316,22 +368,40 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                   </td>
                 ))}
               </tr>
-              <tr>
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Graphique</td>
-                <td colSpan={24} className="p-0 border-r">
-                  {/* <Chart
-                    hours={hours}
-                    temperatures={safeTemperatures}
-                    tempUnit={tempUnit}
-                  /> */}
-                  <StandaloneChart/>
-                </td>
+              <tr className="bg-white">
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Hauteur des vagues</td>
+                {displayWaveHeights.map((height, index) => (
+                  <td 
+                    key={`waveHeight-${index}`} 
+                    className="p-2 text-center border-r min-w-[50px]"
+                  >
+                    {height !== null ? `${height.toFixed(1)} m` : "-"}
+                  </td>
+                ))}
+              </tr>
+              <tr className="bg-gray-50">
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Direction des vagues</td>
+                {displayWaveDirections.map((direction, index) => (
+                  <td key={`waveDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
+                    {getWindDirectionSymbol(direction)}
+                  </td>
+                ))}
+              </tr>
+              <tr className="bg-white">
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-nowrap">Période des vagues</td>
+                {displayWavePeriods.map((period, index) => (
+                  <td 
+                    key={`wavePeriod-${index}`} 
+                    className="p-2 text-center border-r min-w-[50px]"
+                  >
+                    {period !== null ? `${period.toFixed(1)} s` : "-"}
+                  </td>
+                ))}
               </tr>
             </tbody>
           </table>
         </div>
       )}
-      <TableLegend />
     </div>
   );
 };

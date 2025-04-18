@@ -8,6 +8,7 @@ import forecastPlotImg from '/public/img/vue_semaine.jpg';
 import Footer from '../components/Footer';
 import Beach from '../interface/Beach';
 import { WindForecastProvider } from '../context/WindForecastContext';
+import { WaveForecastProvider } from '../context/WaveForecastContext';
 
 const letteBlanche: Beach = {
   nom: 'La lette Blanche',
@@ -24,15 +25,17 @@ const biscarosse: Beach = {
 function App() {
   return (
     <WindForecastProvider>
-      <Router basename="/infoBaines">
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
-          <Route path="/biscarosse" element={<BeachForecast beach={biscarosse} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
-        </Routes>
-        <Footer />
-      </Router>
+      <WaveForecastProvider>
+        <Router basename="/infoBaines">
+          <NavBar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
+            <Route path="/biscarrosse" element={<BeachForecast beach={biscarosse} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
+          </Routes>
+          <Footer />
+        </Router>
+      </WaveForecastProvider>
     </WindForecastProvider>
   );
 }

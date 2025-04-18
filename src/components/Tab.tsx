@@ -3,6 +3,7 @@ import Table from "./Table";
 import Beach from "../interface/Beach";
 import { StandaloneChart } from "./Chart";
 import { ChartAllData } from "./ChartAllData";
+import Bilan from "./Bilan";
 
 interface TabProps {
     tabAllDataPlot: string;
@@ -40,6 +41,16 @@ const Tab: React.FC<TabProps> = ({ tabBeach}) => {
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex justify-center">
                         <ChartAllData/>
+                    </div>
+                </div>
+            </div>
+
+            <input type="radio" name="my_tabs_3" className="tab text-slate-50" aria-label="Tableau Ouverture de poste"  />
+            <div className="tab-content bg-slate-300 border-base-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
+                <h2 className="text-xl font-bold mb-4 text-slate-950">Tableau Ouverture de poste</h2>
+                <div className="beach-data w-full overflow-hidden">
+                    <div className="mt-4 flex justify-center">
+                        <Bilan location={tabBeach}/>
                     </div>
                 </div>
             </div>
