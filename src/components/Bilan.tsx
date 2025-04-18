@@ -258,8 +258,8 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
       
       {/* Affichage des données de marées */}
       {tideData && (
-        <div className="mt-3 sm:mt-4 bg-teal-50 p-2 sm:p-3 rounded-md">
-          <h3 className="text-base sm:text-lg font-semibold text-teal-800">Marées aujourd'hui</h3>
+        <div className="mt-3 sm:mt-4 bg-sky-50 p-2 sm:p-3 rounded-md">
+          <h3 className="text-base sm:text-lg font-semibold text-sky-800">Marées aujourd'hui</h3>
           
           <div className="mt-2">
             <p className="flex justify-between text-sm sm:text-base">
@@ -271,15 +271,15 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
             <div className="mt-2 sm:mt-3 overflow-x-auto">
               <table className="min-w-full bg-white rounded-md">
                 <thead>
-                  <tr className="bg-teal-100">
-                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-teal-800">Type</th>
-                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-teal-800">Heure</th>
-                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-teal-800">Hauteur</th>
+                  <tr className="bg-sky-100">
+                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Type</th>
+                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Heure</th>
+                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Hauteur</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tideTypes.map((type, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-teal-50' : 'bg-white'}>
+                    <tr key={index} className={index % 2 === 0 ? 'bg-sky-50' : 'bg-white'}>
                       <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{type}</td>
                       <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHours[index] || '-'}</td>
                       <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHeights[index] || '-'}</td>
