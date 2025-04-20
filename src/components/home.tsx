@@ -10,7 +10,7 @@ const Home: React.FC = () => {
       <div className="flex items-start justify-center p-2 mt-0">
         <p className='text-lg sm:text-2xl text-center text-slate-100 mx-auto max-w-4xl px-4'>
           InfoBaïne est une application qui utilise une modélisation semi-empirique de la
-          prévision de l'aléa de la houle, des courants d'arrachement et de la houle des vagues de bords
+          prévision de l'aléa de la houle, des courants d'arrachement et de la houle des vagues de bord
           <br className="hidden sm:block" />
           <span className="block mt-2 mb-4">Vous y retrouverez differentes plages de la côte landaise.</span>
         </p>
