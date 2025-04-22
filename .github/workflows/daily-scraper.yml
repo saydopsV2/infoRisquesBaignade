@@ -3,7 +3,7 @@ name: Daily Web Scraping and Deploy
 on:
   schedule:
     # Exécuter tous les jours à 12h00 UTC
-    - cron: '0 14 * * *'
+    - cron: '0 12 * * *'
   # Permet également l'exécution manuelle depuis l'interface GitHub
   workflow_dispatch:
 
@@ -57,6 +57,9 @@ jobs:
           git config --global user.email 'action@github.com'
           git add .
           git diff --quiet && git diff --staged --quiet || git commit -m "Update tide data and deploy: $(date)"
+          
+          # Configuration pour gh-pages avec token d'authentification
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           npm run deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
