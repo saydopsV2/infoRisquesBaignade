@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import NavBar from '../components/navBar';
+import NavBar from '../components/NavBar';
 import BeachForecast from '../components/BeachForecast'; 
-import Home from '../components/home';
+import Home from '../components/Home';
 import allDataPlotImg from '/public/img/vue_saison.jpg';
 import forecastPlotImg from '/public/img/vue_semaine.jpg';
 import Footer from '../components/Footer';

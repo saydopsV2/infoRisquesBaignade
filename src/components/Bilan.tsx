@@ -124,7 +124,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     const fetchTideData = async () => {
       try {
         setIsTideLoading(true);
-        const response = await fetch(`${import.meta.env.BASE_URL}dataModel/resultats-Bisca.json`);
+        const response = await fetch(`${import.meta.env.BASE_URL}dataModel/result_scraper_tide.json`);
         
         if (!response.ok) {
           throw new Error(`Erreur de chargement: ${response.status}`);
@@ -217,38 +217,38 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
   const formattedDuree = tideData?.durée ? formatDuree(tideData.durée) : '';
   
   return (
-    <div className="bg-white shadow-md rounded-lg p-5 max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4 text-center border-b pb-2">
+    <div className="bg-white shadow-md rounded-lg p-4 sm:p-5 w-full max-w-md mx-auto">
+      <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center border-b pb-2">
         Bilan météorologique à 11h00
       </h2>
       
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-blue-50 p-3 rounded-md">
-          <h3 className="text-lg font-semibold text-blue-800">Météo</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+        <div className="bg-blue-50 p-2 sm:p-3 rounded-md">
+          <h3 className="text-base sm:text-lg font-semibold text-blue-800">Météo</h3>
           <div className="mt-2">
-            <p className="flex justify-between">
+            <p className="flex justify-between text-sm sm:text-base">
               <span className="font-medium">Température:</span>
               <span>{data11AM.temperature !== null ? `${data11AM.temperature}${tempUnit}` : "-"}</span>
             </p>
-            <p className="flex justify-between mt-1">
+            <p className="flex justify-between mt-1 text-sm sm:text-base">
               <span className="font-medium">Indice UV:</span>
               <span>{data11AM.uvIndex !== null ? data11AM.uvIndex.toFixed(1) : "-"}</span>
             </p>
           </div>
         </div>
         
-        <div className="bg-cyan-50 p-3 rounded-md">
-          <h3 className="text-lg font-semibold text-cyan-800">Vent</h3>
+        <div className="bg-cyan-50 p-2 sm:p-3 rounded-md">
+          <h3 className="text-base sm:text-lg font-semibold text-cyan-800">Vent</h3>
           <div className="mt-2">
-            <p className="flex justify-between">
+            <p className="flex justify-between text-sm sm:text-base">
               <span className="font-medium">Direction:</span>
               <span>{getWindDirectionSymbol(data11AM.windDirection)}</span>
             </p>
-            <p className="flex justify-between mt-1">
+            <p className="flex justify-between mt-1 text-sm sm:text-base">
               <span className="font-medium">Vitesse:</span>
               <span>{data11AM.windSpeed !== null ? `${data11AM.windSpeed} nds` : "-"}</span>
             </p>
-            <p className="flex justify-between mt-1">
+            <p className="flex justify-between mt-1 text-sm sm:text-base">
               <span className="font-medium">Rafales:</span>
               <span>{data11AM.windGusts !== null ? `${data11AM.windGusts} nds` : "-"}</span>
             </p>
@@ -258,52 +258,52 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
       
       {/* Affichage des données de marées */}
       {tideData && (
-        <div className="mt-4 bg-teal-50 p-3 rounded-md">
-          <h3 className="text-lg font-semibold text-teal-800">Marées aujourd'hui</h3>
+        <div className="mt-3 sm:mt-4 bg-sky-50 p-2 sm:p-3 rounded-md">
+          <h3 className="text-base sm:text-lg font-semibold text-sky-800">Marées aujourd'hui</h3>
           
           <div className="mt-2">
-            <p className="flex justify-between">
+            <p className="flex justify-between text-sm sm:text-base">
               <span className="font-medium">Coefficient:</span>
               <span>{tideData.coefficient}</span>
             </p>
             
             {/* Tableau des marées */}
-            <div className="mt-3 overflow-x-auto">
+            <div className="mt-2 sm:mt-3 overflow-x-auto">
               <table className="min-w-full bg-white rounded-md">
                 <thead>
-                  <tr className="bg-teal-100">
-                    <th className="py-2 px-3 text-left text-xs font-medium text-teal-800">Type</th>
-                    <th className="py-2 px-3 text-left text-xs font-medium text-teal-800">Heure</th>
-                    <th className="py-2 px-3 text-left text-xs font-medium text-teal-800">Hauteur</th>
+                  <tr className="bg-sky-100">
+                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Type</th>
+                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Heure</th>
+                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Hauteur</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tideTypes.map((type, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-teal-50' : 'bg-white'}>
-                      <td className="py-2 px-3 text-xs">{type}</td>
-                      <td className="py-2 px-3 text-xs">{tideHours[index] || '-'}</td>
-                      <td className="py-2 px-3 text-xs">{tideHeights[index] || '-'}</td>
+                    <tr key={index} className={index % 2 === 0 ? 'bg-sky-50' : 'bg-white'}>
+                      <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{type}</td>
+                      <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHours[index] || '-'}</td>
+                      <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHeights[index] || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             
-            <div className="mt-3">
-              <p className="flex justify-between mt-1">
-                <span className="font-medium text-sm">Marnage:</span>
-                <span className="text-sm">{formattedMarnage}</span>
+            <div className="mt-2 sm:mt-3">
+              <p className="flex justify-between mt-1 text-xs sm:text-sm">
+                <span className="font-medium">Marnage:</span>
+                <span>{formattedMarnage}</span>
               </p>
-              <p className="flex justify-between mt-1">
-                <span className="font-medium text-sm">Durée:</span>
-                <span className="text-sm">{formattedDuree}</span>
+              <p className="flex justify-between mt-1 text-xs sm:text-sm">
+                <span className="font-medium">Durée:</span>
+                <span>{formattedDuree}</span>
               </p>
             </div>
           </div>
         </div>
       )}
       
-      <div className="mt-4 text-center text-sm text-gray-500">
+      <div className="mt-3 sm:mt-4 text-center text-xs sm:text-sm text-gray-500">
         Données pour {location.nom}
       </div>
     </div>
