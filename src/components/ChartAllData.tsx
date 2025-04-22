@@ -196,7 +196,12 @@ export function ChartAllData(): React.JSX.Element {
     // Sauvegarder l'ancienne valeur avant de la modifier
     setPreviousTimeRange(timeRange);
 
-    // Mettre à jour la plage temporelle sans modifier le mode de vue
+    // Si on sélectionne "today" (Aujourd'hui), forcer le mode de vue à "hour"
+    if (newTimeRange === "today") {
+      setViewMode("hour");
+    }
+    
+    // Mettre à jour la plage temporelle
     setTimeRange(newTimeRange);
   };
 
@@ -279,6 +284,13 @@ export function ChartAllData(): React.JSX.Element {
       }
 
       return [];
+    }
+  }, [timeRange, viewMode]);
+
+  // Effet pour s'assurer que la vue "aujourd'hui" est toujours en mode horaire
+  React.useEffect(() => {
+    if (timeRange === "today" && viewMode !== "hour") {
+      setViewMode("hour");
     }
   }, [timeRange, viewMode]);
 
