@@ -3,35 +3,52 @@
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts"
 
-// Importer des composants UI personnalisés (versions simplifiées)
-const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>{children}</div>
-)
+// Définition des interfaces pour le typage
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
 
-const CardHeader = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>{children}</div>
-)
-
-const CardTitle = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
-)
-
-const CardDescription = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <p className={`text-sm text-muted-foreground ${className}`}>{children}</p>
-)
-
-const CardContent = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pt-0 ${className}`}>{children}</div>
-)
-
-// Define the expected props for SelectItem
 interface SelectItemProps {
   value: string;
   children: React.ReactNode;
   className?: string;
 }
 
-const Select = ({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: React.ReactNode }) => {
+interface SelectProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  children: React.ReactNode;
+}
+
+interface ChartDataItem {
+  date: string;
+  matin: number;
+  apresmidi: number;
+}
+
+// Importer des composants UI personnalisés (versions simplifiées)
+const Card = ({ children, className = "" }: CardProps): React.JSX.Element => (
+  <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>{children}</div>
+)
+
+const CardHeader = ({ children, className = "" }: CardProps): React.JSX.Element => (
+  <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>{children}</div>
+)
+
+const CardTitle = ({ children, className = "" }: CardProps): React.JSX.Element => (
+  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
+)
+
+const CardDescription = ({ children, className = "" }: CardProps): React.JSX.Element => (
+  <p className={`text-sm text-muted-foreground ${className}`}>{children}</p>
+)
+
+const CardContent = ({ children, className = "" }: CardProps): React.JSX.Element => (
+  <div className={`p-6 pt-0 ${className}`}>{children}</div>
+)
+
+const Select = ({ value, onValueChange, children }: SelectProps): React.JSX.Element => {
   return (
     <div className="relative w-[160px]">
       <select 
@@ -40,7 +57,6 @@ const Select = ({ value, onValueChange, children }: { value: string; onValueChan
         className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm"
       >
         {React.Children.map(children, child => {
-          // Assuming each child is a SelectItem
           if (React.isValidElement<SelectItemProps>(child)) {
             return <option value={child.props.value}>{child.props.children}</option>
           }
@@ -51,132 +67,233 @@ const Select = ({ value, onValueChange, children }: { value: string; onValueChan
   )
 }
 
-const SelectItem = ({ value, children, className = "" }: { value: string; children: React.ReactNode; className?: string }) => (
+const SelectItem = ({ value, children, className = "" }: SelectItemProps): React.JSX.Element => (
   <option value={value} className={className}>{children}</option>
 )
 
-const chartData = [
-  { date: "2024-04-01", desktop: 222, mobile: 150 },
-  { date: "2024-04-02", desktop: 97, mobile: 180 },
-  { date: "2024-04-03", desktop: 167, mobile: 120 },
-  { date: "2024-04-04", desktop: 242, mobile: 260 },
-  { date: "2024-04-05", desktop: 373, mobile: 290 },
-  { date: "2024-04-06", desktop: 301, mobile: 340 },
-  { date: "2024-04-07", desktop: 245, mobile: 180 },
-  { date: "2024-04-08", desktop: 409, mobile: 320 },
-  { date: "2024-04-09", desktop: 59, mobile: 110 },
-  { date: "2024-04-10", desktop: 261, mobile: 190 },
-  { date: "2024-04-11", desktop: 327, mobile: 350 },
-  { date: "2024-04-12", desktop: 292, mobile: 210 },
-  { date: "2024-04-13", desktop: 342, mobile: 380 },
-  { date: "2024-04-14", desktop: 137, mobile: 220 },
-  { date: "2024-04-15", desktop: 120, mobile: 170 },
-  { date: "2024-04-16", desktop: 138, mobile: 190 },
-  { date: "2024-04-17", desktop: 446, mobile: 360 },
-  { date: "2024-04-18", desktop: 364, mobile: 410 },
-  { date: "2024-04-19", desktop: 243, mobile: 180 },
-  { date: "2024-04-20", desktop: 89, mobile: 150 },
-  { date: "2024-04-21", desktop: 137, mobile: 200 },
-  { date: "2024-04-22", desktop: 224, mobile: 170 },
-  { date: "2024-04-23", desktop: 138, mobile: 230 },
-  { date: "2024-04-24", desktop: 387, mobile: 290 },
-  { date: "2024-04-25", desktop: 215, mobile: 250 },
-  { date: "2024-04-26", desktop: 75, mobile: 130 },
-  { date: "2024-04-27", desktop: 383, mobile: 420 },
-  { date: "2024-04-28", desktop: 122, mobile: 180 },
-  { date: "2024-04-29", desktop: 315, mobile: 240 },
-  { date: "2024-04-30", desktop: 454, mobile: 380 },
-  { date: "2024-05-01", desktop: 165, mobile: 220 },
-  { date: "2024-05-02", desktop: 293, mobile: 310 },
-  { date: "2024-05-03", desktop: 247, mobile: 190 },
-  { date: "2024-05-04", desktop: 385, mobile: 420 },
-  { date: "2024-05-05", desktop: 481, mobile: 390 },
-  { date: "2024-05-06", desktop: 498, mobile: 520 },
-  { date: "2024-05-07", desktop: 388, mobile: 300 },
-  { date: "2024-05-08", desktop: 149, mobile: 210 },
-  { date: "2024-05-09", desktop: 227, mobile: 180 },
-  { date: "2024-05-10", desktop: 293, mobile: 330 },
-  { date: "2024-05-11", desktop: 335, mobile: 270 },
-  { date: "2024-05-12", desktop: 197, mobile: 240 },
-  { date: "2024-05-13", desktop: 197, mobile: 160 },
-  { date: "2024-05-14", desktop: 448, mobile: 490 },
-  { date: "2024-05-15", desktop: 473, mobile: 380 },
-  { date: "2024-05-16", desktop: 338, mobile: 400 },
-  { date: "2024-05-17", desktop: 499, mobile: 420 },
-  { date: "2024-05-18", desktop: 315, mobile: 350 },
-  { date: "2024-05-19", desktop: 235, mobile: 180 },
-  { date: "2024-05-20", desktop: 177, mobile: 230 },
-  { date: "2024-05-21", desktop: 82, mobile: 140 },
-  { date: "2024-05-22", desktop: 81, mobile: 120 },
-  { date: "2024-05-23", desktop: 252, mobile: 290 },
-  { date: "2024-05-24", desktop: 294, mobile: 220 },
-  { date: "2024-05-25", desktop: 201, mobile: 250 },
-  { date: "2024-05-26", desktop: 213, mobile: 170 },
-  { date: "2024-05-27", desktop: 420, mobile: 460 },
-  { date: "2024-05-28", desktop: 233, mobile: 190 },
-  { date: "2024-05-29", desktop: 78, mobile: 130 },
-  { date: "2024-05-30", desktop: 340, mobile: 280 },
-  { date: "2024-05-31", desktop: 178, mobile: 230 },
-  { date: "2024-06-01", desktop: 178, mobile: 200 },
-  { date: "2024-06-02", desktop: 470, mobile: 410 },
-  { date: "2024-06-03", desktop: 103, mobile: 160 },
-  { date: "2024-06-04", desktop: 439, mobile: 380 },
-  { date: "2024-06-05", desktop: 88, mobile: 140 },
-  { date: "2024-06-06", desktop: 294, mobile: 250 },
-  { date: "2024-06-07", desktop: 323, mobile: 370 },
-  { date: "2024-06-08", desktop: 385, mobile: 320 },
-  { date: "2024-06-09", desktop: 438, mobile: 480 },
-  { date: "2024-06-10", desktop: 155, mobile: 200 },
-  { date: "2024-06-11", desktop: 92, mobile: 150 },
-  { date: "2024-06-12", desktop: 492, mobile: 420 },
-  { date: "2024-06-13", desktop: 81, mobile: 130 },
-  { date: "2024-06-14", desktop: 426, mobile: 380 },
-  { date: "2024-06-15", desktop: 307, mobile: 350 },
-  { date: "2024-06-16", desktop: 371, mobile: 310 },
-  { date: "2024-06-17", desktop: 475, mobile: 520 },
-  { date: "2024-06-18", desktop: 107, mobile: 170 },
-  { date: "2024-06-19", desktop: 341, mobile: 290 },
-  { date: "2024-06-20", desktop: 408, mobile: 450 },
-  { date: "2024-06-21", desktop: 169, mobile: 210 },
-  { date: "2024-06-22", desktop: 317, mobile: 270 },
-  { date: "2024-06-23", desktop: 480, mobile: 530 },
-  { date: "2024-06-24", desktop: 132, mobile: 180 },
-  { date: "2024-06-25", desktop: 141, mobile: 190 },
-  { date: "2024-06-26", desktop: 434, mobile: 380 },
-  { date: "2024-06-27", desktop: 448, mobile: 490 },
-  { date: "2024-06-28", desktop: 149, mobile: 200 },
-  { date: "2024-06-29", desktop: 103, mobile: 160 },
-  { date: "2024-06-30", desktop: 446, mobile: 400 },
+const chartData: ChartDataItem[] = [
+  { date: "2025-05-01T00:00:00", matin: 222, apresmidi: 150 },
+  { date: "2025-05-01T01:00:00", matin: 97, apresmidi: 180 },
+  { date: "2025-05-01T02:00:00", matin: 167, apresmidi: 120 },
+  { date: "2025-05-01T03:00:00", matin: 242, apresmidi: 260 },
+  { date: "2025-05-01T04:00:00", matin: 373, apresmidi: 290 },
+  { date: "2025-05-01T05:00:00", matin: 301, apresmidi: 340 },
+  { date: "2025-05-01T06:00:00", matin: 245, apresmidi: 180 },
+  { date: "2025-05-01T07:00:00", matin: 409, apresmidi: 320 },
+  { date: "2025-05-01T08:00:00", matin: 59, apresmidi: 110 },
+  { date: "2025-05-01T09:00:00", matin: 261, apresmidi: 190 },
+  { date: "2025-05-01T10:00:00", matin: 327, apresmidi: 350 },
+  { date: "2025-05-01T11:00:00", matin: 292, apresmidi: 210 },
+  { date: "2025-05-01T12:00:00", matin: 342, apresmidi: 380 },
+  { date: "2025-05-01T13:00:00", matin: 137, apresmidi: 220 },
+  { date: "2025-05-01T14:00:00", matin: 120, apresmidi: 170 },
+  { date: "2025-05-01T15:00:00", matin: 138, apresmidi: 190 },
+  { date: "2025-05-01T16:00:00", matin: 446, apresmidi: 360 },
+  { date: "2025-05-01T17:00:00", matin: 364, apresmidi: 410 },
+  { date: "2025-05-01T18:00:00", matin: 243, apresmidi: 180 },
+  { date: "2025-05-01T19:00:00", matin: 89, apresmidi: 150 },
+  { date: "2025-05-01T20:00:00", matin: 137, apresmidi: 200 },
+  { date: "2025-05-01T21:00:00", matin: 224, apresmidi: 170 },
+  { date: "2025-05-01T22:00:00", matin: 138, apresmidi: 230 },
+  { date: "2025-05-01T23:00:00", matin: 387, apresmidi: 290 },
+  { date: "2025-05-02T00:00:00", matin: 215, apresmidi: 250 },
+  { date: "2025-05-02T01:00:00", matin: 75, apresmidi: 130 },
+  { date: "2025-05-02T02:00:00", matin: 383, apresmidi: 420 },
+  { date: "2025-05-02T03:00:00", matin: 122, apresmidi: 180 },
+  { date: "2025-05-02T04:00:00", matin: 315, apresmidi: 240 },
+  { date: "2025-05-02T05:00:00", matin: 454, apresmidi: 380 },
+  { date: "2025-05-02T06:00:00", matin: 165, apresmidi: 220 },
+  { date: "2025-05-02T07:00:00", matin: 293, apresmidi: 310 },
+  { date: "2025-05-02T08:00:00", matin: 247, apresmidi: 190 },
+  { date: "2025-05-02T09:00:00", matin: 385, apresmidi: 420 },
+  { date: "2025-05-02T10:00:00", matin: 481, apresmidi: 390 },
+  { date: "2025-05-02T11:00:00", matin: 498, apresmidi: 520 },
+  { date: "2025-05-02T12:00:00", matin: 388, apresmidi: 300 },
+  { date: "2025-05-02T13:00:00", matin: 149, apresmidi: 210 },
+  { date: "2025-05-02T14:00:00", matin: 227, apresmidi: 180 },
+  { date: "2025-05-02T15:00:00", matin: 293, apresmidi: 330 },
+  { date: "2025-05-02T16:00:00", matin: 335, apresmidi: 270 },
+  { date: "2025-05-02T17:00:00", matin: 197, apresmidi: 240 },
+  { date: "2025-05-02T18:00:00", matin: 197, apresmidi: 160 },
+  { date: "2025-05-02T19:00:00", matin: 448, apresmidi: 490 },
+  { date: "2025-05-02T20:00:00", matin: 473, apresmidi: 380 },
+  { date: "2025-05-02T21:00:00", matin: 338, apresmidi: 400 },
+  { date: "2025-05-02T22:00:00", matin: 499, apresmidi: 420 },
+  { date: "2025-05-02T23:00:00", matin: 315, apresmidi: 350 },
+  { date: "2025-05-03T00:00:00", matin: 235, apresmidi: 180 },
+  { date: "2025-05-03T01:00:00", matin: 177, apresmidi: 230 },
+  { date: "2025-05-03T02:00:00", matin: 82, apresmidi: 140 },
+  { date: "2025-05-03T03:00:00", matin: 81, apresmidi: 120 },
+  { date: "2025-05-03T04:00:00", matin: 252, apresmidi: 290 },
+  { date: "2025-05-03T05:00:00", matin: 294, apresmidi: 220 },
+  { date: "2025-05-03T06:00:00", matin: 201, apresmidi: 250 },
+  { date: "2025-05-03T07:00:00", matin: 213, apresmidi: 170 },
+  { date: "2025-05-03T08:00:00", matin: 420, apresmidi: 460 },
+  { date: "2025-05-03T09:00:00", matin: 233, apresmidi: 190 },
+  { date: "2025-05-03T10:00:00", matin: 78, apresmidi: 130 },
+  { date: "2025-05-03T11:00:00", matin: 340, apresmidi: 280 },
+  { date: "2025-05-03T12:00:00", matin: 178, apresmidi: 230 },
+  { date: "2025-05-03T13:00:00", matin: 178, apresmidi: 200 },
+  { date: "2025-05-03T14:00:00", matin: 470, apresmidi: 410 },
+  { date: "2025-05-03T15:00:00", matin: 103, apresmidi: 160 },
+  { date: "2025-05-03T16:00:00", matin: 439, apresmidi: 380 },
+  { date: "2025-05-03T17:00:00", matin: 88, apresmidi: 140 },
+  { date: "2025-05-03T18:00:00", matin: 294, apresmidi: 250 },
+  { date: "2025-05-03T19:00:00", matin: 323, apresmidi: 370 },
+  { date: "2025-05-03T20:00:00", matin: 385, apresmidi: 320 },
+  { date: "2025-05-03T21:00:00", matin: 438, apresmidi: 480 },
+  { date: "2025-05-03T22:00:00", matin: 155, apresmidi: 200 },
+  { date: "2025-05-03T23:00:00", matin: 92, apresmidi: 150 },
+  { date: "2025-05-04T00:00:00", matin: 492, apresmidi: 420 },
+  { date: "2025-05-04T01:00:00", matin: 81, apresmidi: 130 },
+  { date: "2025-05-04T02:00:00", matin: 426, apresmidi: 380 },
+  { date: "2025-05-05T03:00:00", matin: 307, apresmidi: 350 },
+  { date: "2025-05-05T04:00:00", matin: 371, apresmidi: 310 },
+  { date: "2025-05-05T05:00:00", matin: 475, apresmidi: 520 },
+  { date: "2025-05-05T06:00:00", matin: 107, apresmidi: 170 },
+  { date: "2025-05-05T06:00:00", matin: 341, apresmidi: 290 },
+  { date: "2025-05-05T07:00:00", matin: 408, apresmidi: 450 },
+  { date: "2025-05-05T08:00:00", matin: 169, apresmidi: 210 },
+  { date: "2025-05-05T09:00:00", matin: 317, apresmidi: 270 },
+  { date: "2025-05-05T10:00:00", matin: 480, apresmidi: 530 },
+  { date: "2025-05-05T11:00:00", matin: 132, apresmidi: 180 },
+  { date: "2025-05-05T12:00:00", matin: 141, apresmidi: 190 },
+  { date: "2025-05-05T13:00:00", matin: 434, apresmidi: 380 },
+  { date: "2025-05-05T14:00:00", matin: 448, apresmidi: 490 },
+  { date: "2025-05-05T15:00:00", matin: 149, apresmidi: 200 },
+  { date: "2025-05-05T16:00:00", matin: 103, apresmidi: 160 },
+  { date: "2025-05-05T17:00:00", matin: 446, apresmidi: 400 },
+  { date: "2025-05-05T18:00:00", matin: 385, apresmidi: 320 },
+  { date: "2025-05-05T19:00:00", matin: 438, apresmidi: 480 },
+  { date: "2025-05-05T20:00:00", matin: 155, apresmidi: 200 },
+  { date: "2025-05-05T23:00:00", matin: 92, apresmidi: 150 },
 ]
 
-// Configuration simplifiée des couleurs pour le graphique
+// Configuration des couleurs pour le graphique
 const chartColors = {
-  desktop: {
+  matin: {
     stroke: "#2563eb", // blue-600
     fill: "#93c5fd", // blue-300
   },
-  mobile: {
+  apresmidi: {
     stroke: "#7c3aed", // violet-600 
     fill: "#c4b5fd", // violet-300
   },
 }
 
-export function ChartAllData() {
-  const [timeRange, setTimeRange] = React.useState("90d")
+type TimeRange = "today" | "in3days" | "in5days";
+type ViewMode = "day" | "hour";
 
-  const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date)
-    const referenceDate = new Date("2024-06-30")
-    let daysToSubtract = 90
-    if (timeRange === "30d") {
-      daysToSubtract = 30
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7
+export function ChartAllData(): React.JSX.Element {
+  const [timeRange, setTimeRange] = React.useState<TimeRange>("today");
+  const [viewMode, setViewMode] = React.useState<ViewMode>("hour");
+
+  // Mettre à jour le mode de vue lorsque timeRange change
+  React.useEffect(() => {
+    // Si on n'est pas sur "today", forcer le mode "day"
+    if (timeRange !== "today" && viewMode === "hour") {
+      setViewMode("day");
     }
-    const startDate = new Date(referenceDate)
-    startDate.setDate(startDate.getDate() - daysToSubtract)
-    return date >= startDate
-  })
+  }, [timeRange, viewMode]);
+
+  // Gestionnaire pour le changement de plage temporelle
+  const handleTimeRangeChange = (value: string) => {
+    const newTimeRange = value as TimeRange;
+    setTimeRange(newTimeRange);
+    
+    // Si on passe à une autre plage que "today", forcer le mode jour
+    if (newTimeRange !== "today") {
+      setViewMode("day");
+    }
+  };
+
+  // Préparation des données 
+  const processedData = React.useMemo<ChartDataItem[]>(() => {
+    // Pour les besoins de la démonstration, nous utilisons une date fixe
+    // plutôt que new Date() car nos données sont sur une période spécifique
+    //const referenceDate = new Date("2025-05-05T00:00:00");
+    
+    // En fonction du mode de vue et de la plage temporelle
+    if (viewMode === "hour") {
+      // En mode horaire, montrer les données d'une seule journée
+      let targetDate: Date;
+      
+      if (timeRange === "today") {
+        targetDate = new Date("2025-05-05");
+      } else if (timeRange === "in3days") {
+        targetDate = new Date("2025-05-03");
+      } else { // "in5days"
+        targetDate = new Date("2025-05-01");
+      }
+      
+      const targetDateStr = targetDate.toISOString().split('T')[0]; // "2025-05-05"
+      
+      return chartData.filter(item => {
+        return item.date.startsWith(targetDateStr);
+      });
+    } else {
+      // En mode jour, agréger les données par jour
+      let startDate: Date;
+      
+      if (timeRange === "today") {
+        startDate = new Date("2025-05-05");
+      } else if (timeRange === "in3days") {
+        startDate = new Date("2025-05-03");
+      } else { // "in5days"
+        startDate = new Date("2025-05-01");
+      }
+      
+      // Uniquement montrer les jours complets dans nos données
+      const daysToShow = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05"];
+      
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const startIndex = daysToShow.indexOf(startDateStr);
+      
+      if (startIndex >= 0) {
+        const relevantDays = daysToShow.slice(startIndex);
+        
+        // Créer un tableau agrégé par jour
+        const dailyData = relevantDays.map(day => {
+          // Filtrer les entrées pour ce jour
+          const dayEntries = chartData.filter(item => item.date.startsWith(day));
+          
+          // Calculer les moyennes pour ce jour
+          const matinTotal = dayEntries.reduce((sum, entry) => sum + entry.matin, 0);
+          const apresmidiTotal = dayEntries.reduce((sum, entry) => sum + entry.apresmidi, 0);
+          
+          return {
+            date: `${day}T12:00:00`, // Midi pour représenter le jour
+            matin: Math.round(matinTotal / Math.max(1, dayEntries.length)),
+            apresmidi: Math.round(apresmidiTotal / Math.max(1, dayEntries.length))
+          };
+        });
+        
+        return dailyData;
+      }
+      
+      return [];
+    }
+  }, [timeRange, viewMode]);
+
+  // Fonction pour formater les étiquettes de date/heure
+  const formatAxisLabel = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    
+    if (viewMode === "hour") {
+      // Format horaire HH:MM
+      return date.toLocaleTimeString("fr-FR", { 
+        hour: "2-digit", 
+        minute: "2-digit",
+        hour12: false
+      });
+    } else {
+      // Format date JJ/MM
+      return date.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit"
+      });
+    }
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto">
@@ -185,93 +302,118 @@ export function ChartAllData() {
           <div className="grid flex-1 gap-1 text-center sm:text-left">
             <CardTitle>Fréquentation des plages</CardTitle>
             <CardDescription>
-              Visualisation des données de fréquentation des derniers mois
+              {viewMode === "hour" 
+                ? "Visualisation de la fréquentation horaire" 
+                : "Visualisation de la fréquentation journalière"}
             </CardDescription>
           </div>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectItem value="90d">Derniers 3 mois</SelectItem>
-            <SelectItem value="30d">Derniers 30 jours</SelectItem>
-            <SelectItem value="7d">Derniers 7 jours</SelectItem>
-          </Select>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Select value={timeRange} onValueChange={handleTimeRangeChange}>
+              <SelectItem value="in5days">5 prochains jours</SelectItem>
+              <SelectItem value="in3days">3 prochains jours</SelectItem>
+              <SelectItem value="today">Aujourd'hui</SelectItem>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          <div className="aspect-auto h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={filteredData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorDesktop" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={chartColors.desktop.fill} stopOpacity={0.8} />
-                    <stop offset="95%" stopColor={chartColors.desktop.fill} stopOpacity={0.1} />
-                  </linearGradient>
-                  <linearGradient id="colorMobile" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={chartColors.mobile.fill} stopOpacity={0.8} />
-                    <stop offset="95%" stopColor={chartColors.mobile.fill} stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  tickLine={false} 
-                  axisLine={false} 
-                  tickMargin={8}
-                  minTickGap={32}
-                  tickFormatter={(value) => {
-                    const date = new Date(value)
-                    return date.toLocaleDateString("fr-FR", {
-                      month: "short",
-                      day: "numeric",
-                    })
-                  }}
-                />
-                <YAxis 
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                />
-                <Tooltip
-                  formatter={(value, name) => [value, name === "desktop" ? "Matin" : "Après-midi"]}
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  }}
-                />
-                <Legend 
-                  verticalAlign="top" 
-                  height={36} 
-                  formatter={(value) => (value === "desktop" ? "Fréquentation matin" : "Fréquentation après-midi")}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="mobile"
-                  name="mobile"
-                  stroke={chartColors.mobile.stroke}
-                  fillOpacity={1}
-                  fill="url(#colorMobile)"
-                  stackId="1"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="desktop"
-                  name="desktop"
-                  stroke={chartColors.desktop.stroke}
-                  fillOpacity={1}
-                  fill="url(#colorDesktop)"
-                  stackId="1"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="aspect-auto h-[400px] w-full">
+            {processedData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart 
+                  data={processedData} 
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorMatin" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartColors.matin.fill} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={chartColors.matin.fill} stopOpacity={0.1} />
+                    </linearGradient>
+                    <linearGradient id="colorApresmidi" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartColors.apresmidi.fill} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={chartColors.apresmidi.fill} stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                  <XAxis 
+                    dataKey="date" 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickMargin={8}
+                    minTickGap={viewMode === "hour" ? 50 : 20}
+                    tickFormatter={formatAxisLabel}
+                    interval={viewMode === "hour" ? 2 : 0}
+                  />
+                  <YAxis 
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                  />
+                  <Tooltip
+                    formatter={(value: number, name: string) => [
+                      `${value} visiteurs`, 
+                      name === "matin" ? "Matin" : "Après-midi"
+                    ]}
+                    labelFormatter={(value: string) => {
+                      const date = new Date(value);
+                      if (viewMode === "hour") {
+                        // Format horaire détaillé
+                        return `${date.toLocaleDateString("fr-FR", {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long"
+                        })} à ${date.toLocaleTimeString("fr-FR", {
+                          hour: "2-digit", 
+                          minute: "2-digit"
+                        })}`;
+                      } else {
+                        // Format jour uniquement
+                        return date.toLocaleDateString("fr-FR", {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric"
+                        });
+                      }
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="top" 
+                    height={36} 
+                    formatter={(value: string) => (value === "matin" ? "Fréquentation matin" : "Fréquentation après-midi")}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="matin"
+                    name="matin"
+                    stroke={chartColors.matin.stroke}
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorMatin)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="apresmidi"
+                    name="apresmidi"
+                    stroke={chartColors.apresmidi.stroke}
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorApresmidi)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <p className="text-gray-400">Aucune donnée disponible pour la période sélectionnée</p>
+              </div>
+            )}
           </div>
           
-          <div className="mt-4 text-sm text-center text-gray-500">
-            <p>Les données affichées représentent la fréquentation des plages durant la saison estivale.</p>
-            <p className="mt-1">Source: Relevés de fréquentation - Surveillance des plages 2024</p>
+          <div className="mt-6 text-sm text-center text-gray-500">
+            <p>Les données affichées représentent la fréquentation des plages durant la saison estivale 2025.</p>
+            <p className="mt-1">Source: Relevés de fréquentation - Surveillance des plages 2025</p>
           </div>
         </CardContent>
       </Card>
-      
     </div>
-  )
+  );
 }
