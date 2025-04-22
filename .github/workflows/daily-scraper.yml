@@ -1,0 +1,57 @@
+name: Daily Web Scraping and Deploy
+
+on:
+  schedule:
+    # Exécuter tous les jours à 11h00 UTC
+    - cron: '0 12 * * *'
+  # Permet également l'exécution manuelle depuis l'interface GitHub
+  workflow_dispatch:
+
+jobs:
+  scrape-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scrapy
+          # Installez d'autres dépendances Python si nécessaire
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      
+      - name: Run scraper
+        run: |
+          cd ./scriptPython/maree_scraper  # Ajustez ce chemin
+          rm -rf resultats.json  # Supprimez le fichier précédent
+          scrapy crawl maree -o ../../public/dataModel/result_scraper_tide.json  # Ajustez les chemins
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Node.js dependencies
+        run: |
+          cd 
+          npm ci
+      
+      - name: Build and deploy React app
+        run: |
+          cd   
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update tide data and deploy: $(date)"
+          npm run deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

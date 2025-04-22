@@ -124,7 +124,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     const fetchTideData = async () => {
       try {
         setIsTideLoading(true);
-        const response = await fetch(`${import.meta.env.BASE_URL}dataModel/resultats-Bisca.json`);
+        const response = await fetch(`${import.meta.env.BASE_URL}dataModel/result_scraper_tide.json`);
         
         if (!response.ok) {
           throw new Error(`Erreur de chargement: ${response.status}`);
