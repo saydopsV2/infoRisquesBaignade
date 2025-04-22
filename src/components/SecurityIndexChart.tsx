@@ -158,7 +158,7 @@ export function SecurityIndexChart({ hours = [], indices = [] }: SecurityChartPr
             strokeWidth={2}
             name="Indice Sécurité"
             activeDot={(props) => {
-              const { cx, cy, value, dataKey, payload } = props;
+              const { cx, cy, payload } = props;
               // Obtenir la couleur en fonction de la valeur d'indice
               const color = getSecurityIndexColor(payload.securityIndex);
               
