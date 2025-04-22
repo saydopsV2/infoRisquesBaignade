@@ -102,6 +102,81 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
       windGusts
     };
   };
+
+  // Fonction pour extraire les valeurs maximales de la journée
+  const getDailyMaxValues = () => {
+    if (weatherLoading || windLoading) return null;
+    if (weatherError || windError) return null;
+    
+    // Obtenir la date actuelle
+    const currentDate = new Date();
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
+    // Filtrer les données pour la journée en cours
+    const todayIndices = hours.reduce((indices: number[], hour, index) => {
+      if (
+        hour.getDate() === currentDay &&
+        hour.getMonth() === currentMonth &&
+        hour.getFullYear() === currentYear
+      ) {
+        indices.push(index);
+      }
+      return indices;
+    }, []);
+    
+    if (todayIndices.length === 0) return null;
+    
+    // Calculer les maximums pour la météo
+    const todayTemperatures = todayIndices.map(index => temperatures[index]);
+    const todayUvIndices = todayIndices.map(index => uvIndices[index]);
+    
+    const maxTemperature = Math.max(...todayTemperatures.filter(t => t !== null) as number[]);
+    const maxUvIndex = Math.max(...todayUvIndices.filter(uv => uv !== null) as number[]);
+    
+    // Calculer les maximums pour le vent
+    let maxWindSpeed = null;
+    let maxWindGusts = null;
+    let directionAtMaxSpeed = null;
+    
+    if (windForecast?.hourly?.time) {
+      // Filtrer les indices de temps pour aujourd'hui
+      const todayWindIndices = windForecast.hourly.time.reduce((indices: number[], timeStr, index) => {
+        const apiDate = new Date(timeStr);
+        if (
+          apiDate.getDate() === currentDay &&
+          apiDate.getMonth() === currentMonth &&
+          apiDate.getFullYear() === currentYear
+        ) {
+          indices.push(index);
+        }
+        return indices;
+      }, []);
+      
+      if (todayWindIndices.length > 0) {
+        // Extraire les vitesses du vent et rafales pour aujourd'hui
+        const todayWindSpeeds = todayWindIndices.map(index => windForecast.hourly.wind_speed_10m[index]);
+        const todayWindGusts = todayWindIndices.map(index => windForecast.hourly.wind_gusts_10m[index]);
+        
+        // Trouver les maximums
+        maxWindSpeed = Math.max(...todayWindSpeeds);
+        maxWindGusts = Math.max(...todayWindGusts);
+        
+        // Trouver la direction au moment de la vitesse maximale
+        const maxSpeedIndex = todayWindIndices[todayWindSpeeds.indexOf(maxWindSpeed)];
+        directionAtMaxSpeed = windForecast.hourly.wind_direction_10m[maxSpeedIndex];
+      }
+    }
+    
+    return {
+      maxTemperature: isNaN(maxTemperature) ? null : maxTemperature,
+      maxUvIndex: isNaN(maxUvIndex) ? null : maxUvIndex,
+      maxWindSpeed,
+      maxWindGusts,
+      directionAtMaxSpeed
+    };
+  };
   
   // Fonction pour obtenir le symbole de direction du vent
   const getWindDirectionSymbol = (direction: number | null): string => {
@@ -193,6 +268,9 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
   // Obtenir les données pour 11h00
   const data11AM = getDataAt11AM();
   
+  // Obtenir les valeurs maximales de la journée
+  const maxValues = getDailyMaxValues();
+  
   if (weatherLoading || windLoading || isTideLoading) {
     return <div className="p-4 text-center">Chargement des données...</div>;
   }
@@ -234,6 +312,18 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
               <span className="font-medium">Indice UV:</span>
               <span>{data11AM.uvIndex !== null ? data11AM.uvIndex.toFixed(1) : "-"}</span>
             </p>
+            {maxValues && (
+              <>
+                <p className="flex justify-between mt-2 text-sm sm:text-base text-red-700">
+                  <span className="font-medium">Temp. max:</span>
+                  <span>{maxValues.maxTemperature !== null ? `${maxValues.maxTemperature}${tempUnit}` : "-"}</span>
+                </p>
+                <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
+                  <span className="font-medium">UV max:</span>
+                  <span>{maxValues.maxUvIndex !== null ? maxValues.maxUvIndex.toFixed(1) : "-"}</span>
+                </p>
+              </>
+            )}
           </div>
         </div>
         
@@ -252,6 +342,22 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
               <span className="font-medium">Rafales:</span>
               <span>{data11AM.windGusts !== null ? `${data11AM.windGusts} nds` : "-"}</span>
             </p>
+            {maxValues && (
+              <>
+                <p className="flex justify-between mt-2 text-sm sm:text-base text-red-700">
+                  <span className="font-medium">Direction:</span>
+                  <span>{getWindDirectionSymbol(maxValues.directionAtMaxSpeed)}</span>
+                </p>
+                <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
+                  <span className="font-medium">Vitesse max:</span>
+                  <span>{maxValues.maxWindSpeed !== null ? `${maxValues.maxWindSpeed} nds` : "-"}</span>
+                </p>
+                <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
+                  <span className="font-medium">Rafales max:</span>
+                  <span>{maxValues.maxWindGusts !== null ? `${maxValues.maxWindGusts} nds` : "-"}</span>
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -187,7 +187,7 @@ type ViewMode = "day" | "hour";
 export function ChartAllData(): React.JSX.Element {
   const [timeRange, setTimeRange] = React.useState<TimeRange>("today");
   const [viewMode, setViewMode] = React.useState<ViewMode>("hour");
-  const [previousTimeRange, setPreviousTimeRange] = React.useState<TimeRange>("today");
+  const [, setPreviousTimeRange] = React.useState<TimeRange>("today");
 
   // Gestionnaire pour le changement de plage temporelle
   const handleTimeRangeChange = (value: string) => {
@@ -200,7 +200,7 @@ export function ChartAllData(): React.JSX.Element {
     if (newTimeRange === "today") {
       setViewMode("hour");
     }
-    
+
     // Mettre à jour la plage temporelle
     setTimeRange(newTimeRange);
   };
@@ -318,6 +318,10 @@ export function ChartAllData(): React.JSX.Element {
   // Pour l'option "today", nous ne proposons que la vue horaire
   const showViewModeSelector = timeRange !== "today";
 
+  // Déterminer si les étiquettes de l'axe X doivent être inclinées
+  // On incline seulement en mode "5 prochains jours" pour faciliter la lecture
+  const shouldRotateLabels = timeRange === "in5days";
+
   return (
     <div className="w-full max-w-6xl mx-auto">
       <Card>
@@ -350,7 +354,7 @@ export function ChartAllData(): React.JSX.Element {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={processedData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  margin={{ top: 10, right: 30, left: 0, bottom: shouldRotateLabels ? 40 : 0 }}
                 >
                   <defs>
                     <linearGradient id="colorMatin" x1="0" y1="0" x2="0" y2="1">
@@ -367,10 +371,13 @@ export function ChartAllData(): React.JSX.Element {
                     dataKey="date"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
+                    tickMargin={shouldRotateLabels ? 20 : 8}
                     minTickGap={viewMode === "hour" ? 50 : 20}
                     tickFormatter={formatAxisLabel}
                     interval={viewMode === "hour" ? 2 : 0}
+                    angle={shouldRotateLabels ? -45 : 0}
+                    textAnchor={shouldRotateLabels ? "end" : "middle"}
+                    height={shouldRotateLabels ? 60 : 30}
                   />
                   <YAxis
                     tickLine={false}

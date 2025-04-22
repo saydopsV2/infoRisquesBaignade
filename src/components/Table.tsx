@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import Beach from '../interface/Beach';
 import { StandaloneChart } from './Chart';
+import { SecurityIndexChart } from './SecurityIndexChart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 import { useWaveForecast } from '../context/WaveForecastContext';
@@ -255,25 +256,6 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     waveForecast?.hourly?.time
   );
 
-  // useEffect(() => {
-  //   if (!weatherLoading && !windLoading && !waveLoading && waveForecast && windForecast) {
-  //     console.log("-------- Vérification de l'alignement des données --------");
-  //     console.log("Date actuelle:", currentDate.toISOString());
-  //     console.log("Nombre d'heures affichées:", hours.length);
-
-  //     // Log alignement details
-  //     if (windForecast?.hourly?.time && windForecast?.hourly?.time.length > 0) {
-  //       console.log("Première heure de données de vent:", new Date(windForecast.hourly.time[0]).toISOString());
-  //       console.log("Première heure affichée:", hours[0].toISOString());
-  //     }
-
-  //     // Compare a few samples to verify alignment and log wave period data
-  //     for (let i = 0; i < Math.min(hours.length, 5); i++) {
-  //       console.log(`Heure[${i}]: ${hours[i].getHours()}:00, Vent: ${displayWindSpeeds[i]} nds, Direction: ${displayWindDirections[i]}°, Période de houle: ${displayWavePeriods[i]}`);
-  //     }
-  //   }
-  // }, [weatherLoading, windLoading, waveLoading, hours, displayWindSpeeds, displayWindDirections, displayWavePeriods]);
-
   return (
     <div className="w-full bg-slate-100 text-black rounded">
       {(weatherLoading || windLoading || waveLoading) ? (
@@ -313,6 +295,18 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                   </td>
                 ))}
               </tr>
+              <tr>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Graphique Indice</td>
+                <td colSpan={24} className="p-0 border-r">
+                  <SecurityIndexChart hours={hours} indices={safeIndices} />
+                </td>
+              </tr>
+              <tr className="h-4">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {hours.map((_, index) => (
+                  <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
+                ))}
+              </tr>
               <tr className="bg-white">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Température</td>
                 {safeTemperatures.map((temp, index) => (
@@ -322,7 +316,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 ))}
               </tr>
               <tr>
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Graphique</td>
+                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Graphique Temp.</td>
                 <td colSpan={24} className="p-0 border-r">
                   <StandaloneChart />
                 </td>
@@ -336,6 +330,12 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                   >
                     {uv !== null ? uv.toFixed(1) : "-"}
                   </td>
+                ))}
+              </tr>
+              <tr className="h-4">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {hours.map((_, index) => (
+                  <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
               <tr className="bg-gray-50">
@@ -366,6 +366,12 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                   >
                     {gust !== null ? `${gust} nds` : "-"}
                   </td>
+                ))}
+              </tr>
+              <tr className="h-4">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {hours.map((_, index) => (
+                  <td key={`spacer-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
               <tr className="bg-white">
