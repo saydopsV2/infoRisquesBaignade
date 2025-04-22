@@ -154,7 +154,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     return "bg-purple-700 text-white"; // Extreme
   };
 
-  const getWindDirectionSymbol = (direction: number | null): string => {
+  const getDirectionSymbol = (direction: number | null): string => {
     if (direction === null) return "-";
 
     if (direction >= 337.5 || direction < 22.5) return "↓ N";
@@ -342,7 +342,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction du vent</td>
                 {displayWindDirections.map((direction, index) => (
                   <td key={`windDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
-                    {getWindDirectionSymbol(direction)}
+                    {getDirectionSymbol(direction)}
                   </td>
                 ))}
               </tr>
@@ -383,7 +383,7 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction des vagues</td>
                 {displayWaveDirections.map((direction, index) => (
                   <td key={`waveDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
-                    {getWindDirectionSymbol(direction)}
+                    {getDirectionSymbol(direction)}
                   </td>
                 ))}
               </tr>

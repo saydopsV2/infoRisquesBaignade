@@ -2,8 +2,8 @@ name: Daily Web Scraping and Deploy
 
 on:
   schedule:
-    # Exécuter tous les jours à 12h00 UTC
-    - cron: '0 12 * * *'
+    # Exécuter tous les jours à 14h00 Paris
+    - cron: '30 12 * * *'
   # Permet également l'exécution manuelle depuis l'interface GitHub
   workflow_dispatch:
 
