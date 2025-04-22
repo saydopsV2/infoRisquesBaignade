@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
 import { StandaloneChart } from "./Chart";
 import { ChartAllData } from "./ChartAllData";
 import Bilan from "./Bilan";
+import { SecurityIndexChart } from "./SecurityIndexChart";
+import { useWeather } from "../context/WeatherContext";
+import Papa from 'papaparse';
 
 interface TabProps {
     tabAllDataPlot: string;
@@ -11,11 +14,63 @@ interface TabProps {
     tabBeach: Beach;
 }
 
-const Tab: React.FC<TabProps> = ({ tabBeach}) => {
+// Interface pour les données CSV
+interface PrevisionData {
+    valeur: string;
+    [key: string]: any;
+}
+
+const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // Style pour espacer les onglets horizontalement
     const tabStyle = {
         marginRight: '10px'  // Ajoute une marge à droite de chaque onglet
     };
+    
+    // États pour stocker les heures et les indices de sécurité
+    const [securityIndices, setSecurityIndices] = useState<number[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    
+    // Utiliser le contexte weather pour obtenir les heures
+    const { hours } = useWeather();
+    
+    // Charger les indices de sécurité à partir du CSV
+    useEffect(() => {
+        const fetchSecurityIndices = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`${import.meta.env.BASE_URL}dataModel/prevision.csv`);
+                const csvText = await response.text();
+
+                Papa.parse<PrevisionData>(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        const parsedIndices: number[] = result.data
+                            .map(row => parseInt(row.valeur, 10))
+                            .filter(val => !isNaN(val));
+
+                        // Assurer que nous avons 24 valeurs
+                        const safeIndices = parsedIndices.length >= 24
+                            ? parsedIndices.slice(0, 24)
+                            : [...parsedIndices, ...Array(24 - parsedIndices.length).fill(0)];
+                            
+                        setSecurityIndices(safeIndices);
+                        setLoading(false);
+                    },
+                    error: () => {
+                        // En cas d'erreur, utiliser des valeurs par défaut
+                        setSecurityIndices(new Array(24).fill(0));
+                        setLoading(false);
+                    },
+                });
+            } catch (err) {
+                setSecurityIndices(new Array(24).fill(0));
+                setLoading(false);
+            }
+        };
+
+        fetchSecurityIndices();
+    }, []);
     
     return (
         <div className="tabs tabs-lift w-full max-w-full">
@@ -34,8 +89,21 @@ const Tab: React.FC<TabProps> = ({ tabBeach}) => {
             <div className="tab-content bg-slate-300 border-base-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
                 <h2 className="text-xl font-bold mb-4 text-slate-950">Previsions sous forme de graphe</h2>
                 <div className="beach-data w-full overflow-hidden">
-                    <div className="mt-4 flex justify-center">
-                        <StandaloneChart/>
+                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="w-full">
+                            <h3 className="text-lg font-semibold mb-2">Températures</h3>
+                            <StandaloneChart />
+                        </div>
+                        <div className="w-full">
+                            <h3 className="text-lg font-semibold mb-2">Indice de Sécurité</h3>
+                            {loading ? (
+                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données...</p>
+                                </div>
+                            ) : (
+                                <SecurityIndexChart hours={hours} indices={securityIndices} />
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
