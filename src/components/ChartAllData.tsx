@@ -187,7 +187,7 @@ type ViewMode = "day" | "hour";
 export function ChartAllData(): React.JSX.Element {
   const [timeRange, setTimeRange] = React.useState<TimeRange>("today");
   const [viewMode, setViewMode] = React.useState<ViewMode>("hour");
-  const [previousTimeRange, setPreviousTimeRange] = React.useState<TimeRange>("today");
+  const [, setPreviousTimeRange] = React.useState<TimeRange>("today");
 
   // Gestionnaire pour le changement de plage temporelle
   const handleTimeRangeChange = (value: string) => {
