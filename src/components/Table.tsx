@@ -338,6 +338,12 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                   </td>
                 ))}
               </tr>
+              <tr className="h-4">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {hours.map((_, index) => (
+                  <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
+                ))}
+              </tr>
               <tr className="bg-gray-50">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction du vent</td>
                 {displayWindDirections.map((direction, index) => (
@@ -366,6 +372,12 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                   >
                     {gust !== null ? `${gust} nds` : "-"}
                   </td>
+                ))}
+              </tr>
+              <tr className="h-4">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {hours.map((_, index) => (
+                  <td key={`spacer-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
               <tr className="bg-white">
