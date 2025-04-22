@@ -2,8 +2,8 @@ name: Daily Web Scraping and Deploy
 
 on:
   schedule:
-    # Exécuter tous les jours à 11h00 UTC
-    - cron: '0 13 * * *'
+    # Exécuter tous les jours à 12h00 UTC
+    - cron: '0 14 * * *'
   # Permet également l'exécution manuelle depuis l'interface GitHub
   workflow_dispatch:
 
@@ -17,6 +17,13 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
       
+      # Nettoyer les sous-modules problématiques avant de continuer
+      - name: Clean problematic submodules
+        run: |
+          if [ -d "node_modules/.cache/gh-pages" ]; then
+            rm -rf node_modules/.cache/gh-pages
+          fi
+      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -25,7 +32,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install scrapy
+          pip install scrapy scrapy-playwright
+          playwright install
           # Installez d'autres dépendances Python si nécessaire
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       
@@ -52,3 +60,11 @@ jobs:
           npm run deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Assurez-vous de nettoyer après le déploiement
+      - name: Cleanup after deploy
+        if: always()
+        run: |
+          if [ -d "node_modules/.cache/gh-pages" ]; then
+            rm -rf node_modules/.cache/gh-pages
+          fi
