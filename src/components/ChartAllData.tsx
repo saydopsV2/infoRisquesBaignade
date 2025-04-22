@@ -51,8 +51,8 @@ const CardContent = ({ children, className = "" }: CardProps): React.JSX.Element
 const Select = ({ value, onValueChange, children }: SelectProps): React.JSX.Element => {
   return (
     <div className="relative w-[160px]">
-      <select 
-        value={value} 
+      <select
+        value={value}
         onChange={(e) => onValueChange(e.target.value)}
         className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm"
       >
@@ -187,54 +187,61 @@ type ViewMode = "day" | "hour";
 export function ChartAllData(): React.JSX.Element {
   const [timeRange, setTimeRange] = React.useState<TimeRange>("today");
   const [viewMode, setViewMode] = React.useState<ViewMode>("hour");
-
-  // Mettre à jour le mode de vue lorsque timeRange change
-  React.useEffect(() => {
-    // Si on n'est pas sur "today", forcer le mode "day"
-    if (timeRange !== "today" && viewMode === "hour") {
-      setViewMode("day");
-    }
-  }, [timeRange, viewMode]);
+  const [previousTimeRange, setPreviousTimeRange] = React.useState<TimeRange>("today");
 
   // Gestionnaire pour le changement de plage temporelle
   const handleTimeRangeChange = (value: string) => {
     const newTimeRange = value as TimeRange;
+
+    // Sauvegarder l'ancienne valeur avant de la modifier
+    setPreviousTimeRange(timeRange);
+
+    // Mettre à jour la plage temporelle sans modifier le mode de vue
     setTimeRange(newTimeRange);
-    
-    // Si on passe à une autre plage que "today", forcer le mode jour
-    if (newTimeRange !== "today") {
-      setViewMode("day");
-    }
+  };
+
+  // Gestionnaire pour le changement de mode de vue
+  const handleViewModeChange = (value: string) => {
+    setViewMode(value as ViewMode);
   };
 
   // Préparation des données 
   const processedData = React.useMemo<ChartDataItem[]>(() => {
     // Pour les besoins de la démonstration, nous utilisons une date fixe
     // plutôt que new Date() car nos données sont sur une période spécifique
-    //const referenceDate = new Date("2025-05-05T00:00:00");
-    
+
     // En fonction du mode de vue et de la plage temporelle
     if (viewMode === "hour") {
-      // En mode horaire, montrer les données d'une seule journée
-      let targetDate: Date;
-      
+      // En mode horaire
       if (timeRange === "today") {
-        targetDate = new Date("2025-05-05");
+        // Pour "aujourd'hui", montrer seulement les données de ce jour
+        const targetDate = new Date("2025-05-05");
+        const targetDateStr = targetDate.toISOString().split('T')[0]; // "2025-05-05"
+
+        return chartData.filter(item => {
+          return item.date.startsWith(targetDateStr);
+        });
       } else if (timeRange === "in3days") {
-        targetDate = new Date("2025-05-03");
+        // Pour "3 prochains jours", montrer les données horaires des 3 jours
+        const relevantDays = ["2025-05-03", "2025-05-04", "2025-05-05"];
+
+        return chartData.filter(item => {
+          const itemDateStr = item.date.split('T')[0];
+          return relevantDays.includes(itemDateStr);
+        });
       } else { // "in5days"
-        targetDate = new Date("2025-05-01");
+        // Pour "5 prochains jours", montrer les données horaires des 5 jours
+        const relevantDays = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05"];
+
+        return chartData.filter(item => {
+          const itemDateStr = item.date.split('T')[0];
+          return relevantDays.includes(itemDateStr);
+        });
       }
-      
-      const targetDateStr = targetDate.toISOString().split('T')[0]; // "2025-05-05"
-      
-      return chartData.filter(item => {
-        return item.date.startsWith(targetDateStr);
-      });
     } else {
-      // En mode jour, agréger les données par jour
+      // Mode jour - Utiliser les MAXIMUMS journaliers au lieu des moyennes
       let startDate: Date;
-      
+
       if (timeRange === "today") {
         startDate = new Date("2025-05-05");
       } else if (timeRange === "in3days") {
@@ -242,35 +249,35 @@ export function ChartAllData(): React.JSX.Element {
       } else { // "in5days"
         startDate = new Date("2025-05-01");
       }
-      
+
       // Uniquement montrer les jours complets dans nos données
       const daysToShow = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05"];
-      
+
       const startDateStr = startDate.toISOString().split('T')[0];
       const startIndex = daysToShow.indexOf(startDateStr);
-      
+
       if (startIndex >= 0) {
         const relevantDays = daysToShow.slice(startIndex);
-        
+
         // Créer un tableau agrégé par jour
         const dailyData = relevantDays.map(day => {
           // Filtrer les entrées pour ce jour
           const dayEntries = chartData.filter(item => item.date.startsWith(day));
-          
-          // Calculer les moyennes pour ce jour
-          const matinTotal = dayEntries.reduce((sum, entry) => sum + entry.matin, 0);
-          const apresmidiTotal = dayEntries.reduce((sum, entry) => sum + entry.apresmidi, 0);
-          
+
+          // Calculer les MAXIMUMS pour ce jour (au lieu des moyennes)
+          const matinMax = Math.max(...dayEntries.map(entry => entry.matin));
+          const apresmidiMax = Math.max(...dayEntries.map(entry => entry.apresmidi));
+
           return {
             date: `${day}T12:00:00`, // Midi pour représenter le jour
-            matin: Math.round(matinTotal / Math.max(1, dayEntries.length)),
-            apresmidi: Math.round(apresmidiTotal / Math.max(1, dayEntries.length))
+            matin: matinMax,
+            apresmidi: apresmidiMax
           };
         });
-        
+
         return dailyData;
       }
-      
+
       return [];
     }
   }, [timeRange, viewMode]);
@@ -278,11 +285,11 @@ export function ChartAllData(): React.JSX.Element {
   // Fonction pour formater les étiquettes de date/heure
   const formatAxisLabel = (dateStr: string): string => {
     const date = new Date(dateStr);
-    
+
     if (viewMode === "hour") {
       // Format horaire HH:MM
-      return date.toLocaleTimeString("fr-FR", { 
-        hour: "2-digit", 
+      return date.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
         minute: "2-digit",
         hour12: false
       });
@@ -295,6 +302,10 @@ export function ChartAllData(): React.JSX.Element {
     }
   };
 
+  // Déterminer si le sélecteur de vue doit être affiché
+  // Pour l'option "today", nous ne proposons que la vue horaire
+  const showViewModeSelector = timeRange !== "today";
+
   return (
     <div className="w-full max-w-6xl mx-auto">
       <Card>
@@ -302,12 +313,18 @@ export function ChartAllData(): React.JSX.Element {
           <div className="grid flex-1 gap-1 text-center sm:text-left">
             <CardTitle>Fréquentation des plages</CardTitle>
             <CardDescription>
-              {viewMode === "hour" 
-                ? "Visualisation de la fréquentation horaire" 
-                : "Visualisation de la fréquentation journalière"}
+              {viewMode === "hour"
+                ? "Visualisation de la fréquentation horaire"
+                : "Visualisation de la fréquentation journalière (valeurs maximales)"}
             </CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
+            {showViewModeSelector && (
+              <Select value={viewMode} onValueChange={handleViewModeChange}>
+                <SelectItem value="hour">Vue horaire</SelectItem>
+                <SelectItem value="day">Vue journalière</SelectItem>
+              </Select>
+            )}
             <Select value={timeRange} onValueChange={handleTimeRangeChange}>
               <SelectItem value="in5days">5 prochains jours</SelectItem>
               <SelectItem value="in3days">3 prochains jours</SelectItem>
@@ -319,8 +336,8 @@ export function ChartAllData(): React.JSX.Element {
           <div className="aspect-auto h-[400px] w-full">
             {processedData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart 
-                  data={processedData} 
+                <AreaChart
+                  data={processedData}
                   margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
                 >
                   <defs>
@@ -334,23 +351,23 @@ export function ChartAllData(): React.JSX.Element {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                  <XAxis 
-                    dataKey="date" 
-                    tickLine={false} 
-                    axisLine={false} 
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
                     tickMargin={8}
                     minTickGap={viewMode === "hour" ? 50 : 20}
                     tickFormatter={formatAxisLabel}
                     interval={viewMode === "hour" ? 2 : 0}
                   />
-                  <YAxis 
+                  <YAxis
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
                   />
                   <Tooltip
                     formatter={(value: number, name: string) => [
-                      `${value} visiteurs`, 
+                      `${value} visiteurs`,
                       name === "matin" ? "Matin" : "Après-midi"
                     ]}
                     labelFormatter={(value: string) => {
@@ -362,7 +379,7 @@ export function ChartAllData(): React.JSX.Element {
                           day: "numeric",
                           month: "long"
                         })} à ${date.toLocaleTimeString("fr-FR", {
-                          hour: "2-digit", 
+                          hour: "2-digit",
                           minute: "2-digit"
                         })}`;
                       } else {
@@ -376,9 +393,9 @@ export function ChartAllData(): React.JSX.Element {
                       }
                     }}
                   />
-                  <Legend 
-                    verticalAlign="top" 
-                    height={36} 
+                  <Legend
+                    verticalAlign="top"
+                    height={36}
                     formatter={(value: string) => (value === "matin" ? "Fréquentation matin" : "Fréquentation après-midi")}
                   />
                   <Area
@@ -407,7 +424,7 @@ export function ChartAllData(): React.JSX.Element {
               </div>
             )}
           </div>
-          
+
           <div className="mt-6 text-sm text-center text-gray-500">
             <p>Les données affichées représentent la fréquentation des plages durant la saison estivale 2025.</p>
             <p className="mt-1">Source: Relevés de fréquentation - Surveillance des plages 2025</p>
