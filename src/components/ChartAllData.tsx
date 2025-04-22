@@ -211,7 +211,7 @@ export function ChartAllData(): React.JSX.Element {
   const processedData = React.useMemo<ChartDataItem[]>(() => {
     // Pour les besoins de la démonstration, nous utilisons une date fixe
     // plutôt que new Date() car nos données sont sur une période spécifique
-    const referenceDate = new Date("2025-05-05T00:00:00");
+    //const referenceDate = new Date("2025-05-05T00:00:00");
     
     // En fonction du mode de vue et de la plage temporelle
     if (viewMode === "hour") {

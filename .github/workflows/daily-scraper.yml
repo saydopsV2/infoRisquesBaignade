@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          persist-credentials: false
+          persist-credentials: true
           fetch-depth: 0
       
       - name: Set up Python
@@ -41,13 +41,10 @@ jobs:
           node-version: '18'
       
       - name: Install Node.js dependencies
-        run: |
-          cd 
-          npm ci
+        run: npm ci
       
-      - name: Build and deploy React app
+      - name: Commit changes and deploy
         run: |
-          cd   
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'action@github.com'
           git add .
