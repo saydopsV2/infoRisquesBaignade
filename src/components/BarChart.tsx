@@ -240,7 +240,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, v
         return (
             <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md">
                 <p className="font-bold mb-1">{capitalizedDate}</p>
-                <p className="text-gray-600 text-sm mb-2">{timeInfo}</p>
+                <p className="text-gray-600 text-sm mb-2">{timeInfo} h</p>
                 <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color }}></div>
                     <p>
@@ -258,7 +258,6 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, v
 // Composant Bar Chart réutilisable avec options avancées
 export function BarChartComponent({
     title = "Fréquentation des plages",
-    description = "Nombre de visiteurs par période",
     data = chartData,
     dataKeys = ["morning", "afternoon"],
     chartConfig = defaultChartConfig
