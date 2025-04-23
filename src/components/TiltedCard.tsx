@@ -62,7 +62,7 @@ const TiltedCard: React.FC<TiltedCardProps> = ({
             className="w-full h-full object-cover"
           />
         </figure>
-        <div className="card-body text-slate-800 bg-yellow-300">
+        <div className="card-body text-red-50 bg-red-500">
           <h2 className="card-title">{captionText}</h2>
           <p>Cliquez pour voir les prévisions</p>
         </div>
