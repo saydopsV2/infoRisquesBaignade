@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirection vers Info Risques Baignade</title>
+  <script type="text/javascript">
+    // Redirection vers la page d'accueil avec le chemin correct
+    var segmentCount = 1; // Le nombre de segments à conserver dans le chemin (pour infoRisquesBaignade)
+    
+    var l = window.location;
+    var basePath = l.pathname.split('/').slice(0, segmentCount + 1).join('/'); // Obtient "/infoRisquesBaignade"
+    
+    // Extraire le reste du chemin pour l'ajouter après le hashtag
+    var remainingPath = l.pathname.split('/').slice(segmentCount + 1).join('/');
+    
+    // Construction de l'URL finale
+    var redirectUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + 
+                     basePath + '/#/' + remainingPath + 
+                     (l.search ? l.search : '');
+    
+    // Redirection
+    window.location.replace(redirectUrl);
+  </script>
+</head>
+<body>
+  <h1>Redirection...</h1>
+  <p>Si vous n'êtes pas redirigé automatiquement, <a href="/infoRisquesBaignade/">cliquez ici</a>.</p>
+</body>
+</html>

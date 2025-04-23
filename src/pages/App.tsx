@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import NavBar from '../components/NavBar';
 import BeachForecast from '../components/BeachForecast'; 
@@ -26,7 +26,7 @@ function App() {
   return (
     <WindForecastProvider>
       <WaveForecastProvider>
-        <Router basename="/infoRisquesBaignade">
+        <Router>
           <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />
