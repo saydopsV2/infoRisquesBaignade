@@ -7,6 +7,7 @@ import Bilan from "./Bilan";
 import { SecurityIndexChart } from "./SecurityIndexChart";
 import { useWeather } from "../context/WeatherContext";
 import Papa from 'papaparse';
+import { BarChart } from "./BarChart";  // Cette importation est maintenant correcte
 
 interface TabProps {
     tabAllDataPlot: string;
@@ -89,7 +90,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
             <div className="tab-content bg-slate-300 border-base-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
                 <h2 className="text-xl font-bold mb-4 text-slate-950">Previsions sous forme de graphe</h2>
                 <div className="beach-data w-full overflow-hidden">
-                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="mt-4 flex flex-col space-y-8">
                         <div className="w-full">
                             <h3 className="text-lg font-semibold mb-2">Températures</h3>
                             <StandaloneChart />
@@ -103,6 +104,14 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                             ) : (
                                 <SecurityIndexChart hours={hours} indices={securityIndices} />
                             )}
+                        </div>
+                        <div className="w-full">
+                            <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
+                            <BarChart 
+                                title="Fréquentation des plages" 
+                                description="Nombre de visiteurs par période"
+                                dataKeys={["morning", "afternoon"]}
+                            />
                         </div>
                     </div>
                 </div>
