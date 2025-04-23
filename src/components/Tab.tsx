@@ -92,8 +92,12 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex flex-col space-y-8">
                         <div className="w-full">
-                            <h3 className="text-lg font-semibold mb-2">Températures</h3>
-                            <StandaloneChart />
+                            <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
+                            <BarChart 
+                                title="Fréquentation des plages" 
+                                description="Nombre de visiteurs par période"
+                                dataKeys={["morning", "afternoon"]}
+                            />
                         </div>
                         <div className="w-full">
                             <h3 className="text-lg font-semibold mb-2">Indice de Sécurité</h3>
@@ -106,12 +110,8 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                             )}
                         </div>
                         <div className="w-full">
-                            <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
-                            <BarChart 
-                                title="Fréquentation des plages" 
-                                description="Nombre de visiteurs par période"
-                                dataKeys={["morning", "afternoon"]}
-                            />
+                            <h3 className="text-lg font-semibold mb-2">Températures</h3>
+                            <StandaloneChart />
                         </div>
                     </div>
                 </div>
