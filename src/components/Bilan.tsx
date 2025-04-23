@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 import Beach from '../interface/Beach';
+import DirectionArrow from './DirectionArrow';
 
 interface BilanProps {
   location: Beach;
@@ -178,22 +179,6 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     };
   };
   
-  // Fonction pour obtenir le symbole de direction du vent
-  const getWindDirectionSymbol = (direction: number | null): string => {
-    if (direction === null) return "-";
-    
-    if (direction >= 337.5 || direction < 22.5) return "↓ N";
-    if (direction >= 22.5 && direction < 67.5) return "↙ NE";
-    if (direction >= 67.5 && direction < 112.5) return "← E";
-    if (direction >= 112.5 && direction < 157.5) return "↖ SE";
-    if (direction >= 157.5 && direction < 202.5) return "↑ S";
-    if (direction >= 202.5 && direction < 247.5) return "↗ SO";
-    if (direction >= 247.5 && direction < 292.5) return "→ O";
-    if (direction >= 292.5 && direction < 337.5) return "↘ NO";
-    
-    return direction.toString();
-  };
-
   // Charger les données de marées
   useEffect(() => {
     const fetchTideData = async () => {
@@ -295,13 +280,13 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
   const formattedDuree = tideData?.durée ? formatDuree(tideData.durée) : '';
   
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 sm:p-5 w-full max-w-md mx-auto">
+    <div className="bg-white shadow-md rounded-lg p-4 sm:p-5 w-full max-w-6xl mx-auto">
       <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center border-b pb-2">
         Bilan météorologique à 11h00
       </h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-        <div className="bg-blue-50 p-2 sm:p-3 rounded-md">
+      <div className="flex flex-wrap justify-between gap-4">
+        <div id="weather" className="bg-blue-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
           <h3 className="text-base sm:text-lg font-semibold text-blue-800">Météo</h3>
           <div className="mt-2">
             <p className="flex justify-between text-sm sm:text-base">
@@ -327,12 +312,17 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           </div>
         </div>
         
-        <div className="bg-cyan-50 p-2 sm:p-3 rounded-md">
+        <div id="wind" className="bg-cyan-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
           <h3 className="text-base sm:text-lg font-semibold text-cyan-800">Vent</h3>
           <div className="mt-2">
-            <p className="flex justify-between text-sm sm:text-base">
+            <p className="flex justify-between items-center text-sm sm:text-base">
               <span className="font-medium">Direction:</span>
-              <span>{getWindDirectionSymbol(data11AM.windDirection)}</span>
+              <DirectionArrow 
+                direction={data11AM.windDirection} 
+                size={24} 
+                color="#2563eb" 
+                showLabel={true}
+              />
             </p>
             <p className="flex justify-between mt-1 text-sm sm:text-base">
               <span className="font-medium">Vitesse:</span>
@@ -344,9 +334,14 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
             </p>
             {maxValues && (
               <>
-                <p className="flex justify-between mt-2 text-sm sm:text-base text-red-700">
+                <p className="flex justify-between items-center mt-2 text-sm sm:text-base text-red-700">
                   <span className="font-medium">Direction:</span>
-                  <span>{getWindDirectionSymbol(maxValues.directionAtMaxSpeed)}</span>
+                  <DirectionArrow 
+                    direction={maxValues.directionAtMaxSpeed} 
+                    size={24} 
+                    color="#dc2626" 
+                    showLabel={true}
+                  />
                 </p>
                 <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
                   <span className="font-medium">Vitesse max:</span>
@@ -360,54 +355,54 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
             )}
           </div>
         </div>
-      </div>
-      
-      {/* Affichage des données de marées */}
-      {tideData && (
-        <div className="mt-3 sm:mt-4 bg-sky-50 p-2 sm:p-3 rounded-md">
-          <h3 className="text-base sm:text-lg font-semibold text-sky-800">Marées aujourd'hui</h3>
-          
-          <div className="mt-2">
-            <p className="flex justify-between text-sm sm:text-base">
-              <span className="font-medium">Coefficient:</span>
-              <span>{tideData.coefficient}</span>
-            </p>
+        
+        {/* Affichage des données de marées */}
+        {tideData && (
+          <div id="tide" className="bg-sky-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
+            <h3 className="text-base sm:text-lg font-semibold text-sky-800">Marées aujourd'hui</h3>
             
-            {/* Tableau des marées */}
-            <div className="mt-2 sm:mt-3 overflow-x-auto">
-              <table className="min-w-full bg-white rounded-md">
-                <thead>
-                  <tr className="bg-sky-100">
-                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Type</th>
-                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Heure</th>
-                    <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Hauteur</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tideTypes.map((type, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-sky-50' : 'bg-white'}>
-                      <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{type}</td>
-                      <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHours[index] || '-'}</td>
-                      <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHeights[index] || '-'}</td>
+            <div className="mt-2">
+              <p className="flex justify-between text-sm sm:text-base">
+                <span className="font-medium">Coefficient:</span>
+                <span>{tideData.coefficient}</span>
+              </p>
+              
+              {/* Tableau des marées */}
+              <div className="mt-2 sm:mt-3 overflow-x-auto">
+                <table className="min-w-full bg-white rounded-md">
+                  <thead>
+                    <tr className="bg-sky-100">
+                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Type</th>
+                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Heure</th>
+                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-xs sm:text-sm font-medium text-sky-800">Hauteur</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            <div className="mt-2 sm:mt-3">
-              <p className="flex justify-between mt-1 text-xs sm:text-sm">
-                <span className="font-medium">Marnage:</span>
-                <span>{formattedMarnage}</span>
-              </p>
-              <p className="flex justify-between mt-1 text-xs sm:text-sm">
-                <span className="font-medium">Durée:</span>
-                <span>{formattedDuree}</span>
-              </p>
+                  </thead>
+                  <tbody>
+                    {tideTypes.map((type, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-sky-50' : 'bg-white'}>
+                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{type}</td>
+                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHours[index] || '-'}</td>
+                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-xs sm:text-sm">{tideHeights[index] || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="mt-2 sm:mt-3">
+                <p className="flex justify-between mt-1 text-xs sm:text-sm">
+                  <span className="font-medium">Marnage:</span>
+                  <span>{formattedMarnage}</span>
+                </p>
+                <p className="flex justify-between mt-1 text-xs sm:text-sm">
+                  <span className="font-medium">Durée:</span>
+                  <span>{formattedDuree}</span>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       
       <div className="mt-3 sm:mt-4 text-center text-xs sm:text-sm text-gray-500">
         Données pour {location.nom}

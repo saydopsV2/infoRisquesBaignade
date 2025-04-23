@@ -6,6 +6,7 @@ import { SecurityIndexChart } from './SecurityIndexChart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 import { useWaveForecast } from '../context/WaveForecastContext';
+import DirectionArrow from './DirectionArrow';
 
 // Types
 interface TableProps {
@@ -153,21 +154,6 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     if (uvIndex < 8) return "bg-orange-400"; // High
     if (uvIndex < 11) return "bg-red-500 text-white"; // Very High
     return "bg-purple-700 text-white"; // Extreme
-  };
-
-  const getDirectionSymbol = (direction: number | null): string => {
-    if (direction === null) return "-";
-
-    if (direction >= 337.5 || direction < 22.5) return "↓ N";
-    if (direction >= 22.5 && direction < 67.5) return "↙ NE";
-    if (direction >= 67.5 && direction < 112.5) return "← E";
-    if (direction >= 112.5 && direction < 157.5) return "↖ SE";
-    if (direction >= 157.5 && direction < 202.5) return "↑ S";
-    if (direction >= 202.5 && direction < 247.5) return "↗ SO";
-    if (direction >= 247.5 && direction < 292.5) return "→ O";
-    if (direction >= 292.5 && direction < 337.5) return "↘ NO";
-
-    return direction.toString();
   };
 
   const getWindSpeedColor = (speed: number | null): string => {
@@ -342,7 +328,16 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction du vent</td>
                 {displayWindDirections.map((direction, index) => (
                   <td key={`windDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
-                    {getDirectionSymbol(direction)}
+                    {direction !== null ? (
+                      <DirectionArrow 
+                        direction={direction} 
+                        size={24} 
+                        color="#2563eb" // Blue color for wind
+                        showLabel={true}
+                      />
+                    ) : (
+                      "-"
+                    )}
                   </td>
                 ))}
               </tr>
@@ -389,7 +384,16 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction des vagues</td>
                 {displayWaveDirections.map((direction, index) => (
                   <td key={`waveDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
-                    {getDirectionSymbol(direction)}
+                    {direction !== null ? (
+                      <DirectionArrow 
+                        direction={direction} 
+                        size={24} 
+                        color="#6366f1" // Indigo color for waves
+                        showLabel={true}
+                      />
+                    ) : (
+                      "-"
+                    )}
                   </td>
                 ))}
               </tr>
