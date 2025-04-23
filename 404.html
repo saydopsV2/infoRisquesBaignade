@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirection</title>
+  <script type="text/javascript">
+    // On stocke le segment de path dans le sessionStorage
+    var pathSegmentsToKeep = 1; // Conserve /infoRisquesBaignade/
+    var l = window.location;
+    
+    // Sauvegarde la partie de l'URL après la base (/infoRisquesBaignade/)
+    var redirectUrl = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '');
+    var path = l.pathname.split('/');
+    var pathBase = '';
+    
+    for (var i = 1; i <= pathSegmentsToKeep; i++) {
+      pathBase += '/' + path[i];
+    }
+    
+    redirectUrl += pathBase + '/?p=/';
+    
+    // Ajoute le reste du chemin
+    path.splice(0, pathSegmentsToKeep + 1);
+    redirectUrl += path.join('/');
+    
+    // Ajoute les paramètres de la requête si présents
+    if (l.search) {
+      redirectUrl += l.search;
+    }
+    
+    // Redirige vers index.html avec les bons paramètres
+    window.location.replace(redirectUrl);
+  </script>
+</head>
+<body>
+  Redirection en cours...
+</body>
+</html>
