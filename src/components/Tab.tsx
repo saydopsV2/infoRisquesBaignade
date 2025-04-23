@@ -201,7 +201,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 onChange={() => handleTabChange("frequentation")}
             />
             <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center  flex-wrap gap-2 mb-4">
                     <h2 className="text-xl font-bold text-slate-950">Fréquentation des plages</h2>
                     
                     {/* Toggle switch personnalisé avec des classes Tailwind standard */}
