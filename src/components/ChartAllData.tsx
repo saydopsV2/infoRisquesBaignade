@@ -189,6 +189,32 @@ export function ChartAllData(): React.JSX.Element {
   const [viewMode, setViewMode] = React.useState<ViewMode>("hour");
   const [, setPreviousTimeRange] = React.useState<TimeRange>("today");
 
+  // Déterminer si les étiquettes de l'axe X doivent être inclinées
+  // On incline pour les petits écrans et en mode "5 prochains jours"
+  const [shouldRotateLabels, setShouldRotateLabels] = React.useState<boolean>(
+    timeRange === "in5days" || window?.innerWidth < 768
+  );
+
+  // Effet pour détecter la taille de l'écran et ajuster la rotation des étiquettes
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleResize = () => {
+      setShouldRotateLabels(timeRange === "in5days" || window.innerWidth < 768);
+    };
+    
+    // Configuration initiale
+    handleResize();
+    
+    // Ajout de l'écouteur d'événement
+    window.addEventListener('resize', handleResize);
+    
+    // Nettoyage
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [timeRange]);
+
   // Gestionnaire pour le changement de plage temporelle
   const handleTimeRangeChange = (value: string) => {
     const newTimeRange = value as TimeRange;
@@ -318,10 +344,6 @@ export function ChartAllData(): React.JSX.Element {
   // Pour l'option "today", nous ne proposons que la vue horaire
   const showViewModeSelector = timeRange !== "today";
 
-  // Déterminer si les étiquettes de l'axe X doivent être inclinées
-  // On incline seulement en mode "5 prochains jours" pour faciliter la lecture
-  const shouldRotateLabels = timeRange === "in5days";
-
   return (
     <div className="w-full mx-auto">
       <Card>
@@ -372,12 +394,13 @@ export function ChartAllData(): React.JSX.Element {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={shouldRotateLabels ? 20 : 8}
-                    minTickGap={viewMode === "hour" ? 50 : 20}
+                    minTickGap={viewMode === "hour" ? (shouldRotateLabels ? 30 : 50) : 20}
                     tickFormatter={formatAxisLabel}
-                    interval={viewMode === "hour" ? 2 : 0}
+                    interval={viewMode === "hour" ? (shouldRotateLabels ? 3 : 2) : 0}
                     angle={shouldRotateLabels ? -45 : 0}
                     textAnchor={shouldRotateLabels ? "end" : "middle"}
                     height={shouldRotateLabels ? 60 : 30}
+                    fontSize={shouldRotateLabels ? 10 : 12}
                   />
                   <YAxis
                     tickLine={false}
