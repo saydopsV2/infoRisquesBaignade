@@ -5,7 +5,26 @@
     <link rel="icon"  href="/infoRisquesBaignade/assets/faviconI-B0I7O-Qn.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>InfoRisquesBaignade</title>
-    <script type="module" crossorigin src="/infoRisquesBaignade/assets/index--xXKucJm.js"></script>
+    <script type="text/javascript">
+      // Vérifie si on est redirigé depuis le 404.html
+      (function() {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        
+        // S'il y a un paramètre 'p' dans l'URL qui contient le chemin
+        var urlParams = new URLSearchParams(window.location.search);
+        var path = urlParams.get('p');
+        
+        if (path) {
+          // Reconstruit l'URL originale
+          var newUrl = window.location.origin + window.location.pathname.split('?')[0] + path;
+          
+          // Remplace l'URL actuelle par l'URL originale sans rechargement
+          history.replaceState(null, null, newUrl);
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/infoRisquesBaignade/assets/index-2GPFl6lm.js"></script>
     <link rel="stylesheet" crossorigin href="/infoRisquesBaignade/assets/index-D2aCAxyP.css">
   </head>
   <body>
