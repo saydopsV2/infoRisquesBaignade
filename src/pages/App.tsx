@@ -1,7 +1,7 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import NavBar from '../components/NavBar';
-import BeachForecast from '../components/BeachForecast'; 
+import BeachForecast from '../components/BeachForecast';
 import Home from '../components/Home';
 import allDataPlotImg from '/public/img/vue_saison.jpg';
 import forecastPlotImg from '/public/img/vue_semaine.jpg';
@@ -26,7 +26,7 @@ function App() {
   return (
     <WindForecastProvider>
       <WaveForecastProvider>
-        <Router>
+        <Router basename="/infoRisquesBaignade">
           <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />
