@@ -26,7 +26,7 @@ function App() {
   return (
     <WindForecastProvider>
       <WaveForecastProvider>
-        <Router basename="/infoBaines">
+        <Router basename="/infoRisquesBaignade">
           <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />

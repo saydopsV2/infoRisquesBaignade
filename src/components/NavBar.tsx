@@ -19,7 +19,7 @@ const NavBar: React.FC = () => {
                 </div>
             </div>
             <div className="navbar-center">
-                <Link to="/" className="btn btn-ghost text-xl text-white">Info Baïnes</Link>
+                <Link to="/" className="btn btn-ghost text-xl text-white">Info Risques Baignade</Link>
             </div>
             <div className="navbar-end">
                 <Link to="/" className="btn btn-ghost btn-circle">
