@@ -18,8 +18,10 @@ const NavBar: React.FC = () => {
                     </ul>
                 </div>
             </div>
-            <div className="navbar-center">
-                <Link to="/" className="btn btn-ghost text-xl text-slate-800 hover:text-white hover:bg-red-800 hover:border-red-400">Info Risques Baignade</Link>
+            <div className="navbar-center flex items-center gap-0 sm:gap-2">
+                <img src={`${import.meta.env.BASE_URL}img/finL.png`} alt="" className='w-10 sm:w-20'/>
+                <Link to="/" className="btn btn-ghost text-base sm:text-xl px-1 sm:px-3 text-slate-800 hover:text-white hover:bg-red-800 hover:border-red-400">Info Risques Baignade</Link>
+                <img src={`${import.meta.env.BASE_URL}img/finR.png`} alt="" className='w-10 sm:w-20'/>
             </div>
             <div className="navbar-end">
                 <Link to="/" className="btn btn-ghost btn-circle">
