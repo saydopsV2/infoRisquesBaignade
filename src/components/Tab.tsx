@@ -67,6 +67,14 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // États pour gérer les onglets actifs
     const [activeTab, setActiveTab] = useState<string>("tableau");
     
+    // État pour gérer le type de graphique dans l'onglet Fréquentation
+    const [chartType, setChartType] = useState<'line' | 'bar'>('line');
+    
+    // Fonction pour basculer entre les types de graphiques
+    const toggleChartType = () => {
+        setChartType(prevType => prevType === 'line' ? 'bar' : 'line');
+    };
+
     // Définition des classes pour les onglets basées sur l'état actif
     const getTabClass = (tabName: string) => {
         // Classes de base sans marge verticale
@@ -166,7 +174,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                 dataKeys={["morning", "afternoon"]}
                             />
                         </div>
-                        <div className="w-full">
+                        <div className="w-full bg-white rounded shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-2">Indice de Sécurité</h3>
                             {loading ? (
                                 <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
@@ -176,7 +184,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                 <SecurityIndexChart hours={hours} indices={securityIndices} />
                             )}
                         </div>
-                        <div className="w-full">
+                        <div className="w-full bg-white rounded shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-2">Températures</h3>
                             <StandaloneChart />
                         </div>
@@ -193,10 +201,37 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 onChange={() => handleTabChange("frequentation")}
             />
             <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <h2 className="text-xl font-bold mb-4 text-slate-950">Fréquentation des plages</h2>
+                <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-xl font-bold text-slate-950">Fréquentation des plages</h2>
+                    
+                    {/* Toggle switch personnalisé avec des classes Tailwind standard */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 flex items-center gap-2 ml-2">
+                        <span className="text-sm font-medium text-slate-700">Courbes</span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                className="sr-only peer" 
+                                checked={chartType === 'bar'}
+                                onChange={toggleChartType}
+                            />
+                            <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-300"></div>
+                        </label>
+                        <span className="text-sm font-medium text-slate-700">Histogrammes</span>
+                    </div>
+                </div>
                 <div className="beach-data w-full overflow-hidden">
-                    <div className="mt-4 flex justify-center">
-                        <ChartAllData/>
+                    <div className="mt-4 flex justify-center w-full">
+                        {chartType === 'line' ? (
+                            <ChartAllData />
+                        ) : (
+                            <div className="w-full">
+                                <BarChart 
+                                    title="Fréquentation des plages" 
+                                    description="Nombre de visiteurs par période"
+                                    dataKeys={["morning", "afternoon"]}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

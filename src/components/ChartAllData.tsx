@@ -323,7 +323,7 @@ export function ChartAllData(): React.JSX.Element {
   const shouldRotateLabels = timeRange === "in5days";
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
+    <div className="w-full mx-auto">
       <Card>
         <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
           <div className="grid flex-1 gap-1 text-center sm:text-left">
