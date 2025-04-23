@@ -12,8 +12,8 @@ interface BeachForecastProps {
 const BeachForecast: React.FC<BeachForecastProps> = ({ beach, forecastPlot, allDataPlot }) => {
   return (
     <WeatherProvider>
-      <div className="flex flex-col min-h-screen bg-slate-800">
-        <h1 className="text-3xl text-slate-100 font-bold text-center mt-4 px-4">
+      <div className="flex flex-col min-h-screen bg-red-50">
+        <h1 className="text-3xl text-slate-800 font-bold text-center mt-4 px-4">
           Prévisions pour {beach.nom}
         </h1>
         <div className="flex flex-1 items-start justify-center p-2 sm:p-4 w-full">

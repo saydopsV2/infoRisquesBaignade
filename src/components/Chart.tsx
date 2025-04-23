@@ -58,7 +58,7 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
   const chartData = hours.map((hour, index) => {
     const temp = temperatures[index] !== undefined ? temperatures[index] : null;
     return {
-      hour: hour instanceof Date ? hour.getHours() + ":00" : "0:00",
+      hour: hour instanceof Date ? `${hour.getHours()}:00` : "0:00",
       temperature: temp,
       // Ajouter la couleur pour chaque point de température
       color: getTemperatureColor(temp)
@@ -174,7 +174,7 @@ export function StandaloneChart() {
   const chartData = hours.map((hour, index) => {
     const temp = temperatures[index] !== undefined ? temperatures[index] : null;
     return {
-      hour: hour instanceof Date ? hour.getHours() + ":00" : "0:00",
+      hour: hour instanceof Date ? `${hour.getHours()}:00` : "0:00",
       temperature: temp,
       // Ajouter la couleur pour chaque point de température
       color: getTemperatureColor(temp)
