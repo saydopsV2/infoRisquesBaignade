@@ -104,7 +104,7 @@ const DaisyCarouselEnhanced: React.FC<DaisyCarouselProps> = ({
                     <a
                         key={index}
                         href={`#slide${index + 1}`}
-                        className={`btn btn-md rounded-full ${currentSlide === index + 1 ? 'bg-yellow-300 text-red-500' : 'bg-red-500 text-yellow-300'} shadow-md hover:bg-yellow-300 hover:text-red-500 border-none`}
+                        className={`btn btn-md rounded-full ${currentSlide === index + 1 ? 'bg-red-500 text-yellow-300' : 'bg-yellow-300 text-red-500'} shadow-md hover:bg-yellow-300 hover:text-red-500 border-none`}
                     >
                         {index + 1}
                     </a>

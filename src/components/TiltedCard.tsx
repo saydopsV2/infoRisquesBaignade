@@ -46,7 +46,7 @@ const TiltedCard: React.FC<TiltedCardProps> = ({
     <Link to={url} className="block">
       <div 
         ref={cardRef}
-        className="card bg-base-100 shadow-xl overflow-hidden transition-all duration-300 ease-out transform-gpu"
+        className="card bg-base-100 shadow-xl overflow-hidden transition-all duration-300 ease-out transform-gpu w-100"
         style={{
           transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${isHovering ? 1.05 : 1})`,
           transformStyle: 'preserve-3d',
@@ -55,14 +55,15 @@ const TiltedCard: React.FC<TiltedCardProps> = ({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <figure className="relative w-full h-64">
+        {/* Conteneur avec dimensions fixes et gestion uniforme de l'image */}
+        <figure className="relative w-full h-64 overflow-hidden">
           <img
             src={imageSrc}
             alt={altText}
             className="w-full h-full object-cover"
           />
         </figure>
-        <div className="card-body text-red-50 bg-red-500">
+        <div className="card-body text-red-50 bg-red-500 p-4">
           <h2 className="card-title">{captionText}</h2>
           <p>Cliquez pour voir les prévisions</p>
         </div>
