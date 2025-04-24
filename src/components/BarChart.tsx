@@ -240,7 +240,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, v
         return (
             <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md">
                 <p className="font-bold mb-1">{capitalizedDate}</p>
-                <p className="text-gray-600 text-sm mb-2">{timeInfo} h</p>
+                <p className="text-gray-600 text-sm mb-2">{timeInfo} </p>
                 <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color }}></div>
                     <p>

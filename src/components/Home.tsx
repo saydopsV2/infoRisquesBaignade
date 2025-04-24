@@ -39,7 +39,7 @@ const Home: React.FC = () => {
         <div className="w-full flex justify-center mt-4 mb-10">
           <DaisyCarouselEnhanced
             items={beachItems}
-            autoPlay={true}
+            autoPlay={false}
             autoPlayInterval={5000}
           />
         </div>

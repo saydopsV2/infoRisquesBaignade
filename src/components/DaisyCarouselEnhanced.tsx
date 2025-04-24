@@ -16,7 +16,7 @@ interface DaisyCarouselProps {
 
 const DaisyCarouselEnhanced: React.FC<DaisyCarouselProps> = ({
     items,
-    autoPlay = true,
+    autoPlay = false,
     autoPlayInterval = 5000
 }) => {
     const [currentSlide, setCurrentSlide] = useState(1);
