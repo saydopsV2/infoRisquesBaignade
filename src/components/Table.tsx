@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Beach from '../interface/Beach';
 import { StandaloneChart } from './Chart';
 import { SecurityIndexChart } from './SecurityIndexChart';
-import { RipCurrentHazardChart, getRipCurrentColorClass } from './RipCurrentHazardChart';
+import { RipCurrentHazardChart } from './RipCurrentHazardChart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 import { useWaveForecast } from '../context/WaveForecastContext';
@@ -248,7 +248,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
           <table className="w-full border-collapse bg-slate-100 text-black">
             <thead>
               <tr className="bg-blue-500">
-                <th className="p-2 text-left whitespace-nowrap" colSpan={25}>
+                <th className="p-1 text-left whitespace-nowrap" colSpan={25}>
                   Données pour le {currentDate.toLocaleDateString()}
                 </th>
               </tr>
@@ -307,7 +307,11 @@ const Table: React.FC<TableProps> = ({ location }) => {
               <tr>
                 <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Graphique Courant</td>
                 <td colSpan={24} className="p-0 border-r h-24">
-                  <RipCurrentHazardChart hours={displayHours} velocities={safeVelocities.slice(0, displayHours.length)} />
+                  <RipCurrentHazardChart 
+                    hours={displayHours} 
+                    velocities={safeVelocities.slice(0, displayHours.length)}
+                    hazardLevels={safeRipCurrentHazardLevels.slice(0, displayHours.length)}
+                  />
                 </td>
               </tr>
               <tr className="h-2">
@@ -317,7 +321,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
 
-              {/* Température */}
+              {/* Température - Ligne de référence */}
               <tr className="bg-white">
                 <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Température</td>
                 {safeTemperatures.map((temp, index) => (
@@ -347,23 +351,23 @@ const Table: React.FC<TableProps> = ({ location }) => {
                   )
                 ))}
               </tr>
-              <tr className="h-4">
+              <tr className="h-2">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
                 {displayHours.map((_, index) => (
                   <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction du vent</td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Direction du vent</td>
                 {displayWindDirections.map((direction, index) => (
                   index < displayHours.length && (
-                    <td key={`windDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
+                    <td key={`windDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
                       {direction !== null ? (
                         <DirectionArrow
                           direction={direction}
-                          size={24}
+                          size={35}
                           color="#2563eb" // Blue color for wind
-                          showLabel={true}
+                          showLabel={false}
                         />
                       ) : (
                         "-"
@@ -373,61 +377,61 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Vitesse du vent</td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Vitesse du vent</td>
                 {displayWindSpeeds.map((speed, index) => (
                   index < displayHours.length && (
                     <td
                       key={`windSpeed-${index}`}
-                      className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(speed)}`}
+                      className={`p-1 text-center border-r min-w-[40px] text-xs ${getWindSpeedColor(speed)}`}
                     >
-                      {speed !== null ? `${speed} nds` : "-"}
+                      {speed !== null ? `${speed}` : "-"}
                     </td>
                   )
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Rafales de vent</td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Rafales de vent</td>
                 {displayWindGusts.map((gust, index) => (
                   index < displayHours.length && (
                     <td
                       key={`windGust-${index}`}
-                      className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(gust)}`}
+                      className={`p-1 text-center border-r min-w-[40px] text-xs ${getWindSpeedColor(gust)}`}
                     >
-                      {gust !== null ? `${gust} nds` : "-"}
+                      {gust !== null ? `${gust}` : "-"}
                     </td>
                   )
                 ))}
               </tr>
-              <tr className="h-4">
+              <tr className="h-2">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
                 {displayHours.map((_, index) => (
                   <td key={`spacer-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Hauteur des vagues</td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Hauteur des vagues</td>
                 {displayWaveHeights.map((height, index) => (
                   index < displayHours.length && (
                     <td
                       key={`waveHeight-${index}`}
-                      className="p-2 text-center border-r min-w-[50px]"
+                      className="p-1 text-center border-r min-w-[40px] text-xs"
                     >
-                      {height !== null ? `${height.toFixed(1)} m` : "-"}
+                      {height !== null ? `${height.toFixed(1)}` : "-"}
                     </td>
                   )
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction des vagues</td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Direction des vagues</td>
                 {displayWaveDirections.map((direction, index) => (
                   index < displayHours.length && (
-                    <td key={`waveDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
+                    <td key={`waveDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
                       {direction !== null ? (
                         <DirectionArrow
                           direction={direction}
-                          size={24}
+                          size={35}
                           color="#6366f1" // Indigo color for waves
-                          showLabel={true}
+                          showLabel={false}
                         />
                       ) : (
                         "-"
@@ -437,14 +441,14 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Période des vagues</td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Période des vagues</td>
                 {displayWavePeriods.map((period, index) => (
                   index < displayHours.length && (
                     <td
                       key={`wavePeriod-${index}`}
-                      className="p-2 text-center border-r min-w-[50px]"
+                      className="p-1 text-center border-r min-w-[40px] text-xs"
                     >
-                      {period !== null ? `${period.toFixed(1)} s` : "-"}
+                      {period !== null ? `${period.toFixed(1)}` : "-"}
                     </td>
                   )
                 ))}

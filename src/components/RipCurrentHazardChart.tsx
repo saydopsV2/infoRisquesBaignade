@@ -10,6 +10,7 @@ import {
 interface RipCurrentChartProps {
     hours?: Date[];
     velocities?: number[];
+    hazardLevels?: number[];
 }
 
 // Configuration du graphique
@@ -63,13 +64,16 @@ export const getRipCurrentColorClass = (velocity: number | null): string => {
 };
 
 // Version autonome du graphique de courant d'arrachement
-export function RipCurrentHazardChart({ hours = [], velocities = [] }: RipCurrentChartProps) {
+export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevels = [] }: RipCurrentChartProps) {
     // Préparer les données pour le graphique en combinant heures et vitesses
     const chartData = hours.map((hour, index) => {
         const velocity = velocities[index] !== undefined ? velocities[index] : null;
+        const hazardLevel = hazardLevels[index] !== undefined ? hazardLevels[index] : null;
+
         return {
             hour: hour instanceof Date ? hour.getHours() + ":00" : "0:00",
             ripCurrentVelocity: velocity,
+            hazardLevel: hazardLevel,
             // Ajouter la couleur pour chaque point
             color: getRipCurrentColor(velocity)
         }
