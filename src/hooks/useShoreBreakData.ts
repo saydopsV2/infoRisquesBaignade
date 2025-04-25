@@ -16,6 +16,11 @@ interface ShoreBreakResult {
   error: string | null;
 }
 
+// Constante pour le nombre de jours à récupérer
+const DAYS_TO_DISPLAY = 7;
+const HOURS_PER_DAY = 24;
+const TOTAL_HOURS = DAYS_TO_DISPLAY * HOURS_PER_DAY;
+
 /**
  * Fonction utilitaire pour regrouper les données par heure
  * Calcule la moyenne des indices de shore break et des niveaux de danger
@@ -153,11 +158,11 @@ export const useShoreBreakData = (): ShoreBreakResult => {
             const orderedIndices = indices.map(item => item.index);
             const orderedHazardLevels = indices.map(item => item.hazard);
 
-            // Filtrer les données pour n'avoir que les 24 prochaines heures
+            // Filtrer les données pour les 7 prochains jours
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
 
-            // Filtrer les prévisions pour les 24 prochaines heures
+            // Filtrer les prévisions pour les 7 jours
             const filteredDates: Date[] = [];
             const filteredIndices: number[] = [];
             const filteredHazardLevels: number[] = [];
@@ -166,15 +171,15 @@ export const useShoreBreakData = (): ShoreBreakResult => {
             let startIndex = orderedDates.findIndex(date => date >= today);
             if (startIndex === -1) startIndex = 0;
 
-            // Prendre jusqu'à 24 heures à partir de cet index
+            // Prendre jusqu'à 7 jours (168 heures) à partir de cet index
             for (let i = startIndex; i < orderedDates.length; i++) {
-              // Vérifier que la date est dans les 24 prochaines heures
-              if (orderedDates[i].getTime() - today.getTime() <= 24 * 60 * 60 * 1000) {
+              // Vérifier que la date est dans les 7 prochains jours
+              if (orderedDates[i].getTime() - today.getTime() <= DAYS_TO_DISPLAY * 24 * 60 * 60 * 1000) {
                 filteredDates.push(orderedDates[i]);
                 filteredIndices.push(orderedIndices[i]);
                 filteredHazardLevels.push(orderedHazardLevels[i]);
               } else {
-                break; // Sortir de la boucle une fois qu'on dépasse 24 heures
+                break; // Sortir de la boucle une fois qu'on dépasse 7 jours
               }
             }
 

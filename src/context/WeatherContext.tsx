@@ -14,6 +14,11 @@ interface WeatherData {
   };
 }
 
+// Constante pour le nombre de jours à afficher
+const DAYS_TO_DISPLAY = 7;
+const HOURS_PER_DAY = 24;
+const TOTAL_HOURS = DAYS_TO_DISPLAY * HOURS_PER_DAY;
+
 interface WeatherContextType {
   hours: Date[];
   temperatures: number[];
@@ -32,7 +37,7 @@ const WeatherContext = createContext<WeatherContextType>({
   tempUnit: '°C',
   isLoading: false,
   error: null,
-  fetchWeatherData: async () => {},
+  fetchWeatherData: async () => { },
 });
 
 // Custom hook to use the context
@@ -55,9 +60,9 @@ export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children }) =>
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=temperature_2m,uv_index&timezone=auto&forecast_days=3`
+        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=temperature_2m,uv_index&timezone=auto&forecast_days=${DAYS_TO_DISPLAY}`
       );
 
       if (!response.ok) {
@@ -65,7 +70,7 @@ export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children }) =>
       }
 
       const data = await response.json() as WeatherData;
-      
+
       // Get current hour
       const now = new Date();
       now.setMinutes(0, 0, 0);
@@ -73,31 +78,34 @@ export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children }) =>
       // Parse the API time strings to Date objects to align with current time
       const apiTimes = data.hourly.time.map(timeStr => new Date(timeStr));
 
-      // Generate 24 hours from current time
+      // Generate hours for all days
       const hoursList: Date[] = [];
       const tempsList: number[] = [];
       const uvList: number[] = [];
 
-      for (let i = 0; i < 24; i++) {
-        const targetHour = new Date(now);
-        targetHour.setHours(targetHour.getHours() + i);
-        hoursList.push(targetHour);
+      // Generate dates for each day at each hour (7 days * 24 hours)
+      for (let day = 0; day < DAYS_TO_DISPLAY; day++) {
+        for (let hourOfDay = 0; hourOfDay < HOURS_PER_DAY; hourOfDay++) {
+          const targetHour = new Date(now);
+          targetHour.setHours(now.getHours() + (day * 24) + hourOfDay);
+          hoursList.push(targetHour);
 
-        // Find the closest matching time in the API data
-        const closestTimeIndex = apiTimes.findIndex(apiTime => {
-          return apiTime.getHours() === targetHour.getHours() &&
-            apiTime.getDate() === targetHour.getDate() &&
-            apiTime.getMonth() === targetHour.getMonth();
-        });
+          // Find the closest matching time in the API data
+          const closestTimeIndex = apiTimes.findIndex(apiTime => {
+            return apiTime.getHours() === targetHour.getHours() &&
+              apiTime.getDate() === targetHour.getDate() &&
+              apiTime.getMonth() === targetHour.getMonth();
+          });
 
-        // Add corresponding temperature and UV data
-        if (closestTimeIndex !== -1) {
-          tempsList.push(data.hourly.temperature_2m[closestTimeIndex]);
-          uvList.push(data.hourly.uv_index[closestTimeIndex]);
-        } else {
-          // Fallback if no matching time is found
-          tempsList.push(0);
-          uvList.push(0);
+          // Add corresponding temperature and UV data
+          if (closestTimeIndex !== -1) {
+            tempsList.push(data.hourly.temperature_2m[closestTimeIndex]);
+            uvList.push(data.hourly.uv_index[closestTimeIndex]);
+          } else {
+            // Fallback if no matching time is found
+            tempsList.push(0);
+            uvList.push(0);
+          }
         }
       }
 
@@ -106,15 +114,17 @@ export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children }) =>
       setUvIndices(uvList);
       setTempUnit(data.hourly_units.temperature_2m);
       setIsLoading(false);
-      
+
     } catch (error) {
       console.error('Error fetching weather data:', error);
       setError(error instanceof Error ? error.message : 'Une erreur est survenue');
-      
+
       // Fallback if API fails - generate hours without weather data
       const now = new Date();
       now.setMinutes(0, 0, 0);
-      const hoursList = Array.from({ length: 24 }, (_, i) => {
+
+      // Generate dates for full 7 days
+      const hoursList = Array.from({ length: TOTAL_HOURS }, (_, i) => {
         const hourDate = new Date(now);
         hourDate.setHours(hourDate.getHours() + i);
         return hourDate;

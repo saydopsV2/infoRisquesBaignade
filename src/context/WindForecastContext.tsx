@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import Beach from '../interface/Beach';
 
+// Constante pour le nombre de jours à afficher
+const DAYS_TO_DISPLAY = 7;
+
 interface WindForecastData {
   latitude: number;
   longitude: number;
@@ -54,7 +57,8 @@ export const WindForecastProvider: React.FC<WindForecastProviderProps> = ({ chil
     setError(null);
     
     try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${beach.latitude}&longitude=${beach.longitude}&hourly=wind_direction_10m,wind_speed_10m,wind_gusts_10m&timezone=auto&wind_speed_unit=kn`;
+      // Ajouter le paramètre forecast_days pour avoir 7 jours de prévisions
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${beach.latitude}&longitude=${beach.longitude}&hourly=wind_direction_10m,wind_speed_10m,wind_gusts_10m&timezone=auto&wind_speed_unit=kn&forecast_days=${DAYS_TO_DISPLAY}`;
       
       const response = await fetch(url);
       
