@@ -6,20 +6,14 @@ import { ChartAllData } from "./ChartAllData";
 import Bilan from "./Bilan";
 import { SecurityIndexChart } from "./SecurityIndexChart";
 import { useWeather } from "../context/WeatherContext";
-import Papa from 'papaparse';
-import { BarChart } from "./BarChart";  // Cette importation est maintenant correcte
+import { useShoreBreakData } from "../hooks/useShoreBreakData"; // Import du nouveau hook
+import { BarChart } from "./BarChart";
 import Toggle from "./Toggle";
 
 interface TabProps {
     tabAllDataPlot: string;
     tabForecastPlot: string;
     tabBeach: Beach;
-}
-
-// Interface pour les données CSV
-interface PrevisionData {
-    valeur: string;
-    [key: string]: any;
 }
 
 const Tab: React.FC<TabProps> = ({ tabBeach }) => {
@@ -58,9 +52,8 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // États pour stocker les heures et les indices de sécurité
-    const [securityIndices, setSecurityIndices] = useState<number[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    // Utiliser le hook useShoreBreakData pour obtenir les indices shore break
+    const { indices: shoreBreakIndices, dates: shoreBreakDates, isLoading: shoreBreakLoading, error: shoreBreakError } = useShoreBreakData();
 
     // Utiliser le contexte weather pour obtenir les heures
     const { hours } = useWeather();
@@ -98,49 +91,13 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
         setActiveTab(tabName);
     };
 
-    // Charger les indices de sécurité à partir du CSV
-    useEffect(() => {
-        const fetchSecurityIndices = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch(`${import.meta.env.BASE_URL}dataModel/prevision.csv`);
-                const csvText = await response.text();
-
-                Papa.parse<PrevisionData>(csvText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (result) => {
-                        const parsedIndices: number[] = result.data
-                            .map(row => parseInt(row.valeur, 10))
-                            .filter(val => !isNaN(val));
-
-                        // Assurer que nous avons 24 valeurs
-                        const safeIndices = parsedIndices.length >= 24
-                            ? parsedIndices.slice(0, 24)
-                            : [...parsedIndices, ...Array(24 - parsedIndices.length).fill(0)];
-
-                        setSecurityIndices(safeIndices);
-                        setLoading(false);
-                    },
-                    error: () => {
-                        // En cas d'erreur, utiliser des valeurs par défaut
-                        setSecurityIndices(new Array(24).fill(0));
-                        setLoading(false);
-                    },
-                });
-            } catch (err) {
-                setSecurityIndices(new Array(24).fill(0));
-                setLoading(false);
-            }
-        };
-
-        fetchSecurityIndices();
-    }, []);
-
     // Initialiser l'onglet actif par défaut
     useEffect(() => {
         setActiveTab("tableau");
     }, []);
+
+    // Pour la visualisation, utiliser soit les dates du shore break soit les heures du contexte météo
+    const displayHours = shoreBreakDates.length > 0 ? shoreBreakDates : hours;
 
     return (
         <div className="tabs tabs-lift w-full max-w-full flex flex-wrap">
@@ -197,13 +154,17 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                             )}
                         </div>
                         <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Indice de Sécurité</h3>
-                            {loading ? (
+                            <h3 className="text-lg font-semibold mb-2">Indice Shore Break</h3>
+                            {shoreBreakLoading ? (
                                 <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
                                     <p>Chargement des données...</p>
                                 </div>
+                            ) : shoreBreakError ? (
+                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {shoreBreakError}</p>
+                                </div>
                             ) : (
-                                <SecurityIndexChart hours={hours} indices={securityIndices} />
+                                <SecurityIndexChart hours={displayHours} indices={shoreBreakIndices} />
                             )}
                         </div>
                         <div className="w-full bg-white rounded shadow-md p-4">

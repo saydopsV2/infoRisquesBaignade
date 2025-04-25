@@ -78,7 +78,7 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
     });
 
   return (
-    <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
+    <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart
           data={chartData}
@@ -194,7 +194,7 @@ export function StandaloneChart() {
     });
 
   return (
-    <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
+    <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart
           data={chartData}

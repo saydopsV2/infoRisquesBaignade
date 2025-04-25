@@ -15,7 +15,7 @@ interface SecurityChartProps {
 // Configuration du graphique
 const chartConfig = {
   securityIndex: {
-    label: "Indice Sécurité",
+    label: "Indice Shore Break",
     color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
@@ -26,12 +26,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     // Déterminer la couleur du tooltip en fonction de l'indice
     const index = payload[0].value;
     const color = getSecurityIndexColor(index);
-    
+
     return (
       <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
         <p className="font-bold">{label}</p>
         <p style={{ color }}>
-          Indice Sécurité: {index !== null ? index : "-"}
+          Indice Shore Break: {index !== null ? index.toFixed(1) : "-"}
         </p>
       </div>
     );
@@ -39,17 +39,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Fonction pour obtenir la couleur basée sur l'indice de sécurité
+// Fonction pour obtenir la couleur basée sur l'indice de shore break
 const getSecurityIndexColor = (index: number | null): string => {
   if (index === null) return "#94a3b8"; // Couleur par défaut (gris)
-  if (index === 0) return "#16a34a"; // Vert foncé - Sécurité optimale
-  if (index === 1) return "#4ade80"; // Vert clair - Faible risque
-  if (index === 2) return "#fde047"; // Jaune - Risque modéré
-  if (index === 3) return "#f97316"; // Orange - Risque élevé
-  return "#dc2626"; // Rouge - Danger important
+
+  // Utiliser Math.floor pour les comparaisons de valeurs décimales
+  const floorIndex = Math.floor(index);
+
+  // Respecter exactement les conditions fournies
+  if (floorIndex <= 0 || floorIndex <= 2) return "#16a34a"; // Vert foncé - Sécurité optimale (bg-green-600)
+  if (floorIndex <= 3) return "#4ade80"; // Vert clair - Faible risque (bg-green-400)
+  if (floorIndex <= 4) return "#fde047"; // Jaune - Risque modéré (bg-yellow-300)
+  if (floorIndex <= 9) return "#f97316"; // Orange - Risque élevé (bg-orange-500)
+  if (floorIndex > 9) return "#dc2626"; // Rouge - Danger important (bg-red-600)
+  return "#e5e7eb"; // Couleur par défaut (bg-gray-200)
 };
 
-// Version autonome du graphique d'indice de sécurité
+// Version autonome du graphique d'indice de shore break
 export function SecurityIndexChart({ hours = [], indices = [] }: SecurityChartProps) {
   // Préparer les données pour le graphique en combinant heures et indices
   const chartData = hours.map((hour, index) => {
@@ -75,7 +81,7 @@ export function SecurityIndexChart({ hours = [], indices = [] }: SecurityChartPr
     });
 
   return (
-    <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
+    <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart
           data={chartData}
@@ -90,45 +96,45 @@ export function SecurityIndexChart({ hours = [], indices = [] }: SecurityChartPr
             {/* Gradient horizontal pour le contour */}
             <linearGradient id="securityIndexGradient" x1="0" y1="0" x2="1" y2="0">
               {gradientStops.map((stop, index) => (
-                <stop 
+                <stop
                   key={index}
-                  offset={stop.offset} 
-                  stopColor={stop.color} 
-                  stopOpacity={1} 
+                  offset={stop.offset}
+                  stopColor={stop.color}
+                  stopOpacity={1}
                 />
               ))}
             </linearGradient>
-            
+
             {/* Créer des gradients verticaux individuels pour chaque couleur */}
             {gradientStops.map((stop, index) => (
-              <linearGradient 
+              <linearGradient
                 key={`security-fill-${index}`}
-                id={`securityIndexFillGradient-${index}`} 
-                x1="0" 
-                y1="0" 
-                x2="0" 
+                id={`securityIndexFillGradient-${index}`}
+                x1="0"
+                y1="0"
+                x2="0"
                 y2="1"
               >
                 <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
                 <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
               </linearGradient>
             ))}
-            
+
             {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
             <pattern id="securityIndexPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
               {gradientStops.map((stop, index, arr) => {
-                const width = index < arr.length - 1 
-                  ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset) 
+                const width = index < arr.length - 1
+                  ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset)
                   : 100 - parseFloat(stop.offset);
-                
+
                 return (
-                  <rect 
+                  <rect
                     key={index}
-                    x={`${parseFloat(stop.offset)}%`} 
-                    y="0" 
-                    width={`${width}%`} 
-                    height="100%" 
-                    fill={`url(#securityIndexFillGradient-${index})`} 
+                    x={`${parseFloat(stop.offset)}%`}
+                    y="0"
+                    width={`${width}%`}
+                    height="100%"
+                    fill={`url(#securityIndexFillGradient-${index})`}
                   />
                 );
               })}
@@ -156,12 +162,12 @@ export function SecurityIndexChart({ hours = [], indices = [] }: SecurityChartPr
             fill="url(#securityIndexPattern)"
             fillOpacity={1}
             strokeWidth={2}
-            name="Indice Sécurité"
+            name="Indice Shore Break"
             activeDot={(props) => {
               const { cx, cy, payload } = props;
               // Obtenir la couleur en fonction de la valeur d'indice
               const color = getSecurityIndexColor(payload.securityIndex);
-              
+
               return (
                 <g>
                   {/* Cercle extérieur blanc */}

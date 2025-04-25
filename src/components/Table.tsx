@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import Papa from 'papaparse';
 import Beach from '../interface/Beach';
 import { StandaloneChart } from './Chart';
 import { SecurityIndexChart } from './SecurityIndexChart';
+import { RipCurrentHazardChart, getRipCurrentColorClass } from './RipCurrentHazardChart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 import { useWaveForecast } from '../context/WaveForecastContext';
 import DirectionArrow from './DirectionArrow';
+import { useShoreBreakData } from '../hooks/useShoreBreakData';
+import { useRipCurrentData } from '../hooks/useRipCurrentData';
 
 // Types
 interface TableProps {
-  indices: number[];
   tableBeach: string;
   location: Beach;
 }
@@ -20,52 +21,6 @@ interface LegendItem {
   class: string;
   label: string;
 }
-
-interface PrevisionData {
-  valeur: string;
-  [key: string]: any;
-}
-
-// Custom hook for loading CSV data
-const usePrevisionData = () => {
-  const [indices, setIndices] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(`${import.meta.env.BASE_URL}dataModel/prevision.csv`);
-        const csvText = await response.text();
-
-        Papa.parse<PrevisionData>(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (result) => {
-            const parsedIndices: number[] = result.data
-              .map(row => parseInt(row.valeur, 10))
-              .filter(val => !isNaN(val));
-
-            setIndices(parsedIndices);
-            setIsLoading(false);
-          },
-          error: (err: { message: React.SetStateAction<string | null>; }) => {
-            setError(err.message);
-            setIsLoading(false);
-          },
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return { indices, isLoading, error };
-};
 
 // Components
 const LegendItem: React.FC<{ item: LegendItem }> = ({ item }) => (
@@ -98,8 +53,25 @@ const TableLegend: React.FC = () => {
   );
 };
 
-const Table: React.FC<TableProps> = ({ indices, location }) => {
+const Table: React.FC<TableProps> = ({ location }) => {
   const [currentDate] = useState(new Date());
+
+  // Utilisation du hook pour obtenir les données shore break
+  const {
+    indices,
+    dates,
+    hazardLevels: shoreBreakHazardLevels,
+    isLoading: shoreBreakLoading,
+    error: shoreBreakError
+  } = useShoreBreakData();
+
+  // Utilisation du hook pour obtenir les données de courant d'arrachement
+  const {
+    velocities,
+    hazardLevels: ripCurrentHazardLevels,
+    isLoading: ripCurrentLoading,
+    error: ripCurrentError
+  } = useRipCurrentData();
 
   // Utilisation du contexte pour obtenir les données météo
   const {
@@ -137,15 +109,14 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     fetchWaveForecast(location);
   }, [location]);
 
-  const getIndexColor = (indice: number): string => {
-    switch (indice) {
-      case 0: return "bg-green-600";
-      case 1: return "bg-green-400";
-      case 2: return "bg-yellow-300";
-      case 3: return "bg-orange-500";
-      case 4: return "bg-red-600 text-white";
-      default: return "bg-gray-100";
-    }
+  // Fonction pour obtenir la couleur basée sur le niveau de danger
+  const getHazardLevelColor = (level: number): string => {
+    if (level === 0) return "bg-green-600"; // Vert foncé - Sécurité optimale
+    if (level === 1) return "bg-green-400"; // Vert clair - Faible risque
+    if (level === 2) return "bg-yellow-300"; // Jaune - Risque modéré
+    if (level === 3) return "bg-orange-500"; // Orange - Risque élevé
+    if (level >= 4) return "bg-red-600 text-white"; // Rouge - Danger important
+    return "bg-gray-200"; // Couleur par défaut
   };
 
   const getUvIndexColor = (uvIndex: number): string => {
@@ -171,29 +142,50 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
     return "bg-purple-700 text-white"; // Vent très violent
   };
 
+  // Normaliser les heures d'affichage à exactement 24 heures
+  const displayHours = dates.length > 0
+    ? (dates.length > 24 ? dates.slice(0, 24) : dates)
+    : (hours.length > 24 ? hours.slice(0, 24) : hours);
+
   // Ensure we have exactly 24 values, filling with zeros if needed
   const safeIndices = indices.length >= 24
     ? indices.slice(0, 24)
     : [...indices, ...Array(24 - indices.length).fill(0)];
 
+  // Ensure we have exactly 24 values for shore break hazard levels
+  const safeShoreBreakHazardLevels = shoreBreakHazardLevels.length >= 24
+    ? shoreBreakHazardLevels.slice(0, 24)
+    : [...shoreBreakHazardLevels, ...Array(24 - shoreBreakHazardLevels.length).fill(0)];
+
+  // Ensure we have exactly 24 values for rip current velocities and hazard levels
+  const safeVelocities = velocities.length >= 24
+    ? velocities.slice(0, 24)
+    : [...velocities, ...Array(24 - velocities.length).fill(0)];
+
+  const safeRipCurrentHazardLevels = ripCurrentHazardLevels.length >= 24
+    ? ripCurrentHazardLevels.slice(0, 24)
+    : [...ripCurrentHazardLevels, ...Array(24 - ripCurrentHazardLevels.length).fill(0)];
+
   // Ensure we have temperature and UV data
   const safeTemperatures = temperatures.length >= 24
-    ? temperatures
+    ? temperatures.slice(0, 24)
     : [...temperatures, ...Array(24 - temperatures.length).fill(null)];
 
   const safeUvIndices = uvIndices.length >= 24
-    ? uvIndices
+    ? uvIndices.slice(0, 24)
     : [...uvIndices, ...Array(24 - uvIndices.length).fill(null)];
 
   // Better approach for aligning data with hours
   const alignDataWithHours = (dataArray: any[] | undefined, timeArray: string[] | undefined) => {
-    if (!dataArray || !timeArray || hours.length === 0) return Array(24).fill(null);
+    if (!dataArray || !timeArray || displayHours.length === 0) return Array(24).fill(null);
 
     const alignedData = Array(24).fill(null);
     const today = new Date();
     const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    hours.forEach((hour, hourIndex) => {
+    displayHours.forEach((hour, hourIndex) => {
+      if (hourIndex >= 24) return; // Ignorer les heures supplémentaires
+
       const hourValue = hour.getHours();
 
       const matchingIndex = timeArray.findIndex((timeStr) => {
@@ -244,11 +236,11 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
 
   return (
     <div className="w-full bg-slate-100 text-black rounded">
-      {(weatherLoading || windLoading || waveLoading) ? (
+      {(weatherLoading || windLoading || waveLoading || shoreBreakLoading || ripCurrentLoading) ? (
         <div className="p-4 text-center">Chargement des données...</div>
-      ) : (weatherError || windError || waveError) ? (
+      ) : (weatherError || windError || waveError || shoreBreakError || ripCurrentError) ? (
         <div className="p-4 bg-red-100 text-red-700 mb-4 rounded-lg">
-          Erreur: {weatherError || windError || waveError}
+          Erreur: {weatherError || windError || waveError || shoreBreakError || ripCurrentError}
         </div>
       ) : (
         <div className="overflow-x-auto w-full">
@@ -263,149 +255,198 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
             </thead>
             <tbody>
               <tr className="border-b">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Heures</td>
-                {hours.map((hour, index) => (
-                  <td key={`hour-${index}`} className="p-2 text-center border-r min-w-[50px]">
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Heures</td>
+                {displayHours.map((hour, index) => (
+                  <td key={`hour-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
                     {hour.getHours()}:00
                   </td>
                 ))}
               </tr>
+
+              {/* Shore Break Hazard Level */}
               <tr className="bg-blue-100">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Indice Sécurité</td>
-                {safeIndices.map((indice, index) => (
-                  <td
-                    key={`indice-${index}`}
-                    className={`p-2 text-center border-r ${getIndexColor(indice)} min-w-[50px]`}
-                  >
-                    {indice}
-                  </td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Danger Shore Break</td>
+                {safeShoreBreakHazardLevels.map((level, index) => (
+                  index < displayHours.length && (
+                    <td
+                      key={`shore-hazard-${index}`}
+                      className={`p-1 text-center border-r ${getHazardLevelColor(level)} min-w-[40px] text-xs`}
+                    >
+                      {level}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr>
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Graphique Indice</td>
-                <td colSpan={24} className="p-0 border-r">
-                  <SecurityIndexChart hours={hours} indices={safeIndices} />
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Graphique Shore Break</td>
+                <td colSpan={24} className="p-0 border-r h-24">
+                  <SecurityIndexChart hours={displayHours} indices={safeIndices.slice(0, displayHours.length)} />
                 </td>
               </tr>
-              <tr className="h-4">
+              <tr className="h-2">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {hours.map((_, index) => (
-                  <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
+                {displayHours.map((_, index) => (
+                  <td key={`spacer-sb-rip-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
-              <tr className="bg-white">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Température</td>
-                {safeTemperatures.map((temp, index) => (
-                  <td key={`temp-${index}`} className="p-2 text-center border-r min-w-[50px]">
-                    {temp !== null ? `${temp}${tempUnit}` : "-"}
-                  </td>
+
+              {/* Rip Current Hazard Level */}
+              <tr className="bg-blue-50">
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Danger Courant</td>
+                {safeRipCurrentHazardLevels.map((level, index) => (
+                  index < displayHours.length && (
+                    <td
+                      key={`rip-hazard-${index}`}
+                      className={`p-1 text-center border-r ${getHazardLevelColor(level)} min-w-[40px] text-xs`}
+                    >
+                      {level}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr>
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Graphique Temp.</td>
-                <td colSpan={24} className="p-0 border-r">
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Graphique Courant</td>
+                <td colSpan={24} className="p-0 border-r h-24">
+                  <RipCurrentHazardChart hours={displayHours} velocities={safeVelocities.slice(0, displayHours.length)} />
+                </td>
+              </tr>
+              <tr className="h-2">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {displayHours.map((_, index) => (
+                  <td key={`spacer-current-temp-${index}`} className="border-r bg-gray-300"></td>
+                ))}
+              </tr>
+
+              {/* Température */}
+              <tr className="bg-white">
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Température</td>
+                {safeTemperatures.map((temp, index) => (
+                  index < displayHours.length && (
+                    <td key={`temp-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
+                      {temp !== null ? `${temp}${tempUnit}` : "-"}
+                    </td>
+                  )
+                ))}
+              </tr>
+              <tr>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Graphique Temp.</td>
+                <td colSpan={24} className="p-0 border-r h-24">
                   <StandaloneChart />
                 </td>
               </tr>
               <tr className="bg-blue-50">
-                <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Indice UV</td>
+                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Indice UV</td>
                 {safeUvIndices.map((uv, index) => (
-                  <td
-                    key={`uv-${index}`}
-                    className={`p-2 text-center border-r ${uv !== null ? getUvIndexColor(uv) : ""} min-w-[50px]`}
-                  >
-                    {uv !== null ? uv.toFixed(1) : "-"}
-                  </td>
+                  index < displayHours.length && (
+                    <td
+                      key={`uv-${index}`}
+                      className={`p-1 text-center border-r ${uv !== null ? getUvIndexColor(uv) : ""} min-w-[40px] text-xs`}
+                    >
+                      {uv !== null ? uv.toFixed(1) : "-"}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr className="h-4">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {hours.map((_, index) => (
+                {displayHours.map((_, index) => (
                   <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
               <tr className="bg-gray-50">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction du vent</td>
                 {displayWindDirections.map((direction, index) => (
-                  <td key={`windDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
-                    {direction !== null ? (
-                      <DirectionArrow 
-                        direction={direction} 
-                        size={24} 
-                        color="#2563eb" // Blue color for wind
-                        showLabel={true}
-                      />
-                    ) : (
-                      "-"
-                    )}
-                  </td>
+                  index < displayHours.length && (
+                    <td key={`windDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
+                      {direction !== null ? (
+                        <DirectionArrow
+                          direction={direction}
+                          size={24}
+                          color="#2563eb" // Blue color for wind
+                          showLabel={true}
+                        />
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr className="bg-white">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Vitesse du vent</td>
                 {displayWindSpeeds.map((speed, index) => (
-                  <td
-                    key={`windSpeed-${index}`}
-                    className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(speed)}`}
-                  >
-                    {speed !== null ? `${speed} nds` : "-"}
-                  </td>
+                  index < displayHours.length && (
+                    <td
+                      key={`windSpeed-${index}`}
+                      className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(speed)}`}
+                    >
+                      {speed !== null ? `${speed} nds` : "-"}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr className="bg-gray-50">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Rafales de vent</td>
                 {displayWindGusts.map((gust, index) => (
-                  <td
-                    key={`windGust-${index}`}
-                    className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(gust)}`}
-                  >
-                    {gust !== null ? `${gust} nds` : "-"}
-                  </td>
+                  index < displayHours.length && (
+                    <td
+                      key={`windGust-${index}`}
+                      className={`p-2 text-center border-r min-w-[50px] ${getWindSpeedColor(gust)}`}
+                    >
+                      {gust !== null ? `${gust} nds` : "-"}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr className="h-4">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {hours.map((_, index) => (
+                {displayHours.map((_, index) => (
                   <td key={`spacer-${index}`} className="border-r bg-gray-300"></td>
                 ))}
               </tr>
               <tr className="bg-white">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Hauteur des vagues</td>
                 {displayWaveHeights.map((height, index) => (
-                  <td
-                    key={`waveHeight-${index}`}
-                    className="p-2 text-center border-r min-w-[50px]"
-                  >
-                    {height !== null ? `${height.toFixed(1)} m` : "-"}
-                  </td>
+                  index < displayHours.length && (
+                    <td
+                      key={`waveHeight-${index}`}
+                      className="p-2 text-center border-r min-w-[50px]"
+                    >
+                      {height !== null ? `${height.toFixed(1)} m` : "-"}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr className="bg-gray-50">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Direction des vagues</td>
                 {displayWaveDirections.map((direction, index) => (
-                  <td key={`waveDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
-                    {direction !== null ? (
-                      <DirectionArrow 
-                        direction={direction} 
-                        size={24} 
-                        color="#6366f1" // Indigo color for waves
-                        showLabel={true}
-                      />
-                    ) : (
-                      "-"
-                    )}
-                  </td>
+                  index < displayHours.length && (
+                    <td key={`waveDir-${index}`} className="p-2 text-center border-r min-w-[50px]">
+                      {direction !== null ? (
+                        <DirectionArrow
+                          direction={direction}
+                          size={24}
+                          color="#6366f1" // Indigo color for waves
+                          showLabel={true}
+                        />
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                  )
                 ))}
               </tr>
               <tr className="bg-white">
                 <td className="p-2 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap">Période des vagues</td>
                 {displayWavePeriods.map((period, index) => (
-                  <td
-                    key={`wavePeriod-${index}`}
-                    className="p-2 text-center border-r min-w-[50px]"
-                  >
-                    {period !== null ? `${period.toFixed(1)} s` : "-"}
-                  </td>
+                  index < displayHours.length && (
+                    <td
+                      key={`wavePeriod-${index}`}
+                      className="p-2 text-center border-r min-w-[50px]"
+                    >
+                      {period !== null ? `${period.toFixed(1)} s` : "-"}
+                    </td>
+                  )
                 ))}
               </tr>
             </tbody>
@@ -418,8 +459,11 @@ const Table: React.FC<TableProps> = ({ indices, location }) => {
 
 // Main component export
 const PrevisionTable: React.FC<{ location: Beach }> = ({ location }) => {
-  const { indices, isLoading, error } = usePrevisionData();
-  const defaultIndices = new Array(24).fill(0);
+  const { isLoading: shoreBreakLoading, error: shoreBreakError } = useShoreBreakData();
+  const { isLoading: ripCurrentLoading, error: ripCurrentError } = useRipCurrentData();
+
+  const isLoading = shoreBreakLoading || ripCurrentLoading;
+  const error = shoreBreakError || ripCurrentError;
 
   return (
     <div className="w-full">
@@ -432,10 +476,10 @@ const PrevisionTable: React.FC<{ location: Beach }> = ({ location }) => {
           <div className="p-4 bg-red-100 text-red-700 mb-4 rounded-lg">
             Erreur: {error}. Affichage des données par défaut.
           </div>
-          <Table indices={defaultIndices} tableBeach={location.nom.toLowerCase().replace(' ', '-')} location={location} />
+          <Table tableBeach={location.nom.toLowerCase().replace(' ', '-')} location={location} />
         </div>
       ) : (
-        <Table indices={indices} tableBeach={location.nom.toLowerCase().replace(' ', '-')} location={location} />
+        <Table tableBeach={location.nom.toLowerCase().replace(' ', '-')} location={location} />
       )}
     </div>
   );
