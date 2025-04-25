@@ -41,11 +41,11 @@ const defaultChartConfig = {
     },
     morning: {
         label: "Matin",
-        color: "hsl(var(--chart-1))",
+        color: "hsl(214, 90%, 52%)", // Bleu pour le matin
     },
     afternoon: {
         label: "Après-midi",
-        color: "hsl(var(--chart-2))",
+        color: "hsl(214, 80%, 50%)", // Bleu légèrement plus foncé pour l'après-midi
     },
 } satisfies ChartConfig;
 
@@ -240,7 +240,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, v
         return (
             <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md">
                 <p className="font-bold mb-1">{capitalizedDate}</p>
-                <p className="text-gray-600 text-sm mb-2">{timeInfo} h</p>
+                <p className="text-gray-600 text-sm mb-2">{timeInfo} </p>
                 <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: color }}></div>
                     <p>
@@ -435,7 +435,7 @@ export function BarChartComponent({
                     <button
                         key={key}
                         data-active={activeChart === key}
-                        className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-r px-6 py-4 text-center data-[active=true]:bg-muted/50"
+                        className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-r px-6 py-4 text-center data-[active=true]:bg-slate-200"
                         onClick={() => setActiveChart(key)}
                     >
                         <span className="text-xs text-muted-foreground">
@@ -503,8 +503,9 @@ export function BarChartComponent({
                             <Bar
                                 dataKey={activeChart}
                                 fill={activeChart === "morning"
-                                    ? "hsl(var(--chart-1))"
-                                    : "hsl(var(--chart-2))"}
+                                    ? "hsl(214, 82.10%, 60.60%)" // Bleu pour le matin
+                                    : "hsl(207, 100.00%, 39.00%)" // Bleu légèrement plus foncé pour l'après-midi
+                                }
                                 radius={[4, 4, 0, 0]}
                                 animationDuration={500}
                                 animationEasing="ease-out"

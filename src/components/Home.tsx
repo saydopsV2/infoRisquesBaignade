@@ -1,8 +1,24 @@
 import React from "react";
-import TiltedCard from "./TiltedCard";
 import HeadBand from "./HeadBand";
+import DaisyCarouselEnhanced from "./DaisyCarouselEnhanced";
 
 const Home: React.FC = () => {
+  // Données des plages à afficher dans le carousel
+  const beachItems = [
+    {
+      imageSrc: `${import.meta.env.BASE_URL}img/La-Lette-Blanche.jpg`,
+      altText: "La Lette Blanche",
+      captionText: "La Lette Blanche",
+      url: "/lette-blanche"
+    },
+    {
+      imageSrc: `${import.meta.env.BASE_URL}img/Biscarrosse.jpg`,
+      altText: "Biscarrosse",
+      captionText: "Biscarrosse",
+      url: "/biscarrosse"
+    }
+  ];
+
   return (
     <>
       <HeadBand />
@@ -19,22 +35,17 @@ const Home: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 max-w-4xl mx-auto w-full mb-10">
-          <TiltedCard
-            imageSrc={`${import.meta.env.BASE_URL}img/La-Lette-Blanche.jpg`}
-            altText="La Lette Blanche"
-            captionText="La Lette Blanche"
-            url="/lette-blanche"
-          />
-          <TiltedCard
-            imageSrc={`${import.meta.env.BASE_URL}img/Biscarrosse.jpg`}
-            altText="Biscarrosse"
-            captionText="Biscarrosse"
-            url="/biscarrosse"
+        {/* Carousel de plages utilisant DaisyUI - Bien centré */}
+        <div className="w-full flex justify-center mt-4 mb-10">
+          <DaisyCarouselEnhanced
+            items={beachItems}
+            autoPlay={false}
+            autoPlayInterval={5000}
           />
         </div>
       </div>
     </>
   );
 };
+
 export default Home;
