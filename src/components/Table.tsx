@@ -74,7 +74,6 @@ const Table: React.FC<TableProps> = ({ location }) => {
   // Utilisation du hook pour obtenir les données shore break
   const {
     indices,
-    dates,
     hazardLevels: shoreBreakHazardLevels,
     isLoading: shoreBreakLoading,
     error: shoreBreakError
@@ -90,7 +89,6 @@ const Table: React.FC<TableProps> = ({ location }) => {
 
   // Utilisation du contexte pour obtenir les données météo
   const {
-    hours,
     temperatures,
     uvIndices,
     tempUnit,
@@ -264,6 +262,9 @@ const Table: React.FC<TableProps> = ({ location }) => {
     waveForecast?.hourly?.time
   );
 
+  // Classe pour les cellules de titre (réduite)
+  const titleCellClass = "py-0.5 px-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal text-xs w-30 max-w-30";
+
   return (
     <div className="w-full bg-slate-100 text-black rounded">
       {(weatherLoading || windLoading || waveLoading || shoreBreakLoading || ripCurrentLoading) ? (
@@ -281,8 +282,8 @@ const Table: React.FC<TableProps> = ({ location }) => {
           <table className="w-full border-collapse bg-slate-100 text-black">
             <thead>
               <tr className="bg-blue-500">
-                <th className="p-1 text-left whitespace-nowrap sticky left-0 z-20 bg-blue-500" colSpan={1}>
-                  Données à partir du {currentDate.toLocaleDateString()}
+                <th className="p-1 text-left whitespace-nowrap sticky left-0 z-20 bg-blue-500 w-20 max-w-20" colSpan={1}>
+                  {currentDate.toLocaleDateString()}
                 </th>
                 {/* Colonnes pour les jours */}
                 {displayDays.map((day, dayIndex) => (
@@ -294,7 +295,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
             </thead>
             <tbody>
               <tr className="border-b">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Heures</td>
+                <td className={titleCellClass}>Heures</td>
                 {allDisplayHours.map((hour, index) => (
                   <td key={`hour-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
                     {hour.getHours()}:00
@@ -304,7 +305,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
 
               {/* Shore Break Hazard Level */}
               <tr className="bg-blue-100">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Danger Shore Break</td>
+                <td className={titleCellClass}>Danger Shore Break</td>
                 {safeShoreBreakHazardLevels.map((level, index) => (
                   index < allDisplayHours.length && (
                     <td
@@ -317,7 +318,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr>
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Graphique Shore Break</td>
+                <td className={titleCellClass}>Graph. Shore Break</td>
                 <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
                   <SecurityIndexChart hours={allDisplayHours} indices={safeIndices.slice(0, allDisplayHours.length).map(index => index === null ? 0 : index)} />
                 </td>
@@ -331,7 +332,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
 
               {/* Rip Current Hazard Level */}
               <tr className="bg-blue-50">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Danger Courant</td>
+                <td className={titleCellClass}>Danger Courant</td>
                 {safeRipCurrentHazardLevels.map((level, index) => (
                   index < allDisplayHours.length && (
                     <td
@@ -344,7 +345,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr>
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Graphique Courant</td>
+                <td className={titleCellClass}>Graph. Courant</td>
                 <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
                   <RipCurrentHazardChart 
                     hours={allDisplayHours} 
@@ -362,7 +363,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
 
               {/* Température - Ligne de référence */}
               <tr className="bg-white">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Température</td>
+                <td className={titleCellClass}>Température</td>
                 {safeTemperatures.map((temp, index) => (
                   index < allDisplayHours.length && (
                     <td key={`temp-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
@@ -372,13 +373,13 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr>
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Graphique Temp.</td>
+                <td className={titleCellClass}>Graph. Temp.</td>
                 <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
                   <StandaloneChart />
                 </td>
               </tr>
               <tr className="bg-blue-50">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Indice UV</td>
+                <td className={titleCellClass}>Indice UV</td>
                 {safeUvIndices.map((uv, index) => (
                   index < allDisplayHours.length && (
                     <td
@@ -397,7 +398,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Direction du vent</td>
+                <td className={titleCellClass}>Direction vent</td>
                 {displayWindDirections.map((direction, index) => (
                   index < allDisplayHours.length && (
                     <td key={`windDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
@@ -416,7 +417,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Vitesse du vent</td>
+                <td className={titleCellClass}>Vitesse vent</td>
                 {displayWindSpeeds.map((speed, index) => (
                   index < allDisplayHours.length && (
                     <td
@@ -429,7 +430,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Rafales de vent</td>
+                <td className={titleCellClass}>Rafales vent</td>
                 {displayWindGusts.map((gust, index) => (
                   index < allDisplayHours.length && (
                     <td
@@ -448,7 +449,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Hauteur des vagues</td>
+                <td className={titleCellClass}>Hauteur vagues</td>
                 {displayWaveHeights.map((height, index) => (
                   index < allDisplayHours.length && (
                     <td
@@ -461,7 +462,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-gray-50">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Direction des vagues</td>
+                <td className={titleCellClass}>Direction vagues</td>
                 {displayWaveDirections.map((direction, index) => (
                   index < allDisplayHours.length && (
                     <td key={`waveDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
@@ -480,7 +481,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
               <tr className="bg-white">
-                <td className="p-1 font-bold border-r bg-gray-200 sticky left-0 z-10 whitespace-normal md:whitespace-nowrap text-sm">Période des vagues</td>
+                <td className={titleCellClass}>Période vagues</td>
                 {displayWavePeriods.map((period, index) => (
                   index < allDisplayHours.length && (
                     <td

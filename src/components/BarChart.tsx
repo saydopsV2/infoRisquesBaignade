@@ -216,7 +216,8 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, v
             formattedDate = date.toLocaleDateString('fr-FR', {
                 weekday: 'long',
                 day: 'numeric',
-                month: 'long'
+                month: 'long',
+                year: 'numeric'
             });
             timeInfo = `${date.getHours()}:00`;
         } else {

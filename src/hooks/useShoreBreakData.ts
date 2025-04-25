@@ -18,8 +18,6 @@ interface ShoreBreakResult {
 
 // Constante pour le nombre de jours à récupérer
 const DAYS_TO_DISPLAY = 7;
-const HOURS_PER_DAY = 24;
-const TOTAL_HOURS = DAYS_TO_DISPLAY * HOURS_PER_DAY;
 
 /**
  * Fonction utilitaire pour regrouper les données par heure

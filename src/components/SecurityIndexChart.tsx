@@ -2,184 +2,206 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
-  ChartConfig,
-  ChartContainer,
+    ChartConfig,
+    ChartContainer,
 } from "@/components/ui/chart";
 
-// Interface pour les données du graphique
-interface SecurityChartProps {
-  hours?: Date[];
-  indices?: number[];
+// Interface pour les props
+interface SecurityIndexChartProps {
+    hours: Date[];
+    indices: number[];
 }
 
 // Configuration du graphique
 const chartConfig = {
-  securityIndex: {
-    label: "Indice Shore Break",
-    color: "hsl(var(--chart-2))",
-  },
+    shoreBreakIndex: {
+        label: "Indice Shore Break",
+        color: "hsl(var(--chart-2))",
+    },
 } satisfies ChartConfig;
 
 // Composant personnalisé pour le tooltip
 const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    // Déterminer la couleur du tooltip en fonction de l'indice
-    const index = payload[0].value;
-    const color = getSecurityIndexColor(index);
-
-    return (
-      <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
-        <p className="font-bold">{label}</p>
-        <p style={{ color }}>
-          Indice Shore Break: {index !== null ? index.toFixed(1) : "-"}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
-// Fonction pour obtenir la couleur basée sur l'indice de shore break
-const getSecurityIndexColor = (index: number | null): string => {
-  if (index === null) return "#94a3b8"; // Couleur par défaut (gris)
-
-  // Utiliser Math.floor pour les comparaisons de valeurs décimales
-  const floorIndex = Math.floor(index);
-
-  // Respecter exactement les conditions fournies
-  if (floorIndex <= 0 || floorIndex <= 2) return "#16a34a"; // Vert foncé - Sécurité optimale (bg-green-600)
-  if (floorIndex <= 3) return "#4ade80"; // Vert clair - Faible risque (bg-green-400)
-  if (floorIndex <= 4) return "#fde047"; // Jaune - Risque modéré (bg-yellow-300)
-  if (floorIndex <= 9) return "#f97316"; // Orange - Risque élevé (bg-orange-500)
-  if (floorIndex > 9) return "#dc2626"; // Rouge - Danger important (bg-red-600)
-  return "#e5e7eb"; // Couleur par défaut (bg-gray-200)
-};
-
-// Version autonome du graphique d'indice de shore break
-export function SecurityIndexChart({ hours = [], indices = [] }: SecurityChartProps) {
-  // Préparer les données pour le graphique en combinant heures et indices
-  const chartData = hours.map((hour, index) => {
-    const securityIndex = indices[index] !== undefined ? indices[index] : null;
-    return {
-      hour: hour instanceof Date ? hour.getHours() + ":00" : "0:00",
-      securityIndex: securityIndex,
-      // Ajouter la couleur pour chaque point d'indice
-      color: getSecurityIndexColor(securityIndex)
+    if (active && payload && payload.length) {
+        const shoreBreakIndex = payload[0].value;
+        const color = getShoreBreakColor(shoreBreakIndex);
+        const hazardText = getHazardText(shoreBreakIndex);
+        
+        // Récupérer la date complète à partir des données du graphique
+        const item = payload[0].payload;
+        const dateObj = item.originalDate instanceof Date ? item.originalDate : new Date();
+        
+        // Formater la date pour afficher le jour et l'heure
+        const formattedDate = dateObj.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Première lettre en majuscule
+        const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+        
+        return (
+            <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
+                <p className="font-bold">{capitalizedDate}</p>
+                <p className="text-sm text-gray-600">{label}</p>
+                <p style={{ color }}>
+                    <span>Indice: {shoreBreakIndex !== null ? shoreBreakIndex.toFixed(1) : "-"}</span>
+                </p>
+                <p style={{ color }}>
+                    <span>Niveau: {hazardText}</span>
+                </p>
+            </div>
+        );
     }
-  });
+    return null;
+};
 
-  // Créer des stops de dégradé pour chaque point d'indice
-  const gradientStops = indices
-    .filter(index => index !== null)
-    .map((index, i, filteredIndices) => {
-      // Calculer le pourcentage de position dans le gradient
-      const offset = `${(i / Math.max(1, filteredIndices.length - 1)) * 100}%`;
-      return {
-        offset,
-        color: getSecurityIndexColor(index)
-      };
+// Fonction pour obtenir la couleur basée sur l'indice shore break
+const getShoreBreakColor = (index: number | null): string => {
+    if (index === null) return "#94a3b8"; // Couleur par défaut (gris)
+    if (index < 2) return "#16a34a"; // Vert foncé - Sécurité optimale
+    if (index < 5) return "#4ade80"; // Vert clair - Faible risque
+    if (index < 10) return "#fde047"; // Jaune - Risque modéré
+    if (index < 15) return "#f97316"; // Orange - Risque élevé
+    return "#dc2626"; // Rouge - Danger important
+};
+
+// Fonction pour obtenir le texte du niveau de danger
+const getHazardText = (index: number | null): string => {
+    if (index === null) return "Inconnu";
+    if (index < 2) return "Très faible";
+    if (index < 5) return "Faible";
+    if (index < 10) return "Modéré";
+    if (index < 15) return "Élevé";
+    return "Très élevé";
+};
+
+// Composant du graphique d'indice de sécurité
+export function SecurityIndexChart({ hours, indices }: SecurityIndexChartProps) {
+    // Préparer les données pour le graphique en combinant heures et indices
+    const chartData = hours.map((hour, index) => {
+        const shoreBreakIndex = indices[index] !== undefined ? indices[index] : null;
+        
+        return {
+            hour: hour instanceof Date ? `${hour.getHours()}:00` : "00:00",
+            shoreBreakIndex: shoreBreakIndex,
+            color: getShoreBreakColor(shoreBreakIndex),
+            // Stocker la date originale pour l'affichage dans le tooltip
+            originalDate: hour
+        };
     });
 
-  return (
-    <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
-      <ResponsiveContainer width="100%" height={200}>
-        <AreaChart
-          data={chartData}
-          margin={{
-            top: 10,
-            right: 30,
-            left: 10,
-            bottom: 0,
-          }}
-        >
-          <defs>
-            {/* Gradient horizontal pour le contour */}
-            <linearGradient id="securityIndexGradient" x1="0" y1="0" x2="1" y2="0">
-              {gradientStops.map((stop, index) => (
-                <stop
-                  key={index}
-                  offset={stop.offset}
-                  stopColor={stop.color}
-                  stopOpacity={1}
-                />
-              ))}
-            </linearGradient>
+    // Créer des stops de dégradé pour chaque point d'indice
+    const gradientStops = indices
+        .filter(index => index !== null && index !== undefined)
+        .map((index, i, filteredIndices) => {
+            const offset = `${(i / Math.max(1, filteredIndices.length - 1)) * 100}%`;
+            return {
+                offset,
+                color: getShoreBreakColor(index)
+            };
+        });
 
-            {/* Créer des gradients verticaux individuels pour chaque couleur */}
-            {gradientStops.map((stop, index) => (
-              <linearGradient
-                key={`security-fill-${index}`}
-                id={`securityIndexFillGradient-${index}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
-                <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
-              </linearGradient>
-            ))}
+    return (
+        <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
+            <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                    data={chartData}
+                    margin={{
+                        top: 10,
+                        right: 30,
+                        left: 10,
+                        bottom: 0,
+                    }}
+                >
+                    <defs>
+                        {/* Gradient horizontal pour le contour */}
+                        <linearGradient id="shoreBreakGradient" x1="0" y1="0" x2="1" y2="0">
+                            {gradientStops.map((stop, index) => (
+                                <stop
+                                    key={index}
+                                    offset={stop.offset}
+                                    stopColor={stop.color}
+                                    stopOpacity={1}
+                                />
+                            ))}
+                        </linearGradient>
 
-            {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
-            <pattern id="securityIndexPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-              {gradientStops.map((stop, index, arr) => {
-                const width = index < arr.length - 1
-                  ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset)
-                  : 100 - parseFloat(stop.offset);
+                        {/* Gradients verticaux pour chaque couleur */}
+                        {gradientStops.map((stop, index) => (
+                            <linearGradient
+                                key={`fill-${index}`}
+                                id={`shoreBreakFillGradient-${index}`}
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
+                                <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
+                            </linearGradient>
+                        ))}
+                        
+                        <pattern id="shoreBreakPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
+                            {gradientStops.map((stop, index, arr) => {
+                                const width = index < arr.length - 1
+                                    ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset)
+                                    : 100 - parseFloat(stop.offset);
+                                
+                                return (
+                                    <rect
+                                        key={index}
+                                        x={`${parseFloat(stop.offset)}%`}
+                                        y="0"
+                                        width={`${width}%`}
+                                        height="100%"
+                                        fill={`url(#shoreBreakFillGradient-${index})`}
+                                    />
+                                );
+                            })}
+                        </pattern>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                        dataKey="hour"
+                        tickLine={false}
+                        axisLine={true}
+                        tickMargin={8}
+                    />
+                    <YAxis
+                        domain={[0, 20]}
+                        tickLine={false}
+                        axisLine={true}
+                        tickMargin={8}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                        type="monotone"
+                        dataKey="shoreBreakIndex"
+                        stroke="url(#shoreBreakGradient)"
+                        fill="url(#shoreBreakPattern)"
+                        fillOpacity={1}
+                        strokeWidth={2}
+                        name="Indice Shore Break"
+                        activeDot={(props) => {
+                            const { cx, cy, payload } = props;
+                            // Obtenir la couleur en fonction de l'indice shore break
+                            const color = getShoreBreakColor(payload.shoreBreakIndex);
 
-                return (
-                  <rect
-                    key={index}
-                    x={`${parseFloat(stop.offset)}%`}
-                    y="0"
-                    width={`${width}%`}
-                    height="100%"
-                    fill={`url(#securityIndexFillGradient-${index})`}
-                  />
-                );
-              })}
-            </pattern>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="hour"
-            tickLine={false}
-            axisLine={true}
-            tickMargin={8}
-          />
-          <YAxis
-            domain={[0, 4]} // Les indices vont de 0 à 4
-            tickCount={5}
-            tickLine={false}
-            axisLine={true}
-            tickMargin={8}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="securityIndex"
-            stroke="url(#securityIndexGradient)"
-            fill="url(#securityIndexPattern)"
-            fillOpacity={1}
-            strokeWidth={2}
-            name="Indice Shore Break"
-            activeDot={(props) => {
-              const { cx, cy, payload } = props;
-              // Obtenir la couleur en fonction de la valeur d'indice
-              const color = getSecurityIndexColor(payload.securityIndex);
-
-              return (
-                <g>
-                  {/* Cercle extérieur blanc */}
-                  <circle cx={cx} cy={cy} r={7} fill="white" />
-                  {/* Cercle intérieur coloré */}
-                  <circle cx={cx} cy={cy} r={5} fill={color} />
-                </g>
-              );
-            }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </ChartContainer>
-  );
+                            return (
+                                <g>
+                                    {/* Cercle extérieur blanc */}
+                                    <circle cx={cx} cy={cy} r={7} fill="white" />
+                                    {/* Cercle intérieur coloré */}
+                                    <circle cx={cx} cy={cy} r={5} fill={color} />
+                                </g>
+                            );
+                        }}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
+        </ChartContainer>
+    );
 }

@@ -27,10 +27,26 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         // Déterminer la couleur du tooltip en fonction de la vitesse du courant
         const velocity = payload[0].value;
         const color = getRipCurrentColor(velocity);
+        
+        // Récupérer la date complète à partir des données du graphique
+        const item = payload[0].payload;
+        const dateObj = item.originalDate instanceof Date ? item.originalDate : new Date();
+        
+        // Formater la date pour afficher le jour et l'heure
+        const formattedDate = dateObj.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Première lettre en majuscule
+        const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
 
         return (
             <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
-                <p className="font-bold">{label}</p>
+                <p className="font-bold">{capitalizedDate}</p>
+                <p className="text-sm text-gray-600">{label}</p>
                 <p style={{ color }}>
                     Vitesse: {velocity !== null ? `${velocity.toFixed(1)} m/s` : "-"}
                 </p>
@@ -75,7 +91,9 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
             ripCurrentVelocity: velocity,
             hazardLevel: hazardLevel,
             // Ajouter la couleur pour chaque point
-            color: getRipCurrentColor(velocity)
+            color: getRipCurrentColor(velocity),
+            // Stocker la date originale pour l'affichage dans le tooltip
+            originalDate: hour
         }
     });
 
