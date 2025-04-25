@@ -11,8 +11,6 @@ import { BarChart } from "./BarChart";
 import Toggle from "./Toggle";
 
 interface TabProps {
-    tabAllDataPlot: string;
-    tabForecastPlot: string;
     tabBeach: Beach;
 }
 
