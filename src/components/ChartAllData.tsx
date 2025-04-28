@@ -305,7 +305,7 @@ export function ChartAllData() {
                             
                             {/* Pattern qui combine les gradients verticaux */}
                             <pattern id="attendancePattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-                                {chartData.map((item, index, arr) => {
+                                {chartData.map((_, index, arr) => {
                                     // Calculer la largeur de chaque segment
                                     const width = index < arr.length - 1
                                         ? (1 / (arr.length - 1)) * 100
@@ -358,7 +358,7 @@ export function ChartAllData() {
                             fill="url(#attendancePattern)"
                             strokeWidth={3}
                             dot={{ r: 1 }}
-                            activeDot={(props) => {
+                            activeDot={(props: any) => {
                                 const { cx, cy, payload } = props;
                                 // Obtenir la couleur en fonction du niveau de risque
                                 const color = getHazardLevelColor(payload.hazardLevel);
