@@ -284,7 +284,7 @@ export function BeachAttendanceBarChart() {
                 axisLine={true}
                 tickMargin={10}
                 height={60}
-                interval={0}
+                tickCount={6}
                 angle={-45}
                 textAnchor="end"
                 tick={{ fontSize: 11 }}
@@ -294,7 +294,7 @@ export function BeachAttendanceBarChart() {
                 tickLine={false}
                 axisLine={true}
                 tickMargin={10}
-                label={{ value: 'Fréquentation (%)', angle: -90, position: 'insideLeft', dx: -5 }}
+                label={{ value: 'Fréquentation (%)', angle: -90, position: 'insidemMidlle', dx: -15 }}
                 domain={[0, 100]}
               />
               <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />

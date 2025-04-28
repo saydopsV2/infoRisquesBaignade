@@ -331,10 +331,10 @@ export function ChartAllData() {
                             tickLine={false}
                             axisLine={true}
                             tickMargin={8}
+                            tickCount={6}
                             label={{ value: 'Date/Heure', position: 'insideBottom', offset: -5 }}
                             tick={{ fontSize: 11 }}
                             height={60}
-                            interval={0}
                             angle={-45}
                             textAnchor="end"
                         />
@@ -344,7 +344,7 @@ export function ChartAllData() {
                             tickLine={false}
                             axisLine={true}
                             tickMargin={8}
-                            label={{ value: 'Fréquentation (%)', angle: -90, position: 'insideLeft', dx: -5 }}
+                            label={{ value: 'Fréquentation (%)', angle: -90, position: 'insidemMidlle', dx: -15 }}
                             fontSize={12}
                         />
                         <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />

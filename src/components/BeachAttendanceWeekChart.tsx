@@ -299,7 +299,6 @@ export function ChartAllDataWeek() {
                             tickLine={false}
                             axisLine={true}
                             tickMargin={8}
-                            label={{ value: 'Fréquentation (%)', angle: -90, position: 'insideLeft', dx: -5 }}
                             fontSize={12}
                         />
                         <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
