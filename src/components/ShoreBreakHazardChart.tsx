@@ -6,27 +6,26 @@ import {
     ChartContainer,
 } from "@/components/ui/chart";
 
-// Interface pour les données du graphique
-interface RipCurrentChartProps {
-    hours?: Date[];
-    velocities?: number[];
-    hazardLevels?: number[];
+// Interface pour les props
+interface ShoreBreakHazardChartProps {
+    hours: Date[];
+    indices: number[];
 }
 
 // Configuration du graphique
 const chartConfig = {
-    ripCurrentVelocity: {
-        label: "Courant d'arrachement",
-        color: "hsl(var(--chart-3))",
+    shoreBreakIndex: {
+        label: "Indice Shore Break",
+        color: "hsl(var(--chart-2))",
     },
 } satisfies ChartConfig;
 
 // Composant personnalisé pour le tooltip
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-        // Déterminer la couleur du tooltip en fonction de la vitesse du courant
-        const velocity = payload[0].value;
-        const color = getRipCurrentColor(velocity);
+        const shoreBreakIndex = payload[0].value;
+        const color = getShoreBreakColor(shoreBreakIndex);
+        const hazardText = getHazardText(shoreBreakIndex);
         
         // Récupérer la date complète à partir des données du graphique
         const item = payload[0].payload;
@@ -42,13 +41,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         
         // Première lettre en majuscule
         const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-
+        
         return (
             <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
                 <p className="font-bold">{capitalizedDate}</p>
                 <p className="text-sm text-gray-600">{label}</p>
                 <p style={{ color }}>
-                    Vitesse: {velocity !== null ? `${velocity.toFixed(1)} m/s` : "-"}
+                    <span>Indice: {shoreBreakIndex !== null ? shoreBreakIndex.toFixed(1) : "-"}</span>
+                </p>
+                <p style={{ color }}>
+                    <span>Niveau: {hazardText}</span>
                 </p>
             </div>
         );
@@ -56,56 +58,49 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-// Fonction pour obtenir la couleur basée sur la vitesse du courant d'arrachement
-const getRipCurrentColor = (velocity: number | null): string => {
-    if (velocity === null) return "#94a3b8"; // Couleur par défaut (gris)
-
-    // Échelle de couleurs basée sur la vitesse
-    if (velocity < 0.5) return "#16a34a"; // Vert foncé - Sécurité optimale
-    if (velocity < 1.0) return "#4ade80"; // Vert clair - Faible risque
-    if (velocity < 1.5) return "#fde047"; // Jaune - Risque modéré
-    if (velocity < 2.0) return "#f97316"; // Orange - Risque élevé
+// Fonction pour obtenir la couleur basée sur l'indice shore break
+const getShoreBreakColor = (index: number | null): string => {
+    if (index === null) return "#94a3b8"; // Couleur par défaut (gris)
+    if (index < 2) return "#16a34a"; // Vert foncé - Sécurité optimale
+    if (index < 5) return "#4ade80"; // Vert clair - Faible risque
+    if (index < 10) return "#fde047"; // Jaune - Risque modéré
+    if (index < 15) return "#f97316"; // Orange - Risque élevé
     return "#dc2626"; // Rouge - Danger important
 };
 
-// Fonction pour obtenir la classe CSS basée sur la vitesse du courant d'arrachement
-export const getRipCurrentColorClass = (velocity: number | null): string => {
-    if (velocity === null) return "bg-gray-200";
-
-    if (velocity < 0.5) return "bg-green-600"; // Vert foncé - Sécurité optimale
-    if (velocity < 1.0) return "bg-green-400"; // Vert clair - Faible risque
-    if (velocity < 1.5) return "bg-yellow-300"; // Jaune - Risque modéré
-    if (velocity < 2.0) return "bg-orange-500"; // Orange - Risque élevé
-    return "bg-red-600 text-white"; // Rouge - Danger important
+// Fonction pour obtenir le texte du niveau de danger
+const getHazardText = (index: number | null): string => {
+    if (index === null) return "Inconnu";
+    if (index < 2) return "Très faible";
+    if (index < 5) return "Faible";
+    if (index < 10) return "Modéré";
+    if (index < 15) return "Élevé";
+    return "Très élevé";
 };
 
-// Version autonome du graphique de courant d'arrachement
-export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevels = [] }: RipCurrentChartProps) {
-    // Préparer les données pour le graphique en combinant heures et vitesses
+// Composant du graphique d'indice de sécurité
+export function ShoreBreakHazardChart({ hours, indices }: ShoreBreakHazardChartProps) {
+    // Préparer les données pour le graphique en combinant heures et indices
     const chartData = hours.map((hour, index) => {
-        const velocity = velocities[index] !== undefined ? velocities[index] : null;
-        const hazardLevel = hazardLevels[index] !== undefined ? hazardLevels[index] : null;
-
+        const shoreBreakIndex = indices[index] !== undefined ? indices[index] : null;
+        
         return {
-            hour: hour instanceof Date ? hour.getHours() + ":00" : "0:00",
-            ripCurrentVelocity: velocity,
-            hazardLevel: hazardLevel,
-            // Ajouter la couleur pour chaque point
-            color: getRipCurrentColor(velocity),
+            hour: hour instanceof Date ? `${hour.getHours()}:00` : "00:00",
+            shoreBreakIndex: shoreBreakIndex,
+            color: getShoreBreakColor(shoreBreakIndex),
             // Stocker la date originale pour l'affichage dans le tooltip
             originalDate: hour
-        }
+        };
     });
 
-    // Créer des stops de dégradé pour chaque point de vitesse
-    const gradientStops = velocities
-        .filter(velocity => velocity !== null)
-        .map((velocity, i, filteredVelocities) => {
-            // Calculer le pourcentage de position dans le gradient
-            const offset = `${(i / Math.max(1, filteredVelocities.length - 1)) * 100}%`;
+    // Créer des stops de dégradé pour chaque point d'indice
+    const gradientStops = indices
+        .filter(index => index !== null && index !== undefined)
+        .map((index, i, filteredIndices) => {
+            const offset = `${(i / Math.max(1, filteredIndices.length - 1)) * 100}%`;
             return {
                 offset,
-                color: getRipCurrentColor(velocity)
+                color: getShoreBreakColor(index)
             };
         });
 
@@ -123,7 +118,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                 >
                     <defs>
                         {/* Gradient horizontal pour le contour */}
-                        <linearGradient id="ripCurrentGradient" x1="0" y1="0" x2="1" y2="0">
+                        <linearGradient id="shoreBreakGradient" x1="0" y1="0" x2="1" y2="0">
                             {gradientStops.map((stop, index) => (
                                 <stop
                                     key={index}
@@ -134,11 +129,11 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                             ))}
                         </linearGradient>
 
-                        {/* Créer des gradients verticaux individuels pour chaque couleur
+                        {/* Gradients verticaux pour chaque couleur
                         {gradientStops.map((stop, index) => (
                             <linearGradient
-                                key={`ripCurrent-fill-${index}`}
-                                id={`ripCurrentFillGradient-${index}`}
+                                key={`fill-${index}`}
+                                id={`shoreBreakFillGradient-${index}`}
                                 x1="0"
                                 y1="0"
                                 x2="0"
@@ -148,14 +143,13 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                                 <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
                             </linearGradient>
                         ))} */}
-
-                        {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
-                        <pattern id="ripCurrentPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
+                        
+                        <pattern id="shoreBreakPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
                             {gradientStops.map((stop, index, arr) => {
                                 const width = index < arr.length - 1
                                     ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset)
                                     : 100 - parseFloat(stop.offset);
-
+                                
                                 return (
                                     <rect
                                         key={index}
@@ -163,7 +157,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                                         y="0"
                                         width={`${width}%`}
                                         height="100%"
-                                        fill={`url(#ripCurrentFillGradient-${index})`}
+                                        fill={`url(#shoreBreakFillGradient-${index})`}
                                     />
                                 );
                             })}
@@ -177,8 +171,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                         tickMargin={8}
                     />
                     <YAxis
-                        domain={[0, 2.5]} // Domaine de valeurs estimé pour les vitesses
-                        tickCount={6}
+                        domain={[0, 20]}
                         tickLine={false}
                         axisLine={true}
                         tickMargin={8}
@@ -186,16 +179,16 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                     <Tooltip content={<CustomTooltip />} />
                     <Area
                         type="monotone"
-                        dataKey="ripCurrentVelocity"
-                        stroke="url(#ripCurrentGradient)"
-                        fill="url(#ripCurrentPattern)"
+                        dataKey="shoreBreakIndex"
+                        stroke="url(#shoreBreakGradient)"
+                        fill="url(#shoreBreakPattern)"
                         fillOpacity={1}
                         strokeWidth={2}
-                        name="Courant d'arrachement"
+                        name="Indice Shore Break"
                         activeDot={(props) => {
                             const { cx, cy, payload } = props;
-                            // Obtenir la couleur en fonction de la valeur de vitesse
-                            const color = getRipCurrentColor(payload.ripCurrentVelocity);
+                            // Obtenir la couleur en fonction de l'indice shore break
+                            const color = getShoreBreakColor(payload.shoreBreakIndex);
 
                             return (
                                 <g>

@@ -29,9 +29,25 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const temperature = payload[0].value;
     const color = getTemperatureColor(temperature);
     
+    // Récupérer l'heure complète à partir des données du graphique
+    const item = payload[0].payload;
+    const dateObj = item.originalDate instanceof Date ? item.originalDate : new Date();
+    
+    // Formater la date pour afficher le jour et l'heure
+    const formattedDate = dateObj.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    // Première lettre en majuscule
+    const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+    
     return (
       <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
-        <p className="font-bold">{label}</p>
+        <p className="font-bold">{capitalizedDate}</p>
+        <p className="text-sm text-gray-600">{label}</p>
         <p style={{ color }}>
           Température: {temperature !== null ? `${temperature}°C` : "-"}
         </p>
@@ -61,7 +77,9 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
       hour: hour instanceof Date ? `${hour.getHours()}:00` : "0:00",
       temperature: temp,
       // Ajouter la couleur pour chaque point de température
-      color: getTemperatureColor(temp)
+      color: getTemperatureColor(temp),
+      // Stocker la date originale pour l'affichage dans le tooltip
+      originalDate: hour
     }
   });
 
@@ -159,6 +177,20 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
             fillOpacity={1}
             strokeWidth={2}
             name="Température"
+            activeDot={(props) => {
+              const { cx, cy, payload } = props;
+              // Obtenir la couleur en fonction de la température
+              const color = getTemperatureColor(payload.temperature);
+
+              return (
+                <g>
+                  {/* Cercle extérieur blanc */}
+                  <circle cx={cx} cy={cy} r={7} fill="white" />
+                  {/* Cercle intérieur coloré */}
+                  <circle cx={cx} cy={cy} r={5} fill={color} />
+                </g>
+              );
+            }}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -167,7 +199,7 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
 }
 
 // Version standalone qui utilise directement le contexte
-export function StandaloneChart() {
+export function TemperatureChart() {
   const { hours, temperatures, tempUnit } = useWeather();
   
   // Préparer les données pour le graphique en combinant heures et températures
@@ -177,7 +209,9 @@ export function StandaloneChart() {
       hour: hour instanceof Date ? `${hour.getHours()}:00` : "0:00",
       temperature: temp,
       // Ajouter la couleur pour chaque point de température
-      color: getTemperatureColor(temp)
+      color: getTemperatureColor(temp),
+      // Stocker la date originale pour l'affichage dans le tooltip
+      originalDate: hour
     }
   });
 
@@ -219,7 +253,7 @@ export function StandaloneChart() {
             </linearGradient>
             
             {/* Créer des gradients verticaux individuels pour chaque couleur */}
-            {gradientStops.map((stop, index) => (
+            {/* {gradientStops.map((stop, index) => (
               <linearGradient 
                 key={`fill-standalone-${index}`}
                 id={`temperatureFillGradientStandalone-${index}`} 
@@ -231,7 +265,7 @@ export function StandaloneChart() {
                 <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
                 <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
               </linearGradient>
-            ))}
+            ))} */}
             
             {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
             <pattern id="temperaturePatternStandalone" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
@@ -275,6 +309,20 @@ export function StandaloneChart() {
             fillOpacity={1}
             strokeWidth={2}
             name="Température"
+            activeDot={(props) => {
+              const { cx, cy, payload } = props;
+              // Obtenir la couleur en fonction de la température
+              const color = getTemperatureColor(payload.temperature);
+
+              return (
+                <g>
+                  {/* Cercle extérieur blanc */}
+                  <circle cx={cx} cy={cy} r={7} fill="white" />
+                  {/* Cercle intérieur coloré */}
+                  <circle cx={cx} cy={cy} r={5} fill={color} />
+                </g>
+              );
+            }}
           />
         </AreaChart>
       </ResponsiveContainer>

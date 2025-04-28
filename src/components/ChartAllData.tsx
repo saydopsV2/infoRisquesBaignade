@@ -1,478 +1,402 @@
 "use client"
 
-import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts"
+import { useState } from "react";
+import { Line, Scatter, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+    ChartConfig,
+    ChartContainer,
+} from "@/components/ui/chart";
+import { useBeachAttendanceData } from "@/hooks/useBeachAttendanceData";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
-// Définition des interfaces pour le typage
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
+// Configuration du graphique
+const chartConfig = {
+    beachAttendance: {
+        label: "Fréquentation des plages",
+        color: "hsl(var(--chart-1))",
+    },
+} satisfies ChartConfig;
+
+// Interface pour les propriétés du shape personnalisé
+interface ShapeProps {
+    cx?: number;
+    cy?: number;
+    payload?: any;
+    [key: string]: any;
 }
 
-interface SelectItemProps {
-  value: string;
-  children: React.ReactNode;
-  className?: string;
-}
+// Type pour les vues temporelles
+type TimeView = "today" | "plus3days" | "plus5days";
 
-interface SelectProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  children: React.ReactNode;
-}
-
-interface ChartDataItem {
-  date: string;
-  matin: number;
-  apresmidi: number;
-}
-
-// Importer des composants UI personnalisés (versions simplifiées)
-const Card = ({ children, className = "" }: CardProps): React.JSX.Element => (
-  <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>{children}</div>
-)
-
-const CardHeader = ({ children, className = "" }: CardProps): React.JSX.Element => (
-  <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>{children}</div>
-)
-
-const CardTitle = ({ children, className = "" }: CardProps): React.JSX.Element => (
-  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
-)
-
-const CardDescription = ({ children, className = "" }: CardProps): React.JSX.Element => (
-  <p className={`text-sm text-muted-foreground ${className}`}>{children}</p>
-)
-
-const CardContent = ({ children, className = "" }: CardProps): React.JSX.Element => (
-  <div className={`p-6 pt-0 ${className}`}>{children}</div>
-)
-
-const Select = ({ value, onValueChange, children }: SelectProps): React.JSX.Element => {
-  return (
-    <div className="relative w-[160px]">
-      <select
-        value={value}
-        onChange={(e) => onValueChange(e.target.value)}
-        className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm"
-      >
-        {React.Children.map(children, child => {
-          if (React.isValidElement<SelectItemProps>(child)) {
-            return <option value={child.props.value}>{child.props.children}</option>
-          }
-          return null
-        })}
-      </select>
-    </div>
-  )
-}
-
-const SelectItem = ({ value, children, className = "" }: SelectItemProps): React.JSX.Element => (
-  <option value={value} className={className}>{children}</option>
-)
-
-const chartData: ChartDataItem[] = [
-  { date: "2025-05-01T00:00:00", matin: 222, apresmidi: 150 },
-  { date: "2025-05-01T01:00:00", matin: 97, apresmidi: 180 },
-  { date: "2025-05-01T02:00:00", matin: 167, apresmidi: 120 },
-  { date: "2025-05-01T03:00:00", matin: 242, apresmidi: 260 },
-  { date: "2025-05-01T04:00:00", matin: 373, apresmidi: 290 },
-  { date: "2025-05-01T05:00:00", matin: 301, apresmidi: 340 },
-  { date: "2025-05-01T06:00:00", matin: 245, apresmidi: 180 },
-  { date: "2025-05-01T07:00:00", matin: 409, apresmidi: 320 },
-  { date: "2025-05-01T08:00:00", matin: 59, apresmidi: 110 },
-  { date: "2025-05-01T09:00:00", matin: 261, apresmidi: 190 },
-  { date: "2025-05-01T10:00:00", matin: 327, apresmidi: 350 },
-  { date: "2025-05-01T11:00:00", matin: 292, apresmidi: 210 },
-  { date: "2025-05-01T12:00:00", matin: 342, apresmidi: 380 },
-  { date: "2025-05-01T13:00:00", matin: 137, apresmidi: 220 },
-  { date: "2025-05-01T14:00:00", matin: 120, apresmidi: 170 },
-  { date: "2025-05-01T15:00:00", matin: 138, apresmidi: 190 },
-  { date: "2025-05-01T16:00:00", matin: 446, apresmidi: 360 },
-  { date: "2025-05-01T17:00:00", matin: 364, apresmidi: 410 },
-  { date: "2025-05-01T18:00:00", matin: 243, apresmidi: 180 },
-  { date: "2025-05-01T19:00:00", matin: 89, apresmidi: 150 },
-  { date: "2025-05-01T20:00:00", matin: 137, apresmidi: 200 },
-  { date: "2025-05-01T21:00:00", matin: 224, apresmidi: 170 },
-  { date: "2025-05-01T22:00:00", matin: 138, apresmidi: 230 },
-  { date: "2025-05-01T23:00:00", matin: 387, apresmidi: 290 },
-  { date: "2025-05-02T00:00:00", matin: 215, apresmidi: 250 },
-  { date: "2025-05-02T01:00:00", matin: 75, apresmidi: 130 },
-  { date: "2025-05-02T02:00:00", matin: 383, apresmidi: 420 },
-  { date: "2025-05-02T03:00:00", matin: 122, apresmidi: 180 },
-  { date: "2025-05-02T04:00:00", matin: 315, apresmidi: 240 },
-  { date: "2025-05-02T05:00:00", matin: 454, apresmidi: 380 },
-  { date: "2025-05-02T06:00:00", matin: 165, apresmidi: 220 },
-  { date: "2025-05-02T07:00:00", matin: 293, apresmidi: 310 },
-  { date: "2025-05-02T08:00:00", matin: 247, apresmidi: 190 },
-  { date: "2025-05-02T09:00:00", matin: 385, apresmidi: 420 },
-  { date: "2025-05-02T10:00:00", matin: 481, apresmidi: 390 },
-  { date: "2025-05-02T11:00:00", matin: 498, apresmidi: 520 },
-  { date: "2025-05-02T12:00:00", matin: 388, apresmidi: 300 },
-  { date: "2025-05-02T13:00:00", matin: 149, apresmidi: 210 },
-  { date: "2025-05-02T14:00:00", matin: 227, apresmidi: 180 },
-  { date: "2025-05-02T15:00:00", matin: 293, apresmidi: 330 },
-  { date: "2025-05-02T16:00:00", matin: 335, apresmidi: 270 },
-  { date: "2025-05-02T17:00:00", matin: 197, apresmidi: 240 },
-  { date: "2025-05-02T18:00:00", matin: 197, apresmidi: 160 },
-  { date: "2025-05-02T19:00:00", matin: 448, apresmidi: 490 },
-  { date: "2025-05-02T20:00:00", matin: 473, apresmidi: 380 },
-  { date: "2025-05-02T21:00:00", matin: 338, apresmidi: 400 },
-  { date: "2025-05-02T22:00:00", matin: 499, apresmidi: 420 },
-  { date: "2025-05-02T23:00:00", matin: 315, apresmidi: 350 },
-  { date: "2025-05-03T00:00:00", matin: 235, apresmidi: 180 },
-  { date: "2025-05-03T01:00:00", matin: 177, apresmidi: 230 },
-  { date: "2025-05-03T02:00:00", matin: 82, apresmidi: 140 },
-  { date: "2025-05-03T03:00:00", matin: 81, apresmidi: 120 },
-  { date: "2025-05-03T04:00:00", matin: 252, apresmidi: 290 },
-  { date: "2025-05-03T05:00:00", matin: 294, apresmidi: 220 },
-  { date: "2025-05-03T06:00:00", matin: 201, apresmidi: 250 },
-  { date: "2025-05-03T07:00:00", matin: 213, apresmidi: 170 },
-  { date: "2025-05-03T08:00:00", matin: 420, apresmidi: 460 },
-  { date: "2025-05-03T09:00:00", matin: 233, apresmidi: 190 },
-  { date: "2025-05-03T10:00:00", matin: 78, apresmidi: 130 },
-  { date: "2025-05-03T11:00:00", matin: 340, apresmidi: 280 },
-  { date: "2025-05-03T12:00:00", matin: 178, apresmidi: 230 },
-  { date: "2025-05-03T13:00:00", matin: 178, apresmidi: 200 },
-  { date: "2025-05-03T14:00:00", matin: 470, apresmidi: 410 },
-  { date: "2025-05-03T15:00:00", matin: 103, apresmidi: 160 },
-  { date: "2025-05-03T16:00:00", matin: 439, apresmidi: 380 },
-  { date: "2025-05-03T17:00:00", matin: 88, apresmidi: 140 },
-  { date: "2025-05-03T18:00:00", matin: 294, apresmidi: 250 },
-  { date: "2025-05-03T19:00:00", matin: 323, apresmidi: 370 },
-  { date: "2025-05-03T20:00:00", matin: 385, apresmidi: 320 },
-  { date: "2025-05-03T21:00:00", matin: 438, apresmidi: 480 },
-  { date: "2025-05-03T22:00:00", matin: 155, apresmidi: 200 },
-  { date: "2025-05-03T23:00:00", matin: 92, apresmidi: 150 },
-  { date: "2025-05-04T00:00:00", matin: 492, apresmidi: 420 },
-  { date: "2025-05-04T01:00:00", matin: 81, apresmidi: 130 },
-  { date: "2025-05-04T02:00:00", matin: 426, apresmidi: 380 },
-  { date: "2025-05-05T03:00:00", matin: 307, apresmidi: 350 },
-  { date: "2025-05-05T04:00:00", matin: 371, apresmidi: 310 },
-  { date: "2025-05-05T05:00:00", matin: 475, apresmidi: 520 },
-  { date: "2025-05-05T06:00:00", matin: 107, apresmidi: 170 },
-  { date: "2025-05-05T06:00:00", matin: 341, apresmidi: 290 },
-  { date: "2025-05-05T07:00:00", matin: 408, apresmidi: 450 },
-  { date: "2025-05-05T08:00:00", matin: 169, apresmidi: 210 },
-  { date: "2025-05-05T09:00:00", matin: 317, apresmidi: 270 },
-  { date: "2025-05-05T10:00:00", matin: 480, apresmidi: 530 },
-  { date: "2025-05-05T11:00:00", matin: 132, apresmidi: 180 },
-  { date: "2025-05-05T12:00:00", matin: 141, apresmidi: 190 },
-  { date: "2025-05-05T13:00:00", matin: 434, apresmidi: 380 },
-  { date: "2025-05-05T14:00:00", matin: 448, apresmidi: 490 },
-  { date: "2025-05-05T15:00:00", matin: 149, apresmidi: 200 },
-  { date: "2025-05-05T16:00:00", matin: 103, apresmidi: 160 },
-  { date: "2025-05-05T17:00:00", matin: 446, apresmidi: 400 },
-  { date: "2025-05-05T18:00:00", matin: 385, apresmidi: 320 },
-  { date: "2025-05-05T19:00:00", matin: 438, apresmidi: 480 },
-  { date: "2025-05-05T20:00:00", matin: 155, apresmidi: 200 },
-  { date: "2025-05-05T23:00:00", matin: 92, apresmidi: 150 },
-]
-
-// Configuration des couleurs pour le graphique
-const chartColors = {
-  matin: {
-    stroke: "#2563eb", // blue-600
-    fill: "#93c5fd", // blue-300
-  },
-  apresmidi: {
-    stroke: "#7c3aed", // violet-600 
-    fill: "#c4b5fd", // violet-300
-  },
-}
-
-type TimeRange = "today" | "in3days" | "in5days";
-type ViewMode = "day" | "hour";
-
-export function ChartAllData(): React.JSX.Element {
-  const [timeRange, setTimeRange] = React.useState<TimeRange>("today");
-  const [viewMode, setViewMode] = React.useState<ViewMode>("hour");
-  const [, setPreviousTimeRange] = React.useState<TimeRange>("today");
-
-  // Déterminer si les étiquettes de l'axe X doivent être inclinées
-  // On incline pour les petits écrans et en mode "5 prochains jours"
-  const [shouldRotateLabels, setShouldRotateLabels] = React.useState<boolean>(
-    timeRange === "in5days" || window?.innerWidth < 768
-  );
-
-  // Effet pour détecter la taille de l'écran et ajuster la rotation des étiquettes
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
+// Fonction pour obtenir la couleur basée sur le niveau de risque
+const getHazardLevelColor = (level: number | null): string => {
+    if (level === null) return "#94a3b8"; // Gris par défaut
     
-    const handleResize = () => {
-      setShouldRotateLabels(timeRange === "in5days" || window.innerWidth < 768);
+    switch(level) {
+        case 0: return "#e5e7eb"; // Gris clair - Niveau 0
+        case 1: return "#51a336"; // Vert - Niveau 1
+        case 2: return "#ebe102"; // Jaune - Niveau 2
+        case 3: return "#f97316"; // Orange - Niveau 3
+        case 4: return "#b91c1c"; // Rouge foncé - Niveau 4
+        default: return "#94a3b8"; // Gris par défaut
+    }
+};
+
+// Fonction pour formater la date pour l'axe des abscisses
+// Format "MM-DD HH" comme dans l'image de référence
+const formatXAxisDate = (date: Date): string => {
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hour = date.getHours().toString().padStart(2, '0');
+    return `${month}-${day} ${hour}`;
+};
+
+// Composant personnalisé pour le tooltip
+const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+        // Récupérer les données du point
+        const attendancePercent = payload[0]?.value;
+        const hazardLevel = payload.length > 1 && payload[0]?.payload?.hazardLevel !== undefined
+            ? payload[0].payload.hazardLevel
+            : null;
+        
+        // Récupérer la date complète
+        const item = payload[0].payload;
+        const dateObj = item?.originalDate instanceof Date ? item.originalDate : new Date();
+        
+        // Formater la date pour afficher le jour et l'heure
+        const formattedDate = dateObj.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Formater l'heure
+        const formattedTime = dateObj.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // Première lettre en majuscule
+        const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+
+        // Description du niveau de risque
+        const hazardDescription = hazardLevel !== null ? [
+            "Très faible",
+            "Faible",
+            "Modéré",
+            "Élevé",
+            "Très élevé"
+        ][hazardLevel] : "Non disponible";
+
+        return (
+            <div className="bg-slate-100 p-3 border border-gray-200 shadow-md rounded-md">
+                <p className="font-bold">{capitalizedDate}</p>
+                <p className="text-sm text-gray-600">{formattedTime}</p>
+                <div className="mt-2">
+                    <p>Fréquentation: <strong>{attendancePercent?.toFixed(1)}%</strong></p>
+                    {hazardLevel !== null && (
+                        <p className="mt-1">
+                            Niveau de risque: <span style={{ color: getHazardLevelColor(hazardLevel) }}>
+                                <strong>{hazardDescription} (Niveau {hazardLevel})</strong>
+                            </span>
+                        </p>
+                    )}
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
+
+// Fonction pour créer des formes personnalisées pour les niveaux de risque
+const createLevelShape = (level: number) => {
+    return (props: ShapeProps) => {
+        const { cx = 0, cy = 0, payload } = props;
+        
+        // Si le niveau de risque correspond, afficher le point
+        if (payload?.hazardLevel === level) {
+            return (
+                <circle 
+                    cx={cx} 
+                    cy={cy} 
+                    r={5} 
+                    fill={getHazardLevelColor(level)}
+                    stroke="#fff"
+                    strokeWidth={1}
+                />
+            );
+        }
+        
+        // Si le niveau ne correspond pas, retourner un élément vide au lieu de null
+        return <circle cx={0} cy={0} r={0} opacity={0} />;
     };
+};
+
+export function ChartAllData() {
+    // État pour la vue temporelle actuelle
+    const [activeView, setActiveView] = useState<TimeView>("today");
     
-    // Configuration initiale
-    handleResize();
-    
-    // Ajout de l'écouteur d'événement
-    window.addEventListener('resize', handleResize);
-    
-    // Nettoyage
-    return () => {
-      window.removeEventListener('resize', handleResize);
+    // Utiliser le hook pour récupérer les données
+    const { 
+        attendanceValues: originalAttendanceValues, 
+        hazardLevels, 
+        dates, 
+        isLoading, 
+        error 
+    } = useBeachAttendanceData();
+
+    // Si les données sont en cours de chargement, afficher un indicateur
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-96 w-full bg-white/50 rounded-lg shadow-sm">
+                <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-3"></div>
+                    <span className="text-gray-600 font-medium">Chargement des données...</span>
+                </div>
+            </div>
+        );
+    }
+
+    // Si une erreur s'est produite, afficher un message d'erreur
+    if (error) {
+        return (
+            <div className="flex justify-center items-center h-96 w-full bg-white/50 rounded-lg shadow-sm">
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200 max-w-md">
+                    <h3 className="text-red-700 font-medium text-lg mb-2">Erreur de chargement</h3>
+                    <p className="text-red-600">{error}</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Fonction pour filtrer les données selon la vue temporelle sélectionnée
+    const filterDataByTimeView = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Dates limites pour chaque vue
+        const limitDate = new Date(today);
+        switch (activeView) {
+            case "today":
+                limitDate.setDate(today.getDate() + 1); // aujourd'hui seulement
+                break;
+            case "plus3days":
+                limitDate.setDate(today.getDate() + 3); // +3 jours
+                break;
+            case "plus5days":
+                limitDate.setDate(today.getDate() + 5); // +5 jours
+                break;
+        }
+        
+        // Filtrer les données selon la limite de date
+        return dates.map((date, index) => {
+            // Ne garder que les données jusqu'à la date limite
+            if (date <= limitDate) {
+                return {
+                    index,
+                    date
+                };
+            }
+            return null;
+        }).filter(item => item !== null) as { index: number; date: Date }[];
     };
-  }, [timeRange]);
 
-  // Gestionnaire pour le changement de plage temporelle
-  const handleTimeRangeChange = (value: string) => {
-    const newTimeRange = value as TimeRange;
+    // Filtrer les données selon la vue temporelle active
+    const filteredDateIndices = filterDataByTimeView();
+    
+    // Convertir les valeurs de fréquentation de visiteurs (0-500) en pourcentage (0-100)
+    const attendanceValues = originalAttendanceValues.map(value => 
+        value !== null ? (value / 500) * 100 : null
+    );
 
-    // Sauvegarder l'ancienne valeur avant de la modifier
-    setPreviousTimeRange(timeRange);
+    // Préparer les données filtrées pour le graphique
+    const chartData = filteredDateIndices.map(({ index }) => {
+        const date = dates[index];
+        const attendancePercent = attendanceValues[index] !== undefined ? attendanceValues[index] : null;
+        const hazardLevel = hazardLevels[index] !== undefined ? hazardLevels[index] : null;
+        
+        // Formater la date pour l'axe X
+        const xAxisDate = date instanceof Date ? formatXAxisDate(date) : "";
+        
+        return {
+            xAxisDate,
+            beachAttendance: attendancePercent,
+            hazardLevel: hazardLevel,
+            // Stocker la date originale pour l'affichage dans le tooltip
+            originalDate: date,
+            // Pour les séries scatter, on affiche un point à chaque niveau de danger
+            scatterPoint: attendancePercent  // Même valeur que beachAttendance pour le positionnement
+        };
+    });
 
-    // Si on sélectionne "today" (Aujourd'hui), forcer le mode de vue à "hour"
-    if (newTimeRange === "today") {
-      setViewMode("hour");
-    }
+    return (
+        <div className="flex flex-col gap-4 w-full h-full" style={{ minHeight: '600px' }}>
+            <div className="flex flex-col mb-4 px-2">
+                <h2 className="text-xl font-semibold mb-2">Fréquentation des plages</h2>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold">Période :</span>
+                    <Select
+                        value={activeView}
+                        onValueChange={(value) => setActiveView(value as TimeView)}
+                    >
+                        <SelectTrigger className="w-[180px] bg-slate-50">
+                            <SelectValue placeholder="Sélectionner une période" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="today">Aujourd'hui</SelectItem>
+                            <SelectItem value="plus3days">+3 jours</SelectItem>
+                            <SelectItem value="plus5days">+5 jours</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+            
+            <ChartContainer config={chartConfig} className="h-[500px] w-full bg-white p-2 rounded-lg">
+                <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart
+                        data={chartData}
+                        margin={{
+                            top: 20,
+                            right: 30,
+                            left: 20,
+                            bottom: 50,
+                        }}
+                        style={{ backgroundColor: 'white' }}
+                        className="text-base"
+                    >
+                        <defs>
+                            {/* Gradient horizontal pour le contour de la ligne */}
+                            <linearGradient id="attendanceGradient" x1="0" y1="0" x2="1" y2="0">
+                                {chartData.map((item, index) => {
+                                    // Calculer la position relative dans le gradient
+                                    const offset = `${(index / Math.max(1, chartData.length - 1)) * 100}%`;
+                                    return (
+                                        <stop
+                                            key={index}
+                                            offset={offset}
+                                            stopColor={getHazardLevelColor(item.hazardLevel)}
+                                            stopOpacity={1}
+                                        />
+                                    );
+                                })}
+                            </linearGradient>
+                            
+                            {/* Gradients verticaux pour l'aire sous la courbe */}
+                            {chartData.map((item, index) => (
+                                <linearGradient
+                                    key={`fill-${index}`}
+                                    id={`attendanceFillGradient-${index}`}
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                >
+                                    <stop offset="0%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.8} />
+                                    <stop offset="100%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.1} />
+                                </linearGradient>
+                            ))}
+                            
+                            {/* Pattern qui combine les gradients verticaux */}
+                            <pattern id="attendancePattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
+                                {chartData.map((_, index, arr) => {
+                                    // Calculer la largeur de chaque segment
+                                    const width = index < arr.length - 1
+                                        ? (1 / (arr.length - 1)) * 100
+                                        : (1 / arr.length) * 100;
+                                    
+                                    return (
+                                        <rect
+                                            key={index}
+                                            x={`${(index / (arr.length - 1)) * 100}%`}
+                                            y="0"
+                                            width={`${width}%`}
+                                            height="100%"
+                                            fill={`url(#attendanceFillGradient-${index})`}
+                                        />
+                                    );
+                                })}
+                            </pattern>
+                        </defs>
 
-    // Mettre à jour la plage temporelle
-    setTimeRange(newTimeRange);
-  };
-
-  // Gestionnaire pour le changement de mode de vue
-  const handleViewModeChange = (value: string) => {
-    setViewMode(value as ViewMode);
-  };
-
-  // Préparation des données 
-  const processedData = React.useMemo<ChartDataItem[]>(() => {
-    // Pour les besoins de la démonstration, nous utilisons une date fixe
-    // plutôt que new Date() car nos données sont sur une période spécifique
-
-    // En fonction du mode de vue et de la plage temporelle
-    if (viewMode === "hour") {
-      // En mode horaire
-      if (timeRange === "today") {
-        // Pour "aujourd'hui", montrer seulement les données de ce jour
-        const targetDate = new Date("2025-05-05");
-        const targetDateStr = targetDate.toISOString().split('T')[0]; // "2025-05-05"
-
-        return chartData.filter(item => {
-          return item.date.startsWith(targetDateStr);
-        });
-      } else if (timeRange === "in3days") {
-        // Pour "3 prochains jours", montrer les données horaires des 3 jours
-        const relevantDays = ["2025-05-03", "2025-05-04", "2025-05-05"];
-
-        return chartData.filter(item => {
-          const itemDateStr = item.date.split('T')[0];
-          return relevantDays.includes(itemDateStr);
-        });
-      } else { // "in5days"
-        // Pour "5 prochains jours", montrer les données horaires des 5 jours
-        const relevantDays = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05"];
-
-        return chartData.filter(item => {
-          const itemDateStr = item.date.split('T')[0];
-          return relevantDays.includes(itemDateStr);
-        });
-      }
-    } else {
-      // Mode jour - Utiliser les MAXIMUMS journaliers au lieu des moyennes
-      let startDate: Date;
-
-      if (timeRange === "today") {
-        startDate = new Date("2025-05-05");
-      } else if (timeRange === "in3days") {
-        startDate = new Date("2025-05-03");
-      } else { // "in5days"
-        startDate = new Date("2025-05-01");
-      }
-
-      // Uniquement montrer les jours complets dans nos données
-      const daysToShow = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05"];
-
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const startIndex = daysToShow.indexOf(startDateStr);
-
-      if (startIndex >= 0) {
-        const relevantDays = daysToShow.slice(startIndex);
-
-        // Créer un tableau agrégé par jour
-        const dailyData = relevantDays.map(day => {
-          // Filtrer les entrées pour ce jour
-          const dayEntries = chartData.filter(item => item.date.startsWith(day));
-
-          // Calculer les MAXIMUMS pour ce jour (au lieu des moyennes)
-          const matinMax = Math.max(...dayEntries.map(entry => entry.matin));
-          const apresmidiMax = Math.max(...dayEntries.map(entry => entry.apresmidi));
-
-          return {
-            date: `${day}T12:00:00`, // Midi pour représenter le jour
-            matin: matinMax,
-            apresmidi: apresmidiMax
-          };
-        });
-
-        return dailyData;
-      }
-
-      return [];
-    }
-  }, [timeRange, viewMode]);
-
-  // Effet pour s'assurer que la vue "aujourd'hui" est toujours en mode horaire
-  React.useEffect(() => {
-    if (timeRange === "today" && viewMode !== "hour") {
-      setViewMode("hour");
-    }
-  }, [timeRange, viewMode]);
-
-  // Fonction pour formater les étiquettes de date/heure
-  const formatAxisLabel = (dateStr: string): string => {
-    const date = new Date(dateStr);
-
-    if (viewMode === "hour") {
-      // Format horaire HH:MM
-      return date.toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
-    } else {
-      // Format date JJ/MM
-      return date.toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit"
-      });
-    }
-  };
-
-  // Déterminer si le sélecteur de vue doit être affiché
-  // Pour l'option "today", nous ne proposons que la vue horaire
-  const showViewModeSelector = timeRange !== "today";
-
-  return (
-    <div className="w-full mx-auto">
-      <Card>
-        <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-          <div className="grid flex-1 gap-1 text-center sm:text-left">
-            <CardTitle>Fréquentation des plages</CardTitle>
-            <CardDescription>
-              {viewMode === "hour"
-                ? "Visualisation de la fréquentation horaire"
-                : "Visualisation de la fréquentation journalière (valeurs maximales)"}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            {showViewModeSelector && (
-              <Select value={viewMode} onValueChange={handleViewModeChange}>
-                <SelectItem value="hour">Vue horaire</SelectItem>
-                <SelectItem value="day">Vue journalière</SelectItem>
-              </Select>
-            )}
-            <Select value={timeRange} onValueChange={handleTimeRangeChange}>
-              <SelectItem value="in5days">5 prochains jours</SelectItem>
-              <SelectItem value="in3days">3 prochains jours</SelectItem>
-              <SelectItem value="today">Aujourd'hui</SelectItem>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          <div className="aspect-auto h-[400px] w-full">
-            {processedData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={processedData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: shouldRotateLabels ? 40 : 0 }}
-                >
-                  <defs>
-                    <linearGradient id="colorMatin" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={chartColors.matin.fill} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={chartColors.matin.fill} stopOpacity={0.1} />
-                    </linearGradient>
-                    <linearGradient id="colorApresmidi" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={chartColors.apresmidi.fill} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={chartColors.apresmidi.fill} stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={shouldRotateLabels ? 20 : 8}
-                    minTickGap={viewMode === "hour" ? (shouldRotateLabels ? 30 : 50) : 20}
-                    tickFormatter={formatAxisLabel}
-                    interval={viewMode === "hour" ? (shouldRotateLabels ? 3 : 2) : 0}
-                    angle={shouldRotateLabels ? -45 : 0}
-                    textAnchor={shouldRotateLabels ? "end" : "middle"}
-                    height={shouldRotateLabels ? 60 : 30}
-                    fontSize={shouldRotateLabels ? 10 : 12}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
-                  <Tooltip
-                    formatter={(value: number, name: string) => [
-                      `${value} visiteurs`,
-                      name === "matin" ? "Matin" : "Après-midi"
-                    ]}
-                    labelFormatter={(value: string) => {
-                      const date = new Date(value);
-                      if (viewMode === "hour") {
-                        // Format horaire détaillé
-                        return `${date.toLocaleDateString("fr-FR", {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long"
-                        })} à ${date.toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}`;
-                      } else {
-                        // Format jour uniquement
-                        return date.toLocaleDateString("fr-FR", {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric"
-                        });
-                      }
-                    }}
-                  />
-                  <Legend
-                    verticalAlign="top"
-                    height={36}
-                    formatter={(value: string) => (value === "matin" ? "Fréquentation matin" : "Fréquentation après-midi")}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="matin"
-                    name="matin"
-                    stroke={chartColors.matin.stroke}
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorMatin)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="apresmidi"
-                    name="apresmidi"
-                    stroke={chartColors.apresmidi.stroke}
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorApresmidi)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <p className="text-gray-400">Aucune donnée disponible pour la période sélectionnée</p>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 text-sm text-center text-gray-500">
-            <p>Les données affichées représentent la fréquentation des plages durant la saison estivale 2025.</p>
-            <p className="mt-1">Source: Relevés de fréquentation - Surveillance des plages 2025</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                            dataKey="xAxisDate"
+                            tickLine={false}
+                            axisLine={true}
+                            tickMargin={8}
+                            label={{ value: 'Date/Heure', position: 'insideBottom', offset: -5 }}
+                            tick={{ fontSize: 11 }}
+                            height={60}
+                            interval={0}
+                            angle={-45}
+                            textAnchor="end"
+                        />
+                        <YAxis
+                            domain={[0, 100]} // Domaine en pourcentage (0-100%)
+                            tickCount={6}
+                            tickLine={false}
+                            axisLine={true}
+                            tickMargin={8}
+                            label={{ value: 'Fréquentation (%)', angle: -90, position: 'insideLeft', dx: -5 }}
+                            fontSize={12}
+                        />
+                        <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
+                        <Legend align="right" verticalAlign="top" iconSize={12} wrapperStyle={{ paddingBottom: 10 }} />
+                        
+                        {/* Ligne continue de fréquentation avec gradient de couleur */}
+                        <Line
+                            type="monotone"
+                            dataKey="beachAttendance"
+                            stroke="url(#attendanceGradient)"
+                            fill="url(#attendancePattern)"
+                            strokeWidth={3}
+                            dot={{ r: 1 }}
+                            activeDot={(props: any) => {
+                                const { cx, cy, payload } = props;
+                                // Obtenir la couleur en fonction du niveau de risque
+                                const color = getHazardLevelColor(payload.hazardLevel);
+                                return (
+                                    <g>
+                                        {/* Cercle extérieur blanc */}
+                                        <circle cx={cx} cy={cy} r={7} fill="white" />
+                                        {/* Cercle intérieur coloré */}
+                                        <circle cx={cx} cy={cy} r={5} fill={color} />
+                                    </g>
+                                );
+                            }}
+                            name="Prévision d'affluence"
+                        />
+                        
+                        {/* Points colorés par niveau de risque */}
+                        {[0, 1, 2, 3, 4].map(level => {
+                            const levelNames = [
+                                "Risque très faible",
+                                "Risque faible",
+                                "Risque modéré",
+                                "Risque élevé",
+                                "Risque très élevé"
+                            ];
+                            return (
+                                <Scatter
+                                    key={`level-${level}`}
+                                    name={levelNames[level]}
+                                    dataKey="scatterPoint"
+                                    fill={getHazardLevelColor(level)}
+                                    shape={createLevelShape(level)}
+                                    legendType="circle"
+                                />
+                            );
+                        })}
+                    </ComposedChart>
+                </ResponsiveContainer>
+            </ChartContainer>
+        </div>
+    );
 }

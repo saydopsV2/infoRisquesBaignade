@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
-import { StandaloneChart } from "./Chart";
+import { TemperatureChart } from "./TemperatureChart";
 import { ChartAllData } from "./ChartAllData";
 import Bilan from "./Bilan";
-import { SecurityIndexChart } from "./SecurityIndexChart";
+import { ShoreBreakHazardChart } from "./ShoreBreakHazardChart";
 import { useWeather } from "../context/WeatherContext";
-import { useShoreBreakData } from "../hooks/useShoreBreakData"; // Import du nouveau hook
-import { BarChart } from "./BarChart";
+import { useShoreBreakData } from "../hooks/useShoreBreakData";
+import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData"; // Import du nouveau hook
+import { BeachAttendanceBarChart } from "./BeachAttendanceBarChart";
 import Toggle from "./Toggle";
+import { RipCurrentHazardChart } from "./RipCurrentHazardChart"; // Import du composant RipCurrentHazardChart
+import { useRipCurrentData } from "../hooks/useRipCurrentData"; // Import du hook pour les données de courant d'arrachement
 
 interface TabProps {
-    tabAllDataPlot: string;
-    tabForecastPlot: string;
     tabBeach: Beach;
 }
 
@@ -53,7 +54,26 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     }, []);
 
     // Utiliser le hook useShoreBreakData pour obtenir les indices shore break
-    const { indices: shoreBreakIndices, dates: shoreBreakDates, isLoading: shoreBreakLoading, error: shoreBreakError } = useShoreBreakData();
+    const {
+        indices: shoreBreakIndices,
+        dates: shoreBreakDates,
+        isLoading: shoreBreakLoading,
+        error: shoreBreakError
+    } = useShoreBreakData();
+
+    // Utiliser le hook useRipCurrentData pour obtenir les données de courant d'arrachement
+    const {
+        velocities: ripCurrentVelocities,
+        hazardLevels: ripCurrentHazardLevels,
+        isLoading: ripCurrentLoading,
+        error: ripCurrentError
+    } = useRipCurrentData();
+
+    // Utiliser notre nouveau hook pour obtenir les données de fréquentation
+    const {
+        isLoading: attendanceLoading,
+        error: attendanceError
+    } = useBeachAttendanceData();
 
     // Utiliser le contexte weather pour obtenir les heures
     const { hours } = useWeather();
@@ -99,6 +119,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // Pour la visualisation, utiliser soit les dates du shore break soit les heures du contexte météo
     const displayHours = shoreBreakDates.length > 0 ? shoreBreakDates : hours;
 
+
     return (
         <div className="tabs tabs-lift w-full max-w-full flex flex-wrap">
             <input
@@ -137,24 +158,28 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                         <div className="w-full">
                             <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
                             <Toggle
-                                leftLabel="Histogrammes"
-                                rightLabel="Courbes"
+                                leftLabel="Courbes"
+                                rightLabel="Histogrammes"
                                 isChecked={previsionChartType === 'line'}
                                 onChange={togglePrevisionChartType}
                                 className="m-2 ml-2 w-53"
                             />
-                            {previsionChartType === 'bar' ? (
-                                <BarChart
-                                    title="Fréquentation des plages"
-                                    description="Nombre de visiteurs par période"
-                                    dataKeys={["morning", "afternoon"]}
-                                />
+                            {attendanceLoading ? (
+                                <div className="h-[300px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données de fréquentation...</p>
+                                </div>
+                            ) : attendanceError ? (
+                                <div className="h-[300px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {attendanceError}</p>
+                                </div>
+                            ) : previsionChartType !== 'bar' ? (
+                                <BeachAttendanceBarChart/>
                             ) : (
                                 <ChartAllData />
                             )}
                         </div>
                         <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Indice Shore Break</h3>
+                            <h3 className="text-lg font-semibold mb-2">Indice Risques Shore Break</h3>
                             {shoreBreakLoading ? (
                                 <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
                                     <p>Chargement des données...</p>
@@ -164,12 +189,32 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                     <p>Erreur: {shoreBreakError}</p>
                                 </div>
                             ) : (
-                                <SecurityIndexChart hours={displayHours} indices={shoreBreakIndices} />
+                                <ShoreBreakHazardChart hours={displayHours} indices={shoreBreakIndices} />
                             )}
                         </div>
+
+                        <div className="w-full bg-white rounded shadow-md p-4">
+                            <h3 className="text-lg font-semibold mb-2">Risque Courant d'Arrachement</h3>
+                            {ripCurrentLoading ? (
+                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données de courant...</p>
+                                </div>
+                            ) : ripCurrentError ? (
+                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {ripCurrentError}</p>
+                                </div>
+                            ) : (
+                                <RipCurrentHazardChart 
+                                    hours={displayHours} 
+                                    velocities={ripCurrentVelocities} 
+                                    hazardLevels={ripCurrentHazardLevels} 
+                                />
+                            )}
+                        </div>
+                        
                         <div className="w-full bg-white rounded shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-2">Températures</h3>
-                            <StandaloneChart />
+                            <TemperatureChart />
                         </div>
                     </div>
                 </div>
@@ -184,7 +229,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 onChange={() => handleTabChange("frequentation")}
             />
             <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <div className="flex items-center  flex-wrap gap-2 mb-4">
+                <div className="flex items-center flex-wrap gap-2 mb-4">
                     <h2 className="text-xl font-bold text-slate-950">Fréquentation des plages</h2>
                     <Toggle
                         leftLabel="Courbes"
@@ -196,15 +241,19 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 </div>
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex justify-center w-full">
-                        {chartType === 'line' ? (
+                        {attendanceLoading ? (
+                            <div className="h-[300px] w-full flex items-center justify-center bg-slate-100 rounded">
+                                <p>Chargement des données de fréquentation...</p>
+                            </div>
+                        ) : attendanceError ? (
+                            <div className="h-[300px] w-full flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                <p>Erreur: {attendanceError}</p>
+                            </div>
+                        ) : chartType === 'line' ? (
                             <ChartAllData />
                         ) : (
                             <div className="w-full">
-                                <BarChart
-                                    title="Fréquentation des plages"
-                                    description="Nombre de visiteurs par période"
-                                    dataKeys={["morning", "afternoon"]}
-                                />
+                                <BeachAttendanceBarChart/>
                             </div>
                         )}
                     </div>

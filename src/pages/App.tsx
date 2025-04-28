@@ -3,8 +3,6 @@ import './App.css';
 import NavBar from '../components/NavBar';
 import BeachForecast from '../components/BeachForecast';
 import Home from '../components/Home';
-import allDataPlotImg from '/public/img/vue_saison.jpg';
-import forecastPlotImg from '/public/img/vue_semaine.jpg';
 import Footer from '../components/Footer';
 import Beach from '../interface/Beach';
 import { WindForecastProvider } from '../context/WindForecastContext';
@@ -30,8 +28,8 @@ function App() {
           <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
-            <Route path="/biscarrosse" element={<BeachForecast beach={biscarosse} forecastPlot={forecastPlotImg} allDataPlot={allDataPlotImg} />} />
+            <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche}   />} />
+            <Route path="/biscarrosse" element={<BeachForecast beach={biscarosse} />} />
           </Routes>
           <Footer />
         </Router>
