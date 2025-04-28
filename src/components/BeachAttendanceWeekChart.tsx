@@ -253,7 +253,11 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
     // Préparer les données filtrées pour le graphique
     const chartData = filteredDateIndices.map(({ index }) => {
         const date = dates[index];
-        const attendancePercent = attendanceValues[index] !== undefined ? attendanceValues[index] : null;
+        // Si la valeur est 0, on la remplace par null pour couper la ligne
+        const rawAttendancePercent = attendanceValues[index];
+        const attendancePercent = (rawAttendancePercent !== undefined && rawAttendancePercent !== 0) 
+            ? rawAttendancePercent 
+            : null;
         const hazardLevel = hazardLevels[index] !== undefined ? hazardLevels[index] : null;
         
         // Formater la date pour l'axe X
@@ -265,8 +269,9 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
             hazardLevel: hazardLevel,
             // Stocker la date originale pour l'affichage dans le tooltip
             originalDate: date,
-            // Pour les séries scatter, on affiche un point à chaque niveau de danger
-            scatterPoint: attendancePercent  // Même valeur que beachAttendance pour le positionnement
+            // Pour les séries scatter, on n'affiche pas de point quand attendancePercent est null (donc à 0)
+            // En utilisant null pour scatterPoint, les points ne seront pas rendus pour les valeurs à 0
+            scatterPoint: attendancePercent
         };
     });
 
