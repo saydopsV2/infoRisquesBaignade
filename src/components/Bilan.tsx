@@ -449,7 +449,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
               </span>
             </p>
             <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Courant d'arrachement:</span>
+              <span className="font-medium">Courant de Baïne:</span>
               <span className={getHazardLevelColor(data11AM.ripCurrentHazardLevel)}>
                 {data11AM.ripCurrentHazardLevel !== null ? data11AM.ripCurrentHazardLevel : "-"}
               </span>

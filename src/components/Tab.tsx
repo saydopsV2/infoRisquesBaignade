@@ -151,7 +151,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex flex-col space-y-8">
                         <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Risque Courant d'Arrachement</h3>
+                            <h3 className="text-lg font-semibold mb-2">Risque Courant de Baïne</h3>
                             {ripCurrentLoading ? (
                                 <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
                                     <p>Chargement des données de courant...</p>

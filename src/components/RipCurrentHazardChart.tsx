@@ -18,7 +18,7 @@ interface RipCurrentChartProps {
 // Configuration du graphique
 const chartConfig = {
     ripCurrentVelocity: {
-        label: "Courant d'arrachement",
+        label: "Courant de baïne",
         color: "hsl(var(--chart-3))",
     },
 } satisfies ChartConfig;
@@ -248,7 +248,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                             fill="url(#ripCurrentPattern)"
                             fillOpacity={1}
                             strokeWidth={2}
-                            name="Courant d'arrachement"
+                            name="Courant de baïne"
                             activeDot={(props) => {
                                 const { cx, cy, payload } = props;
                                 // Obtenir la couleur en fonction de la valeur de vitesse
