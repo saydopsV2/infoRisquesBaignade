@@ -12,6 +12,7 @@ interface ShoreBreakHazardChartProps {
     hours: Date[];
     indices: number[];
     inTable?: boolean;
+    showDayNightZones?: boolean; // Nouvelle prop pour contrôler l'affichage des zones grisées
 }
 
 // Configuration du graphique
@@ -134,7 +135,12 @@ const DayNightZones = () => {
 };
 
 // Composant du graphique d'indice de sécurité
-export function ShoreBreakHazardChart({ hours, indices, inTable = false }: ShoreBreakHazardChartProps) {
+export function ShoreBreakHazardChart({ 
+    hours, 
+    indices, 
+    inTable = false, 
+    showDayNightZones = true // Valeur par défaut à true pour maintenir le comportement actuel
+}: ShoreBreakHazardChartProps) {
     // Préparer les données pour le graphique en combinant heures et indices
     const chartData = hours.map((hour, index) => {
         const shoreBreakIndex = indices[index] !== undefined ? indices[index] : null;
@@ -260,8 +266,8 @@ export function ShoreBreakHazardChart({ hours, indices, inTable = false }: Shore
                 </ResponsiveContainer>
             </ChartContainer>
             
-            {/* Zones grisées en dehors de 11h-20h */}
-            <DayNightZones />
+            {/* Afficher les zones grisées seulement si showDayNightZones est true */}
+            {showDayNightZones && <DayNightZones />}
         </div>
     );
 }

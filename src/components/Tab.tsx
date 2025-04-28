@@ -7,8 +7,6 @@ import { ShoreBreakHazardChart } from "./ShoreBreakHazardChart";
 import { useWeather } from "../context/WeatherContext";
 import { useShoreBreakData } from "../hooks/useShoreBreakData";
 import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData"; // Import du nouveau hook
-import { BeachAttendanceBarChart } from "./BeachAttendanceBarChart";
-import Toggle from "./Toggle";
 import { RipCurrentHazardChart } from "./RipCurrentHazardChart"; // Import du composant RipCurrentHazardChart
 import { useRipCurrentData } from "../hooks/useRipCurrentData"; // Import du hook pour les données de courant d'arrachement
 
@@ -80,17 +78,6 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // États pour gérer les onglets actifs
     const [activeTab, setActiveTab] = useState<string>("tableau");
 
-    
-
-    // État pour gérer le type de graphique dans l'onglet Prévisions
-    const [previsionChartType, setPrevisionChartType] = useState<'line' | 'bar'>('bar');
-
-    
-
-    // Fonction pour basculer entre les types de graphiques (prévisions)
-    const togglePrevisionChartType = () => {
-        setPrevisionChartType(prevType => prevType === 'line' ? 'bar' : 'line');
-    };
 
     // Définition des classes pour les onglets basées sur l'état actif
     const getTabClass = (tabName: string) => {
@@ -161,10 +148,11 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                     <p>Erreur: {ripCurrentError}</p>
                                 </div>
                             ) : (
-                                <RipCurrentHazardChart 
-                                    hours={displayHours} 
-                                    velocities={ripCurrentVelocities} 
-                                    hazardLevels={ripCurrentHazardLevels} 
+                                <RipCurrentHazardChart
+                                    hours={displayHours}
+                                    velocities={ripCurrentVelocities}
+                                    hazardLevels={ripCurrentHazardLevels}
+                                    inTable={false}
                                 />
                             )}
                         </div>
@@ -179,20 +167,16 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                     <p>Erreur: {shoreBreakError}</p>
                                 </div>
                             ) : (
-                                <ShoreBreakHazardChart hours={displayHours} indices={shoreBreakIndices} />
+                                <ShoreBreakHazardChart 
+                                    hours={displayHours}
+                                    indices={shoreBreakIndices}
+                                    inTable={false} />
                             )}
                         </div>
 
-                        
+
                         <div className="w-full">
                             <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
-                            <Toggle
-                                leftLabel="Courbes"
-                                rightLabel="Histogrammes"
-                                isChecked={previsionChartType === 'line'}
-                                onChange={togglePrevisionChartType}
-                                className="m-2 ml-2 w-53"
-                            />
                             {attendanceLoading ? (
                                 <div className="h-[300px] flex items-center justify-center bg-slate-100 rounded">
                                     <p>Chargement des données de fréquentation...</p>
@@ -201,8 +185,6 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                 <div className="h-[300px] flex items-center justify-center bg-red-100 text-red-700 rounded">
                                     <p>Erreur: {attendanceError}</p>
                                 </div>
-                            ) : previsionChartType !== 'bar' ? (
-                                <BeachAttendanceBarChart/>
                             ) : (
                                 <ChartAllData />
                             )}

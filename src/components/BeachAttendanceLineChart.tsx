@@ -141,7 +141,7 @@ const createLevelShape = (level: number) => {
 
 export function ChartAllData() {
     // État pour la vue temporelle actuelle
-    const [activeView, setActiveView] = useState<TimeView>("today");
+    const [activeView, setActiveView] = useState<TimeView>("plus5days");
     
     // Utiliser le hook pour récupérer les données
     const { 
@@ -250,22 +250,22 @@ export function ChartAllData() {
                             <SelectValue placeholder="Sélectionner une période" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="today">Aujourd'hui</SelectItem>
-                            <SelectItem value="plus3days">+3 jours</SelectItem>
                             <SelectItem value="plus5days">+4 jours</SelectItem>
+                            <SelectItem value="plus3days">+3 jours</SelectItem>
+                            <SelectItem value="today">Aujourd'hui</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
             </div>
             
-            <ChartContainer config={chartConfig} className="h-[300px] w-full bg-white p-1 rounded-lg">
+            <ChartContainer config={chartConfig} className="h-[450px] md:h-[600px] w-full bg-white p-1 rounded-lg">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                         data={chartData}
                         margin={{
                             top: 20,
                             right: 30,
-                            left: 20,
+                            left: 0,
                             bottom: 50,
                         }}
                         style={{ backgroundColor: 'white' }}
