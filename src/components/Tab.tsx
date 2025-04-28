@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
-import { StandaloneChart } from "./Chart";
+import { TemperatureChart } from "./TemperatureChart";
 import { ChartAllData } from "./ChartAllData";
 import Bilan from "./Bilan";
-import { SecurityIndexChart } from "./ShoreBreakHazardChart";
+import { ShoreBreakHazardChart } from "./ShoreBreakHazardChart";
 import { useWeather } from "../context/WeatherContext";
 import { useShoreBreakData } from "../hooks/useShoreBreakData";
 import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData"; // Import du nouveau hook
 import { BeachAttendanceBarChart } from "./BeachAttendanceBarChart";
 import Toggle from "./Toggle";
+import { RipCurrentHazardChart } from "./RipCurrentHazardChart"; // Import du composant RipCurrentHazardChart
+import { useRipCurrentData } from "../hooks/useRipCurrentData"; // Import du hook pour les données de courant d'arrachement
 
 interface TabProps {
     tabBeach: Beach;
@@ -58,6 +60,14 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
         isLoading: shoreBreakLoading,
         error: shoreBreakError
     } = useShoreBreakData();
+
+    // Utiliser le hook useRipCurrentData pour obtenir les données de courant d'arrachement
+    const {
+        velocities: ripCurrentVelocities,
+        hazardLevels: ripCurrentHazardLevels,
+        isLoading: ripCurrentLoading,
+        error: ripCurrentError
+    } = useRipCurrentData();
 
     // Utiliser notre nouveau hook pour obtenir les données de fréquentation
     const {
@@ -169,7 +179,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                             )}
                         </div>
                         <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Indice Shore Break</h3>
+                            <h3 className="text-lg font-semibold mb-2">Indice Risques Shore Break</h3>
                             {shoreBreakLoading ? (
                                 <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
                                     <p>Chargement des données...</p>
@@ -179,12 +189,32 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                     <p>Erreur: {shoreBreakError}</p>
                                 </div>
                             ) : (
-                                <SecurityIndexChart hours={displayHours} indices={shoreBreakIndices} />
+                                <ShoreBreakHazardChart hours={displayHours} indices={shoreBreakIndices} />
                             )}
                         </div>
+
+                        <div className="w-full bg-white rounded shadow-md p-4">
+                            <h3 className="text-lg font-semibold mb-2">Risque Courant d'Arrachement</h3>
+                            {ripCurrentLoading ? (
+                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données de courant...</p>
+                                </div>
+                            ) : ripCurrentError ? (
+                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {ripCurrentError}</p>
+                                </div>
+                            ) : (
+                                <RipCurrentHazardChart 
+                                    hours={displayHours} 
+                                    velocities={ripCurrentVelocities} 
+                                    hazardLevels={ripCurrentHazardLevels} 
+                                />
+                            )}
+                        </div>
+                        
                         <div className="w-full bg-white rounded shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-2">Températures</h3>
-                            <StandaloneChart />
+                            <TemperatureChart />
                         </div>
                     </div>
                 </div>

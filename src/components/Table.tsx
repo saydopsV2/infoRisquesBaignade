@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Beach from '../interface/Beach';
-import { StandaloneChart } from './Chart';
-import { SecurityIndexChart } from './ShoreBreakHazardChart';
+import { TemperatureChart } from './TemperatureChart';
+import { ShoreBreakHazardChart } from './ShoreBreakHazardChart';
 import { RipCurrentHazardChart } from './RipCurrentHazardChart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
@@ -333,7 +333,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
               <tr>
                 <td className={titleCellClass}>Graph. Shore Break</td>
                 <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
-                  <SecurityIndexChart hours={allDisplayHours} indices={safeIndices.slice(0, allDisplayHours.length).map(index => index === null ? 0 : index)} />
+                  <ShoreBreakHazardChart hours={allDisplayHours} indices={safeIndices.slice(0, allDisplayHours.length).map(index => index === null ? 0 : index)} />
                 </td>
               </tr>
               <tr className="h-2">
@@ -409,7 +409,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
               <tr>
                 <td className={titleCellClass}>Graph. Temp.</td>
                 <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
-                  <StandaloneChart />
+                  <TemperatureChart />
                 </td>
               </tr>
               <tr className="bg-blue-50">

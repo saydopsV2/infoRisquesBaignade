@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/chart";
 
 // Interface pour les props
-interface SecurityIndexChartProps {
+interface ShoreBreakHazardChartProps {
     hours: Date[];
     indices: number[];
 }
@@ -79,7 +79,7 @@ const getHazardText = (index: number | null): string => {
 };
 
 // Composant du graphique d'indice de sécurité
-export function SecurityIndexChart({ hours, indices }: SecurityIndexChartProps) {
+export function ShoreBreakHazardChart({ hours, indices }: ShoreBreakHazardChartProps) {
     // Préparer les données pour le graphique en combinant heures et indices
     const chartData = hours.map((hour, index) => {
         const shoreBreakIndex = indices[index] !== undefined ? indices[index] : null;
@@ -129,7 +129,7 @@ export function SecurityIndexChart({ hours, indices }: SecurityIndexChartProps) 
                             ))}
                         </linearGradient>
 
-                        {/* Gradients verticaux pour chaque couleur */}
+                        {/* Gradients verticaux pour chaque couleur
                         {gradientStops.map((stop, index) => (
                             <linearGradient
                                 key={`fill-${index}`}
@@ -142,7 +142,7 @@ export function SecurityIndexChart({ hours, indices }: SecurityIndexChartProps) 
                                 <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
                                 <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
                             </linearGradient>
-                        ))}
+                        ))} */}
                         
                         <pattern id="shoreBreakPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
                             {gradientStops.map((stop, index, arr) => {

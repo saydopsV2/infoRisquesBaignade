@@ -199,7 +199,7 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
 }
 
 // Version standalone qui utilise directement le contexte
-export function StandaloneChart() {
+export function TemperatureChart() {
   const { hours, temperatures, tempUnit } = useWeather();
   
   // Préparer les données pour le graphique en combinant heures et températures
@@ -253,7 +253,7 @@ export function StandaloneChart() {
             </linearGradient>
             
             {/* Créer des gradients verticaux individuels pour chaque couleur */}
-            {gradientStops.map((stop, index) => (
+            {/* {gradientStops.map((stop, index) => (
               <linearGradient 
                 key={`fill-standalone-${index}`}
                 id={`temperatureFillGradientStandalone-${index}`} 
@@ -265,7 +265,7 @@ export function StandaloneChart() {
                 <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
                 <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
               </linearGradient>
-            ))}
+            ))} */}
             
             {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
             <pattern id="temperaturePatternStandalone" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">

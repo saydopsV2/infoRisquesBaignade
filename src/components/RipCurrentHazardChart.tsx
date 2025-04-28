@@ -134,7 +134,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                             ))}
                         </linearGradient>
 
-                        {/* Créer des gradients verticaux individuels pour chaque couleur */}
+                        {/* Créer des gradients verticaux individuels pour chaque couleur
                         {gradientStops.map((stop, index) => (
                             <linearGradient
                                 key={`ripCurrent-fill-${index}`}
@@ -147,7 +147,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                                 <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
                                 <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
                             </linearGradient>
-                        ))}
+                        ))} */}
 
                         {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
                         <pattern id="ripCurrentPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
