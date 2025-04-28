@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Beach from '../interface/Beach';
-import { TemperatureChart } from './TemperatureChart';
 import { ShoreBreakHazardChart } from './ShoreBreakHazardChart';
 import { RipCurrentHazardChart } from './RipCurrentHazardChart';
 import { useWeather } from '../context/WeatherContext';
