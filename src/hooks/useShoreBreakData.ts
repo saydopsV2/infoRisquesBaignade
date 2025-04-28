@@ -158,14 +158,15 @@ export const useShoreBreakData = (): ShoreBreakResult => {
 
             // Filtrer les données pour les 7 prochains jours
             const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+            // Modifier pour commencer à 00h00 de la date courante au lieu de l'heure actuelle
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
 
             // Filtrer les prévisions pour les 7 jours
             const filteredDates: Date[] = [];
             const filteredIndices: number[] = [];
             const filteredHazardLevels: number[] = [];
 
-            // Trouver l'index correspondant à l'heure actuelle ou juste après
+            // Trouver l'index correspondant à minuit de la date actuelle ou juste après
             let startIndex = orderedDates.findIndex(date => date >= today);
             if (startIndex === -1) startIndex = 0;
 

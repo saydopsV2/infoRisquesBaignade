@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Beach from '../interface/Beach';
 import { StandaloneChart } from './Chart';
-import { SecurityIndexChart } from './SecurityIndexChart';
+import { SecurityIndexChart } from './ShoreBreakHazardChart';
 import { RipCurrentHazardChart } from './RipCurrentHazardChart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
@@ -9,6 +9,7 @@ import { useWaveForecast } from '../context/WaveForecastContext';
 import DirectionArrow from './DirectionArrow';
 import { useShoreBreakData } from '../hooks/useShoreBreakData';
 import { useRipCurrentData } from '../hooks/useRipCurrentData';
+import { useBeachAttendanceData } from '../hooks/useBeachAttendanceData';
 
 // Types
 interface TableProps {
@@ -60,9 +61,9 @@ const TableLegend: React.FC = () => {
 
 // Fonction utilitaire pour formater la date
 const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('fr-FR', { 
-    weekday: 'short', 
-    day: 'numeric', 
+  return date.toLocaleDateString('fr-FR', {
+    weekday: 'short',
+    day: 'numeric',
     month: 'short'
   });
 };
@@ -113,18 +114,26 @@ const Table: React.FC<TableProps> = ({ location }) => {
     fetchWaveForecast
   } = useWaveForecast();
 
+  // Utilisation du hook pour obtenir les données de fréquentation des plages
+  const {
+    hazardLevels: attendanceHazardLevels,
+    isLoading: attendanceLoading,
+    error: attendanceError
+  } = useBeachAttendanceData();
+
   useEffect(() => {
     // Générer les dates des 7 prochains jours
     const days: Date[] = [];
     const today = new Date();
-    
+    // Réinitialiser l'heure à minuit pour la date courante
+    today.setHours(0, 0, 0, 0);
+
     for (let i = 0; i < DAYS_TO_DISPLAY; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      date.setHours(0, 0, 0, 0); // Réinitialiser l'heure à minuit
       days.push(date);
     }
-    
+
     setDisplayDays(days);
 
     // Appel à fetchWeatherData lors du montage du composant
@@ -171,7 +180,10 @@ const Table: React.FC<TableProps> = ({ location }) => {
   // Générer les heures pour chaque jour
   const generateHoursForDays = () => {
     const allHours: Date[] = [];
-    
+    const today = new Date();
+    // Réinitialiser l'heure à minuit pour la date courante
+    today.setHours(0, 0, 0, 0);
+
     displayDays.forEach(day => {
       for (let hour = 0; hour < HOURS_PER_DAY; hour++) {
         const dateWithHour = new Date(day);
@@ -179,7 +191,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
         allHours.push(dateWithHour);
       }
     });
-    
+
     return allHours;
   };
 
@@ -199,6 +211,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
   const safeShoreBreakHazardLevels = extendDataArray(shoreBreakHazardLevels);
   const safeVelocities = extendDataArray(velocities);
   const safeRipCurrentHazardLevels = extendDataArray(ripCurrentHazardLevels);
+  const safeAttendanceHazardLevels = extendDataArray(attendanceHazardLevels);
   const safeTemperatures = extendDataArray(temperatures, null);
   const safeUvIndices = extendDataArray(uvIndices, null);
 
@@ -267,11 +280,11 @@ const Table: React.FC<TableProps> = ({ location }) => {
 
   return (
     <div className="w-full bg-slate-100 text-black rounded">
-      {(weatherLoading || windLoading || waveLoading || shoreBreakLoading || ripCurrentLoading) ? (
+      {(weatherLoading || windLoading || waveLoading || shoreBreakLoading || ripCurrentLoading || attendanceLoading) ? (
         <div className="p-4 text-center">Chargement des données...</div>
-      ) : (weatherError || windError || waveError || shoreBreakError || ripCurrentError) ? (
+      ) : (weatherError || windError || waveError || shoreBreakError || ripCurrentError || attendanceError) ? (
         <div className="p-4 bg-red-100 text-red-700 mb-4 rounded-lg">
-          Erreur: {weatherError || windError || waveError || shoreBreakError || ripCurrentError}
+          Erreur: {weatherError || windError || waveError || shoreBreakError || ripCurrentError || attendanceError}
         </div>
       ) : (
         <div className="overflow-x-auto w-full">
@@ -347,13 +360,34 @@ const Table: React.FC<TableProps> = ({ location }) => {
               <tr>
                 <td className={titleCellClass}>Graph. Courant</td>
                 <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
-                  <RipCurrentHazardChart 
-                    hours={allDisplayHours} 
+                  <RipCurrentHazardChart
+                    hours={allDisplayHours}
                     velocities={safeVelocities.slice(0, allDisplayHours.length).map(v => v === null ? 0 : v)}
                     hazardLevels={safeRipCurrentHazardLevels.slice(0, allDisplayHours.length).map(h => h === null ? 0 : h)}
                   />
                 </td>
               </tr>
+              <tr className="h-2">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {allDisplayHours.map((_, index) => (
+                  <td key={`spacer-sb-rip-${index}`} className="border-r bg-gray-300"></td>
+                ))}
+              </tr>
+
+              <tr className="bg-blue-50">
+                <td className={titleCellClass}>Indice Fréquentation</td>
+                {safeAttendanceHazardLevels.map((level, index) => (
+                  index < allDisplayHours.length && (
+                    <td
+                      key={`attendance-hazard-${index}`}
+                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                    >
+                      {level}
+                    </td>
+                  )
+                ))}
+              </tr>
+
               <tr className="h-2">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
                 {allDisplayHours.map((_, index) => (

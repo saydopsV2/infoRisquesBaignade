@@ -227,14 +227,15 @@ export const useBeachAttendanceData = (
 
                         // Filtrer les données pour les prochains jours
                         const now = new Date();
-                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+                        // Modifier pour prendre à partir de 00h00 de la date courante au lieu de l'heure actuelle
+                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
 
                         // Filtrer les prévisions pour les jours configurés
                         const filteredDates: Date[] = [];
                         const filteredAttendance: number[] = [];
                         const filteredHazardLevels: number[] = [];
 
-                        // Trouver l'index correspondant à l'heure actuelle ou juste après
+                        // Trouver l'index correspondant à minuit de la date actuelle ou juste après
                         let startIndex = orderedDates.findIndex(date => date >= today);
                         if (startIndex === -1) startIndex = 0;
 

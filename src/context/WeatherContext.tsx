@@ -71,11 +71,11 @@ export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children }) =>
 
       const data = await response.json() as WeatherData;
 
-      // Get current hour
-      const now = new Date();
-      now.setMinutes(0, 0, 0);
+      // Obtenir la date courante et réinitialiser à minuit (00h00)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      // Parse the API time strings to Date objects to align with current time
+      // Parse the API time strings to Date objects
       const apiTimes = data.hourly.time.map(timeStr => new Date(timeStr));
 
       // Generate hours for all days
@@ -86,8 +86,9 @@ export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children }) =>
       // Generate dates for each day at each hour (7 days * 24 hours)
       for (let day = 0; day < DAYS_TO_DISPLAY; day++) {
         for (let hourOfDay = 0; hourOfDay < HOURS_PER_DAY; hourOfDay++) {
-          const targetHour = new Date(now);
-          targetHour.setHours(now.getHours() + (day * 24) + hourOfDay);
+          const targetHour = new Date(today);
+          targetHour.setHours(hourOfDay);
+          targetHour.setDate(today.getDate() + day);
           hoursList.push(targetHour);
 
           // Find the closest matching time in the API data
@@ -120,13 +121,16 @@ export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children }) =>
       setError(error instanceof Error ? error.message : 'Une erreur est survenue');
 
       // Fallback if API fails - generate hours without weather data
-      const now = new Date();
-      now.setMinutes(0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      // Generate dates for full 7 days
+      // Generate dates for full 7 days from midnight
       const hoursList = Array.from({ length: TOTAL_HOURS }, (_, i) => {
-        const hourDate = new Date(now);
-        hourDate.setHours(hourDate.getHours() + i);
+        const hourDate = new Date(today);
+        const day = Math.floor(i / 24);
+        const hour = i % 24;
+        hourDate.setDate(hourDate.getDate() + day);
+        hourDate.setHours(hour);
         return hourDate;
       });
       setHours(hoursList);

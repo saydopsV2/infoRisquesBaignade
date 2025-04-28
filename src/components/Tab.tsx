@@ -4,11 +4,11 @@ import Beach from "../interface/Beach";
 import { StandaloneChart } from "./Chart";
 import { ChartAllData } from "./ChartAllData";
 import Bilan from "./Bilan";
-import { SecurityIndexChart } from "./SecurityIndexChart";
+import { SecurityIndexChart } from "./ShoreBreakHazardChart";
 import { useWeather } from "../context/WeatherContext";
 import { useShoreBreakData } from "../hooks/useShoreBreakData";
 import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData"; // Import du nouveau hook
-import { BarChart } from "./BarChart";
+import { BeachAttendanceBarChart } from "./BeachAttendanceBarChart";
 import Toggle from "./Toggle";
 
 interface TabProps {
@@ -61,9 +61,6 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
 
     // Utiliser notre nouveau hook pour obtenir les données de fréquentation
     const {
-        dates: attendanceDates,
-        morningAttendance,
-        afternoonAttendance,
         isLoading: attendanceLoading,
         error: attendanceError
     } = useBeachAttendanceData();
@@ -112,21 +109,6 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // Pour la visualisation, utiliser soit les dates du shore break soit les heures du contexte météo
     const displayHours = shoreBreakDates.length > 0 ? shoreBreakDates : hours;
 
-    // Préparer les données pour le BarChart (utilisé quand chartType est 'bar')
-    // Convertir les données du hook useBeachAttendanceData au format attendu par BarChart
-    const barChartData = React.useMemo(() => {
-        if (attendanceLoading || attendanceDates.length === 0) {
-            return [];
-        }
-
-        // Créer des données adaptées pour BarChart
-        return attendanceDates.map((date, index) => ({
-            date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
-            time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-            morning: morningAttendance[index] || 0,
-            afternoon: afternoonAttendance[index] || 0,
-        }));
-    }, [attendanceDates, morningAttendance, afternoonAttendance, attendanceLoading]);
 
     return (
         <div className="tabs tabs-lift w-full max-w-full flex flex-wrap">
@@ -166,8 +148,8 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                         <div className="w-full">
                             <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
                             <Toggle
-                                leftLabel="Histogrammes"
-                                rightLabel="Courbes"
+                                leftLabel="Courbes"
+                                rightLabel="Histogrammes"
                                 isChecked={previsionChartType === 'line'}
                                 onChange={togglePrevisionChartType}
                                 className="m-2 ml-2 w-53"
@@ -180,13 +162,8 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                 <div className="h-[300px] flex items-center justify-center bg-red-100 text-red-700 rounded">
                                     <p>Erreur: {attendanceError}</p>
                                 </div>
-                            ) : previsionChartType === 'bar' ? (
-                                <BarChart
-                                    title="Fréquentation des plages"
-                                    description="Nombre de visiteurs par période"
-                                    dataKeys={["morning", "afternoon"]}
-                                    data={barChartData}
-                                />
+                            ) : previsionChartType !== 'bar' ? (
+                                <BeachAttendanceBarChart/>
                             ) : (
                                 <ChartAllData />
                             )}
@@ -246,12 +223,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                             <ChartAllData />
                         ) : (
                             <div className="w-full">
-                                <BarChart
-                                    title="Fréquentation des plages"
-                                    description="Nombre de visiteurs par période"
-                                    dataKeys={["morning", "afternoon"]}
-                                    data={barChartData}
-                                />
+                                <BeachAttendanceBarChart/>
                             </div>
                         )}
                     </div>
