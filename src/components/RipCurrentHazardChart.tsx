@@ -12,6 +12,7 @@ interface RipCurrentChartProps {
     hours?: Date[];
     velocities?: number[];
     hazardLevels?: number[];
+    inTable?: boolean; 
 }
 
 // Configuration du graphique
@@ -80,7 +81,7 @@ export const getRipCurrentColorClass = (velocity: number | null): string => {
     return "bg-red-600 text-white"; // Rouge - Danger important
 };
 
-// Composant pour les zones grisées en dehors de 11h-20h
+// Composant pour les zones grisées en dehors de 11h-18h
 const DayNightZones = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -97,18 +98,20 @@ const DayNightZones = () => {
         return () => window.removeEventListener('resize', updateWidth);
     }, []);
 
-    // On suppose 7 jours au total
-    const dayWidth = containerWidth / 7;
+    // Déterminer le nombre de jours en fonction du conteneur
+    // Pour les composants dans Table, nous utilisons toujours 4 jours
+    const numberOfDays = 4; // Forcer à 4 jours pour correspondre à Table.tsx
+    const dayWidth = containerWidth / numberOfDays;
     
     return (
         <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
-            {Array.from({ length: 7 }).map((_, dayIndex) => {
+            {Array.from({ length: numberOfDays }).map((_, dayIndex) => {
                 const dayStart = dayIndex * dayWidth;
                 const hourWidth = dayWidth / 24;
                 
                 return (
                     <div key={dayIndex}>
-                        {/* Zone grisée de 0h à 11h */}
+                        {/* Zone grisée de 0h à 11h (matin) */}
                         <div 
                             className="absolute top-0 h-full bg-gray-300 opacity-50" 
                             style={{ 
@@ -117,7 +120,7 @@ const DayNightZones = () => {
                             }}
                         />
                         
-                        {/* Zone grisée de 20h à 24h */}
+                        {/* Zone grisée de 20h à 24h (soir) - Modifié pour commencer à 20h */}
                         <div 
                             className="absolute top-0 h-full bg-gray-300 opacity-50" 
                             style={{ 
@@ -133,7 +136,7 @@ const DayNightZones = () => {
 };
 
 // Version autonome du graphique de courant d'arrachement
-export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevels = [] }: RipCurrentChartProps) {
+export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevels = [], inTable = false }: RipCurrentChartProps) {
     // Préparer les données pour le graphique en combinant heures et vitesses
     const chartData = hours.map((hour, index) => {
         const velocity = velocities[index] !== undefined ? velocities[index] : null;
@@ -171,7 +174,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                         margin={{
                             top: 10,
                             right: 30,
-                            left: 10,
+                            left: inTable ? -45 : 10, // Marge gauche négative si dans tableau
                             bottom: 0,
                         }}
                     >

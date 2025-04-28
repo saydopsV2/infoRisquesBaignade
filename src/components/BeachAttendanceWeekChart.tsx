@@ -180,8 +180,13 @@ const DayNightZones = () => {
     );
 };
 
-// Nouveau composant qui affiche uniquement 4 jours
-export function ChartAllDataWeek() {
+// Ajoutez inTable à l'interface des props
+interface ChartAllDataWeekProps {
+  inTable?: boolean;
+}
+
+// Assurez-vous que le composant accepte cette prop
+export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
     // Utiliser le hook pour récupérer les données
     const { 
         attendanceValues: originalAttendanceValues, 
@@ -266,150 +271,146 @@ export function ChartAllDataWeek() {
     });
 
     return (
-        <div className="flex flex-col gap-4 w-full h-full">
-            <div className="relative">
-                <ChartContainer config={chartConfig} className="h-[300px] w-full bg-white p-1 rounded-lg">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart
-                            data={chartData}
-                            margin={{
-                                top: 20,
-                                right: 30,
-                                left: 20,
-                                bottom: 50,
-                            }}
-                            style={{ backgroundColor: 'white' }}
-                            className="text-base"
-                        >
-                            <defs>
-                                {/* Gradient horizontal pour le contour de la ligne */}
-                                <linearGradient id="attendanceGradient" x1="0" y1="0" x2="1" y2="0">
-                                    {chartData.map((item, index) => {
-                                        // Calculer la position relative dans le gradient
-                                        const offset = `${(index / Math.max(1, chartData.length - 1)) * 100}%`;
-                                        return (
-                                            <stop
-                                                key={index}
-                                                offset={offset}
-                                                stopColor={getHazardLevelColor(item.hazardLevel)}
-                                                stopOpacity={1}
-                                            />
-                                        );
-                                    })}
-                                </linearGradient>
-                                
-                                {/* Gradients verticaux pour l'aire sous la courbe */}
-                                {chartData.map((item, index) => (
-                                    <linearGradient
-                                        key={`fill-${index}`}
-                                        id={`attendanceFillGradient-${index}`}
-                                        x1="0"
-                                        y1="0"
-                                        x2="0"
-                                        y2="1"
-                                    >
-                                        <stop offset="0%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.1} />
-                                    </linearGradient>
-                                ))}
-                                
-                                {/* Pattern qui combine les gradients verticaux */}
-                                <pattern id="attendancePattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-                                    {chartData.map((_, index, arr) => {
-                                        // Calculer la largeur de chaque segment
-                                        const width = index < arr.length - 1
-                                            ? (1 / (arr.length - 1)) * 100
-                                            : (1 / arr.length) * 100;
-                                        
-                                        return (
-                                            <rect
-                                                key={index}
-                                                x={`${(index / (arr.length - 1)) * 100}%`}
-                                                y="0"
-                                                width={`${width}%`}
-                                                height="100%"
-                                                fill={`url(#attendanceFillGradient-${index})`}
-                                            />
-                                        );
-                                    })}
-                                </pattern>
-                            </defs>
-
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                                dataKey="xAxisDate"
-                                tickLine={false}
-                                axisLine={true}
-                                tickMargin={8}
-                                label={{ value: 'Date/Heure', position: 'insideBottom', offset: -5 }}
-                                tick={{ fontSize: 11 }}
-                                height={60}
-                                interval={Math.floor(chartData.length / 12)} // Adapter l'intervalle pour 4 jours
-                                angle={-45}
-                                textAnchor="end"
-                            />
-                            <YAxis
-                                domain={[0, 100]} // Domaine en pourcentage (0-100%)
-                                tickCount={6}
-                                tickLine={false}
-                                axisLine={true}
-                                tickMargin={8}
-                                fontSize={12}
-                            />
-                            <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
-                            <Legend align="right" verticalAlign="top" iconSize={12} wrapperStyle={{ paddingBottom: 10 }} />
-                            
-                            {/* Ligne continue de fréquentation avec gradient de couleur */}
-                            <Line
-                                type="monotone"
-                                dataKey="beachAttendance"
-                                stroke="url(#attendanceGradient)"
-                                fill="url(#attendancePattern)"
-                                strokeWidth={3}
-                                dot={false} // Pas de points pour les 4 jours
-                                activeDot={(props: any) => {
-                                    const { cx, cy, payload } = props;
-                                    // Obtenir la couleur en fonction du niveau de risque
-                                    const color = getHazardLevelColor(payload.hazardLevel);
+        <div className="relative">
+            <ChartContainer config={chartConfig} className="h-[250px] w-full bg-white p-1 rounded-lg">
+                <ResponsiveContainer width="100%" height={400}>
+                    <ComposedChart
+                        data={chartData}
+                        margin={{
+                            top: 10,
+                            right: 30,
+                            left: inTable ? -45 : 10, // Marge gauche négative si dans tableau
+                            bottom: 0,
+                        }}
+                    >
+                        <defs>
+                            {/* Gradient horizontal pour le contour de la ligne */}
+                            <linearGradient id="attendanceGradient" x1="0" y1="0" x2="1" y2="0">
+                                {chartData.map((item, index) => {
+                                    // Calculer la position relative dans le gradient
+                                    const offset = `${(index / Math.max(1, chartData.length - 1)) * 100}%`;
                                     return (
-                                        <g>
-                                            {/* Cercle extérieur blanc */}
-                                            <circle cx={cx} cy={cy} r={7} fill="white" />
-                                            {/* Cercle intérieur coloré */}
-                                            <circle cx={cx} cy={cy} r={5} fill={color} />
-                                        </g>
+                                        <stop
+                                            key={index}
+                                            offset={offset}
+                                            stopColor={getHazardLevelColor(item.hazardLevel)}
+                                            stopOpacity={1}
+                                        />
                                     );
-                                }}
-                                name="Prévision d'affluence"
-                            />
+                                })}
+                            </linearGradient>
                             
-                            {/* Points colorés par niveau de risque */}
-                            {[0, 1, 2, 3, 4].map(level => {
-                                const levelNames = [
-                                    "Risque très faible",
-                                    "Risque faible",
-                                    "Risque modéré",
-                                    "Risque élevé",
-                                    "Risque très élevé"
-                                ];
+                            {/* Gradients verticaux pour l'aire sous la courbe */}
+                            {chartData.map((item, index) => (
+                                <linearGradient
+                                    key={`fill-${index}`}
+                                    id={`attendanceFillGradient-${index}`}
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                >
+                                    <stop offset="0%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.8} />
+                                    <stop offset="100%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.1} />
+                                </linearGradient>
+                            ))}
+                            
+                            {/* Pattern qui combine les gradients verticaux */}
+                            <pattern id="attendancePattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
+                                {chartData.map((_, index, arr) => {
+                                    // Calculer la largeur de chaque segment
+                                    const width = index < arr.length - 1
+                                        ? (1 / (arr.length - 1)) * 100
+                                        : (1 / arr.length) * 100;
+                                    
+                                    return (
+                                        <rect
+                                            key={index}
+                                            x={`${(index / (arr.length - 1)) * 100}%`}
+                                            y="0"
+                                            width={`${width}%`}
+                                            height="100%"
+                                            fill={`url(#attendanceFillGradient-${index})`}
+                                        />
+                                    );
+                                })}
+                            </pattern>
+                        </defs>
+
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                            dataKey="xAxisDate"
+                            tickLine={false}
+                            axisLine={true}
+                            tickMargin={8}
+                            label={{ value: 'Date/Heure', position: 'insideBottom', offset: -5 }}
+                            tick={{ fontSize: 11 }}
+                            height={60}
+                            interval={Math.floor(chartData.length / 12)} // Adapter l'intervalle pour 4 jours
+                            angle={-45}
+                            textAnchor="end"
+                        />
+                        <YAxis
+                            domain={[0, 100]} // Domaine en pourcentage (0-100%)
+                            tickCount={6}
+                            tickLine={false}
+                            axisLine={true}
+                            tickMargin={8}
+                            fontSize={12}
+                        />
+                        <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
+                        <Legend align="right" verticalAlign="top" iconSize={12} wrapperStyle={{ paddingBottom: 10 }} />
+                        
+                        {/* Ligne continue de fréquentation avec gradient de couleur */}
+                        <Line
+                            type="monotone"
+                            dataKey="beachAttendance"
+                            stroke="url(#attendanceGradient)"
+                            fill="url(#attendancePattern)"
+                            strokeWidth={3}
+                            dot={false} // Pas de points pour les 4 jours
+                            activeDot={(props: any) => {
+                                const { cx, cy, payload } = props;
+                                // Obtenir la couleur en fonction du niveau de risque
+                                const color = getHazardLevelColor(payload.hazardLevel);
                                 return (
-                                    <Scatter
-                                        key={`level-${level}`}
-                                        name={levelNames[level]}
-                                        dataKey="scatterPoint"
-                                        fill={getHazardLevelColor(level)}
-                                        shape={createLevelShape(level)}
-                                        legendType="circle"
-                                    />
+                                    <g>
+                                        {/* Cercle extérieur blanc */}
+                                        <circle cx={cx} cy={cy} r={7} fill="white" />
+                                        {/* Cercle intérieur coloré */}
+                                        <circle cx={cx} cy={cy} r={5} fill={color} />
+                                    </g>
                                 );
-                            })}
-                        </ComposedChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
-                
-                {/* Zones grisées en dehors de 11h-20h */}
-                <DayNightZones />
-            </div>
+                            }}
+                            name="Prévision d'affluence"
+                        />
+                        
+                        {/* Points colorés par niveau de risque */}
+                        {[0, 1, 2, 3, 4].map(level => {
+                            const levelNames = [
+                                "Risque très faible",
+                                "Risque faible",
+                                "Risque modéré",
+                                "Risque élevé",
+                                "Risque très élevé"
+                            ];
+                            return (
+                                <Scatter
+                                    key={`level-${level}`}
+                                    name={levelNames[level]}
+                                    dataKey="scatterPoint"
+                                    fill={getHazardLevelColor(level)}
+                                    shape={createLevelShape(level)}
+                                    legendType="circle"
+                                />
+                            );
+                        })}
+                    </ComposedChart>
+                </ResponsiveContainer>
+            </ChartContainer>
+            
+            {/* Zones grisées en dehors de 11h-20h */}
+            <DayNightZones />
         </div>
     );
 }

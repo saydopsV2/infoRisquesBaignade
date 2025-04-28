@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 interface ShoreBreakHazardChartProps {
     hours: Date[];
     indices: number[];
+    inTable?: boolean;
 }
 
 // Configuration du graphique
@@ -96,18 +97,19 @@ const DayNightZones = () => {
         return () => window.removeEventListener('resize', updateWidth);
     }, []);
 
-    // On suppose 7 jours au total
-    const dayWidth = containerWidth / 7;
+    // Forcer à 4 jours pour correspondre à Table.tsx
+    const numberOfDays = 4;
+    const dayWidth = containerWidth / numberOfDays;
     
     return (
         <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
-            {Array.from({ length: 7 }).map((_, dayIndex) => {
+            {Array.from({ length: numberOfDays }).map((_, dayIndex) => {
                 const dayStart = dayIndex * dayWidth;
                 const hourWidth = dayWidth / 24;
                 
                 return (
                     <div key={dayIndex}>
-                        {/* Zone grisée de 0h à 11h */}
+                        {/* Zone grisée de 0h à 11h (matin) */}
                         <div 
                             className="absolute top-0 h-full bg-gray-300 opacity-50" 
                             style={{ 
@@ -116,7 +118,7 @@ const DayNightZones = () => {
                             }}
                         />
                         
-                        {/* Zone grisée de 20h à 24h */}
+                        {/* Zone grisée de 20h à 24h (soir) - Modifié pour commencer à 20h */}
                         <div 
                             className="absolute top-0 h-full bg-gray-300 opacity-50" 
                             style={{ 
@@ -132,7 +134,7 @@ const DayNightZones = () => {
 };
 
 // Composant du graphique d'indice de sécurité
-export function ShoreBreakHazardChart({ hours, indices }: ShoreBreakHazardChartProps) {
+export function ShoreBreakHazardChart({ hours, indices, inTable = false }: ShoreBreakHazardChartProps) {
     // Préparer les données pour le graphique en combinant heures et indices
     const chartData = hours.map((hour, index) => {
         const shoreBreakIndex = indices[index] !== undefined ? indices[index] : null;
@@ -166,7 +168,7 @@ export function ShoreBreakHazardChart({ hours, indices }: ShoreBreakHazardChartP
                         margin={{
                             top: 10,
                             right: 30,
-                            left: 10,
+                            left: inTable ? -45 : 10, // Marge gauche négative si dans tableau
                             bottom: 0,
                         }}
                     >
