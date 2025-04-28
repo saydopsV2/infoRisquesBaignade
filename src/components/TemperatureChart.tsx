@@ -1,11 +1,12 @@
 "use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
 } from "@/components/ui/chart";
 import { useWeather } from "../context/WeatherContext";
+import { useEffect, useRef, useState } from "react";
 
 // Interface pour les données du graphique explicites
 interface ChartProps {
@@ -68,6 +69,58 @@ const getTemperatureColor = (temp: number | null): string => {
   return "#ef4444"; // Rouge pour les températures chaudes
 };
 
+// Composant pour les zones grisées en dehors de 11h-20h
+const DayNightZones = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+    
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  // On suppose 7 jours au total
+  const dayWidth = containerWidth / 7;
+  
+  return (
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
+      {Array.from({ length: 7 }).map((_, dayIndex) => {
+        const dayStart = dayIndex * dayWidth;
+        const hourWidth = dayWidth / 24;
+        
+        return (
+          <div key={dayIndex}>
+            {/* Zone grisée de 0h à 11h */}
+            <div 
+              className="absolute top-0 h-full bg-gray-300 opacity-50" 
+              style={{ 
+                left: `${dayStart}px`,
+                width: `${hourWidth * 11}px`
+              }}
+            />
+            
+            {/* Zone grisée de 20h à 24h */}
+            <div 
+              className="absolute top-0 h-full bg-gray-300 opacity-50" 
+              style={{ 
+                left: `${dayStart + hourWidth * 20}px`,
+                width: `${hourWidth * 4}px`
+              }}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // Version qui utilise les props explicites
 export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: ChartProps) {
   // Préparer les données pour le graphique en combinant heures et températures
@@ -83,7 +136,7 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
     }
   });
 
-  // Créer des stops de dégradé pour chaque point de température
+  // Créer des stops de dégradé pour chaque point de température (pour la ligne)
   const gradientStops = temperatures
     .filter(temp => temp !== null)
     .map((temp, index, filteredTemps) => {
@@ -94,107 +147,113 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
         color: getTemperatureColor(temp)
       };
     });
+    
+  // Identifier les positions des changements de jour pour les lignes verticales
+  const dayBreaks = chartData.reduce((breaks, item, index) => {
+    if (index > 0) {
+      const prevDate = chartData[index - 1].originalDate;
+      const currentDate = item.originalDate;
+      
+      if (prevDate instanceof Date && currentDate instanceof Date) {
+        if (prevDate.getDate() !== currentDate.getDate()) {
+          breaks.push({
+            index,
+            hour: item.hour,
+            date: new Date(currentDate)
+          });
+        }
+      }
+    }
+    return breaks;
+  }, [] as {index: number, hour: string, date: Date}[]);
 
   return (
-    <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
-      <ResponsiveContainer width="100%" height={200}>
-        <AreaChart
-          data={chartData}
-          margin={{
-            top: 10,
-            right: 30,
-            left: 10,
-            bottom: 0,
-          }}
-        >
-          <defs>
-            {/* Gradient horizontal pour le contour */}
-            <linearGradient id="temperatureGradient" x1="0" y1="0" x2="1" y2="0">
-              {gradientStops.map((stop, index) => (
-                <stop 
-                  key={index}
-                  offset={stop.offset} 
-                  stopColor={stop.color} 
-                  stopOpacity={1} 
-                />
-              ))}
-            </linearGradient>
-            
-            {/* Créer des gradients verticaux individuels pour chaque couleur */}
-            {gradientStops.map((stop, index) => (
-              <linearGradient 
-                key={`fill-${index}`}
-                id={`temperatureFillGradient-${index}`} 
-                x1="0" 
-                y1="0" 
-                x2="0" 
-                y2="1"
-              >
-                <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
-                <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
+    <div className="relative">
+      {/* Conteneur du graphique */}
+      <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart
+            data={chartData}
+            margin={{
+              top: 10,
+              right: 30,
+              left: 10,
+              bottom: 0,
+            }}
+          >
+            <defs>
+              {/* Gradient horizontal pour le contour de la ligne */}
+              <linearGradient id="temperatureGradient" x1="0" y1="0" x2="1" y2="0">
+                {gradientStops.map((stop, index) => (
+                  <stop 
+                    key={index}
+                    offset={stop.offset} 
+                    stopColor={stop.color} 
+                    stopOpacity={1} 
+                  />
+                ))}
               </linearGradient>
+            </defs>
+            
+            {/* Lignes verticales pour séparer les jours */}
+            {dayBreaks.map((dayBreak, index) => (
+              <ReferenceLine
+                key={index}
+                x={dayBreak.hour}
+                stroke="#94a3b8"
+                strokeDasharray="3 3"
+                label={{
+                  value: dayBreak.date.toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric'}),
+                  position: 'top',
+                  fill: '#64748b',
+                  fontSize: 10
+                }}
+              />
             ))}
             
-            {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
-            <pattern id="temperaturePattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-              {gradientStops.map((stop, index, arr) => {
-                const width = index < arr.length - 1 
-                  ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset) 
-                  : 100 - parseFloat(stop.offset);
-                
-                return (
-                  <rect 
-                    key={index}
-                    x={`${parseFloat(stop.offset)}%`} 
-                    y="0" 
-                    width={`${width}%`} 
-                    height="100%" 
-                    fill={`url(#temperatureFillGradient-${index})`} 
-                  />
-                );
-              })}
-            </pattern>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="hour"
-            tickLine={false}
-            axisLine={true}
-            tickMargin={8}
-          />
-          <YAxis
-            unit={tempUnit}
-            tickLine={false}
-            axisLine={true}
-            tickMargin={8}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="temperature"
-            stroke="url(#temperatureGradient)"
-            fill="url(#temperaturePattern)"
-            fillOpacity={1}
-            strokeWidth={2}
-            name="Température"
-            activeDot={(props) => {
-              const { cx, cy, payload } = props;
-              // Obtenir la couleur en fonction de la température
-              const color = getTemperatureColor(payload.temperature);
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey="hour"
+              tickLine={false}
+              axisLine={true}
+              tickMargin={8}
+            />
+            <YAxis
+              unit={tempUnit}
+              tickLine={false}
+              axisLine={true}
+              tickMargin={8}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Area
+              type="monotone"
+              dataKey="temperature"
+              stroke="url(#temperatureGradient)"
+              fill="transparent" // Aire sous la courbe transparente
+              strokeWidth={2}
+              name="Température"
+              activeDot={(props) => {
+                const { cx, cy, payload } = props;
+                // Obtenir la couleur en fonction de la température
+                const color = getTemperatureColor(payload.temperature);
 
-              return (
-                <g>
-                  {/* Cercle extérieur blanc */}
-                  <circle cx={cx} cy={cy} r={7} fill="white" />
-                  {/* Cercle intérieur coloré */}
-                  <circle cx={cx} cy={cy} r={5} fill={color} />
-                </g>
-              );
-            }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+                return (
+                  <g>
+                    {/* Cercle extérieur blanc */}
+                    <circle cx={cx} cy={cy} r={7} fill="white" />
+                    {/* Cercle intérieur coloré */}
+                    <circle cx={cx} cy={cy} r={5} fill={color} />
+                  </g>
+                );
+              }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+      
+      {/* Zones grisées en dehors de 11h-20h */}
+      <DayNightZones />
+    </div>
   );
 }
 
@@ -214,8 +273,8 @@ export function TemperatureChart() {
       originalDate: hour
     }
   });
-
-  // Créer des stops de dégradé pour chaque point de température
+  
+  // Créer des stops de dégradé pour chaque point de température (pour la ligne)
   const gradientStops = temperatures
     .filter(temp => temp !== null)
     .map((temp, index, filteredTemps) => {
@@ -227,105 +286,110 @@ export function TemperatureChart() {
       };
     });
 
-  return (
-    <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
-      <ResponsiveContainer width="100%" height={200}>
-        <AreaChart
-          data={chartData}
-          margin={{
-            top: 10,
-            right: 30,
-            left: 10,
-            bottom: 0,
-          }}
-        >
-          <defs>
-            {/* Gradient horizontal pour le contour */}
-            <linearGradient id="temperatureGradientStandalone" x1="0" y1="0" x2="1" y2="0">
-              {gradientStops.map((stop, index) => (
-                <stop 
-                  key={index}
-                  offset={stop.offset} 
-                  stopColor={stop.color} 
-                  stopOpacity={1} 
-                />
-              ))}
-            </linearGradient>
-            
-            {/* Créer des gradients verticaux individuels pour chaque couleur */}
-            {/* {gradientStops.map((stop, index) => (
-              <linearGradient 
-                key={`fill-standalone-${index}`}
-                id={`temperatureFillGradientStandalone-${index}`} 
-                x1="0" 
-                y1="0" 
-                x2="0" 
-                y2="1"
-              >
-                <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
-                <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
-              </linearGradient>
-            ))} */}
-            
-            {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
-            <pattern id="temperaturePatternStandalone" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-              {gradientStops.map((stop, index, arr) => {
-                const width = index < arr.length - 1 
-                  ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset) 
-                  : 100 - parseFloat(stop.offset);
-                
-                return (
-                  <rect 
-                    key={index}
-                    x={`${parseFloat(stop.offset)}%`} 
-                    y="0" 
-                    width={`${width}%`} 
-                    height="100%" 
-                    fill={`url(#temperatureFillGradientStandalone-${index})`} 
-                  />
-                );
-              })}
-            </pattern>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="hour"
-            tickLine={false}
-            axisLine={true}
-            tickMargin={8}
-          />
-          <YAxis
-            unit={tempUnit}
-            tickLine={false}
-            axisLine={true}
-            tickMargin={8}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="temperature"
-            stroke="url(#temperatureGradientStandalone)"
-            fill="url(#temperaturePatternStandalone)"
-            fillOpacity={1}
-            strokeWidth={2}
-            name="Température"
-            activeDot={(props) => {
-              const { cx, cy, payload } = props;
-              // Obtenir la couleur en fonction de la température
-              const color = getTemperatureColor(payload.temperature);
+  // Identifier les positions des changements de jour pour les lignes verticales
+  const dayBreaks = chartData.reduce((breaks, item, index) => {
+    if (index > 0) {
+      const prevDate = chartData[index - 1].originalDate;
+      const currentDate = item.originalDate;
+      
+      if (prevDate instanceof Date && currentDate instanceof Date) {
+        if (prevDate.getDate() !== currentDate.getDate()) {
+          breaks.push({
+            index,
+            hour: item.hour,
+            date: new Date(currentDate)
+          });
+        }
+      }
+    }
+    return breaks;
+  }, [] as {index: number, hour: string, date: Date}[]);
 
-              return (
-                <g>
-                  {/* Cercle extérieur blanc */}
-                  <circle cx={cx} cy={cy} r={7} fill="white" />
-                  {/* Cercle intérieur coloré */}
-                  <circle cx={cx} cy={cy} r={5} fill={color} />
-                </g>
-              );
+  return (
+    <div className="relative">
+      <ChartContainer config={chartConfig} className="max-h-[150px] w-full bg-white">
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart
+            data={chartData}
+            margin={{
+              top: 10,
+              right: 30,
+              left: 10,
+              bottom: 0,
             }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+          >
+            <defs>
+              {/* Gradient horizontal pour le contour de la ligne */}
+              <linearGradient id="temperatureGradientStandalone" x1="0" y1="0" x2="1" y2="0">
+                {gradientStops.map((stop, index) => (
+                  <stop 
+                    key={index}
+                    offset={stop.offset} 
+                    stopColor={stop.color} 
+                    stopOpacity={1} 
+                  />
+                ))}
+              </linearGradient>
+            </defs>
+            
+            {/* Lignes verticales pour séparer les jours */}
+            {dayBreaks.map((dayBreak, index) => (
+              <ReferenceLine
+                key={index}
+                x={dayBreak.hour}
+                stroke="#94a3b8"
+                strokeDasharray="3 3"
+                label={{
+                  value: dayBreak.date.toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric'}),
+                  position: 'top',
+                  fill: '#64748b',
+                  fontSize: 10
+                }}
+              />
+            ))}
+            
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey="hour"
+              tickLine={false}
+              axisLine={true}
+              tickMargin={8}
+            />
+            <YAxis
+              unit={tempUnit}
+              tickLine={false}
+              axisLine={true}
+              tickMargin={8}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Area
+              type="monotone"
+              dataKey="temperature"
+              stroke="url(#temperatureGradientStandalone)"
+              fill="transparent" // Rendre l'aire sous la courbe transparente
+              strokeWidth={2}
+              name="Température"
+              activeDot={(props) => {
+                const { cx, cy, payload } = props;
+                // Obtenir la couleur en fonction de la température
+                const color = getTemperatureColor(payload.temperature);
+
+                return (
+                  <g>
+                    {/* Cercle extérieur blanc */}
+                    <circle cx={cx} cy={cy} r={7} fill="white" />
+                    {/* Cercle intérieur coloré */}
+                    <circle cx={cx} cy={cy} r={5} fill={color} />
+                  </g>
+                );
+              }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+      
+      {/* Zones grisées en dehors de 11h-20h */}
+      <DayNightZones />
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import {
     ChartConfig,
     ChartContainer,
 } from "@/components/ui/chart";
+import { useEffect, useRef, useState } from "react";
 
 // Interface pour les props
 interface ShoreBreakHazardChartProps {
@@ -78,6 +79,58 @@ const getHazardText = (index: number | null): string => {
     return "Très élevé";
 };
 
+// Composant pour les zones grisées en dehors de 11h-20h
+const DayNightZones = () => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [containerWidth, setContainerWidth] = useState(0);
+    
+    useEffect(() => {
+        const updateWidth = () => {
+            if (containerRef.current) {
+                setContainerWidth(containerRef.current.clientWidth);
+            }
+        };
+        
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
+
+    // On suppose 7 jours au total
+    const dayWidth = containerWidth / 7;
+    
+    return (
+        <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
+            {Array.from({ length: 7 }).map((_, dayIndex) => {
+                const dayStart = dayIndex * dayWidth;
+                const hourWidth = dayWidth / 24;
+                
+                return (
+                    <div key={dayIndex}>
+                        {/* Zone grisée de 0h à 11h */}
+                        <div 
+                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
+                            style={{ 
+                                left: `${dayStart}px`,
+                                width: `${hourWidth * 11}px`
+                            }}
+                        />
+                        
+                        {/* Zone grisée de 20h à 24h */}
+                        <div 
+                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
+                            style={{ 
+                                left: `${dayStart + hourWidth * 20}px`,
+                                width: `${hourWidth * 4}px`
+                            }}
+                        />
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 // Composant du graphique d'indice de sécurité
 export function ShoreBreakHazardChart({ hours, indices }: ShoreBreakHazardChartProps) {
     // Préparer les données pour le graphique en combinant heures et indices
@@ -105,103 +158,108 @@ export function ShoreBreakHazardChart({ hours, indices }: ShoreBreakHazardChartP
         });
 
     return (
-        <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
-            <ResponsiveContainer width="100%" height={200}>
-                <AreaChart
-                    data={chartData}
-                    margin={{
-                        top: 10,
-                        right: 30,
-                        left: 10,
-                        bottom: 0,
-                    }}
-                >
-                    <defs>
-                        {/* Gradient horizontal pour le contour */}
-                        <linearGradient id="shoreBreakGradient" x1="0" y1="0" x2="1" y2="0">
-                            {gradientStops.map((stop, index) => (
-                                <stop
-                                    key={index}
-                                    offset={stop.offset}
-                                    stopColor={stop.color}
-                                    stopOpacity={1}
-                                />
-                            ))}
-                        </linearGradient>
-
-                        {/* Gradients verticaux pour chaque couleur
-                        {gradientStops.map((stop, index) => (
-                            <linearGradient
-                                key={`fill-${index}`}
-                                id={`shoreBreakFillGradient-${index}`}
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                            >
-                                <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
-                                <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
-                            </linearGradient>
-                        ))} */}
-                        
-                        <pattern id="shoreBreakPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-                            {gradientStops.map((stop, index, arr) => {
-                                const width = index < arr.length - 1
-                                    ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset)
-                                    : 100 - parseFloat(stop.offset);
-                                
-                                return (
-                                    <rect
-                                        key={index}
-                                        x={`${parseFloat(stop.offset)}%`}
-                                        y="0"
-                                        width={`${width}%`}
-                                        height="100%"
-                                        fill={`url(#shoreBreakFillGradient-${index})`}
-                                    />
-                                );
-                            })}
-                        </pattern>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis
-                        dataKey="hour"
-                        tickLine={false}
-                        axisLine={true}
-                        tickMargin={8}
-                    />
-                    <YAxis
-                        domain={[0, 20]}
-                        tickLine={false}
-                        axisLine={true}
-                        tickMargin={8}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area
-                        type="monotone"
-                        dataKey="shoreBreakIndex"
-                        stroke="url(#shoreBreakGradient)"
-                        fill="url(#shoreBreakPattern)"
-                        fillOpacity={1}
-                        strokeWidth={2}
-                        name="Indice Shore Break"
-                        activeDot={(props) => {
-                            const { cx, cy, payload } = props;
-                            // Obtenir la couleur en fonction de l'indice shore break
-                            const color = getShoreBreakColor(payload.shoreBreakIndex);
-
-                            return (
-                                <g>
-                                    {/* Cercle extérieur blanc */}
-                                    <circle cx={cx} cy={cy} r={7} fill="white" />
-                                    {/* Cercle intérieur coloré */}
-                                    <circle cx={cx} cy={cy} r={5} fill={color} />
-                                </g>
-                            );
+        <div className="relative">
+            <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
+                <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart
+                        data={chartData}
+                        margin={{
+                            top: 10,
+                            right: 30,
+                            left: 10,
+                            bottom: 0,
                         }}
-                    />
-                </AreaChart>
-            </ResponsiveContainer>
-        </ChartContainer>
+                    >
+                        <defs>
+                            {/* Gradient horizontal pour le contour */}
+                            <linearGradient id="shoreBreakGradient" x1="0" y1="0" x2="1" y2="0">
+                                {gradientStops.map((stop, index) => (
+                                    <stop
+                                        key={index}
+                                        offset={stop.offset}
+                                        stopColor={stop.color}
+                                        stopOpacity={1}
+                                    />
+                                ))}
+                            </linearGradient>
+
+                            {/* Gradients verticaux pour chaque couleur
+                            {gradientStops.map((stop, index) => (
+                                <linearGradient
+                                    key={`fill-${index}`}
+                                    id={`shoreBreakFillGradient-${index}`}
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                >
+                                    <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
+                                    <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
+                                </linearGradient>
+                            ))} */}
+                            
+                            <pattern id="shoreBreakPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
+                                {gradientStops.map((stop, index, arr) => {
+                                    const width = index < arr.length - 1
+                                        ? parseFloat(arr[index + 1].offset) - parseFloat(stop.offset)
+                                        : 100 - parseFloat(stop.offset);
+                                    
+                                    return (
+                                        <rect
+                                            key={index}
+                                            x={`${parseFloat(stop.offset)}%`}
+                                            y="0"
+                                            width={`${width}%`}
+                                            height="100%"
+                                            fill={`url(#shoreBreakFillGradient-${index})`}
+                                        />
+                                    );
+                                })}
+                            </pattern>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis
+                            dataKey="hour"
+                            tickLine={false}
+                            axisLine={true}
+                            tickMargin={8}
+                        />
+                        <YAxis
+                            domain={[0, 20]}
+                            tickLine={false}
+                            axisLine={true}
+                            tickMargin={8}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Area
+                            type="monotone"
+                            dataKey="shoreBreakIndex"
+                            stroke="url(#shoreBreakGradient)"
+                            fill="url(#shoreBreakPattern)"
+                            fillOpacity={1}
+                            strokeWidth={2}
+                            name="Indice Shore Break"
+                            activeDot={(props) => {
+                                const { cx, cy, payload } = props;
+                                // Obtenir la couleur en fonction de l'indice shore break
+                                const color = getShoreBreakColor(payload.shoreBreakIndex);
+
+                                return (
+                                    <g>
+                                        {/* Cercle extérieur blanc */}
+                                        <circle cx={cx} cy={cy} r={7} fill="white" />
+                                        {/* Cercle intérieur coloré */}
+                                        <circle cx={cx} cy={cy} r={5} fill={color} />
+                                    </g>
+                                );
+                            }}
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </ChartContainer>
+            
+            {/* Zones grisées en dehors de 11h-20h */}
+            <DayNightZones />
+        </div>
     );
 }
