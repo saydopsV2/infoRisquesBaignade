@@ -196,7 +196,7 @@ export function BeachAttendanceBarChart() {
         limitDate.setDate(today.getDate() + 3); // +3 jours
         break;
       case "plus5days":
-        limitDate.setDate(today.getDate() + 5); // +5 jours
+        limitDate.setDate(today.getDate() + 4); // +4 jours
         break;
     }
 
@@ -258,7 +258,7 @@ export function BeachAttendanceBarChart() {
           <SelectContent>
             <SelectItem value="today">Aujourd'hui</SelectItem>
             <SelectItem value="plus3days">+3 jours</SelectItem>
-            <SelectItem value="plus5days">+5 jours</SelectItem>
+            <SelectItem value="plus5days">+4 jours</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -266,7 +266,7 @@ export function BeachAttendanceBarChart() {
         {/* Ajout de la légende des niveaux de risque */}
         <RiskLevelLegend />
 
-        <ChartContainer config={chartConfig} className="h-[500px] w-full bg-white p-2 rounded-lg">
+        <ChartContainer config={chartConfig} className="h-[250px] w-full bg-white rounded-lg">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}

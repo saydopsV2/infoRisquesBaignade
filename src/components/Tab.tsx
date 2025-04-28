@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
 import { TemperatureChart } from "./TemperatureChart";
-import { ChartAllData } from "./ChartAllData";
+import { ChartAllData } from "./BeachAttendanceLineChart";
 import Bilan from "./Bilan";
 import { ShoreBreakHazardChart } from "./ShoreBreakHazardChart";
 import { useWeather } from "../context/WeatherContext";

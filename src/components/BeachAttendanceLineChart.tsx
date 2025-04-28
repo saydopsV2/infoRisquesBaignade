@@ -191,7 +191,7 @@ export function ChartAllData() {
                 limitDate.setDate(today.getDate() + 3); // +3 jours
                 break;
             case "plus5days":
-                limitDate.setDate(today.getDate() + 5); // +5 jours
+                limitDate.setDate(today.getDate() + 4); // +4 jours
                 break;
         }
         
@@ -252,13 +252,13 @@ export function ChartAllData() {
                         <SelectContent>
                             <SelectItem value="today">Aujourd'hui</SelectItem>
                             <SelectItem value="plus3days">+3 jours</SelectItem>
-                            <SelectItem value="plus5days">+5 jours</SelectItem>
+                            <SelectItem value="plus5days">+4 jours</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
             </div>
             
-            <ChartContainer config={chartConfig} className="h-[500px] w-full bg-white p-2 rounded-lg">
+            <ChartContainer config={chartConfig} className="h-[300px] w-full bg-white p-1 rounded-lg">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                         data={chartData}

@@ -10,6 +10,7 @@ import DirectionArrow from './DirectionArrow';
 import { useShoreBreakData } from '../hooks/useShoreBreakData';
 import { useRipCurrentData } from '../hooks/useRipCurrentData';
 import { useBeachAttendanceData } from '../hooks/useBeachAttendanceData';
+import { ChartAllDataWeek } from './BeachAttendanceWeekChart';
 
 // Types
 interface TableProps {
@@ -27,6 +28,10 @@ interface LegendItem {
 const DAYS_TO_DISPLAY = 7;
 const HOURS_PER_DAY = 24;
 const TOTAL_HOURS = DAYS_TO_DISPLAY * HOURS_PER_DAY;
+
+// Constante pour le nombre de jours à afficher dans le graphique
+const CHART_DAYS_TO_DISPLAY = 4;
+const CHART_TOTAL_HOURS = CHART_DAYS_TO_DISPLAY * HOURS_PER_DAY;
 
 // Components
 const LegendItem: React.FC<{ item: LegendItem }> = ({ item }) => (
@@ -386,6 +391,26 @@ const Table: React.FC<TableProps> = ({ location }) => {
                     </td>
                   )
                 ))}
+              </tr>
+
+              {/* Ajout du graphique de fréquentation des plages sur 4 jours */}
+              <tr>
+                <td className={titleCellClass}>Graph. Fréquentation</td>
+                <td colSpan={CHART_TOTAL_HOURS} className="p-0 border-r h-64">
+                  {attendanceLoading ? (
+                    <div className="h-full flex items-center justify-center bg-slate-100">
+                      <p>Chargement des données de fréquentation...</p>
+                    </div>
+                  ) : attendanceError ? (
+                    <div className="h-full flex items-center justify-center bg-red-100 text-red-700">
+                      <p>Erreur: {attendanceError}</p>
+                    </div>
+                  ) : (
+                    <ChartAllDataWeek />
+                  )}
+                </td>
+                {/* Ajouter des cellules vides pour les 3 jours restants */}
+                <td colSpan={TOTAL_HOURS - CHART_TOTAL_HOURS} className="p-0 border-r bg-gray-100"></td>
               </tr>
 
               <tr className="h-2">
