@@ -14,11 +14,13 @@ import {
     ChartConfig,
     ChartContainer,
 } from "@/components/ui/chart"
+import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData"
 
 // Interface pour les données du graphique
 interface DataPoint {
     date: string;
-    [key: string]: string | number;
+    time?: string;
+    [key: string]: string | number | undefined;
 }
 
 // Interface pour les props du composant
@@ -49,103 +51,12 @@ const defaultChartConfig = {
     },
 } satisfies ChartConfig;
 
-// Données d'exemple pour le graphique
+// Données d'exemple pour le graphique (utilisées si aucune donnée n'est fournie)
 const chartData = [
     { date: "2025-05-01T00:00:00", morning: 222, afternoon: 150 },
     { date: "2025-05-01T01:00:00", morning: 97, afternoon: 180 },
     { date: "2025-05-01T02:00:00", morning: 167, afternoon: 120 },
-    { date: "2025-05-01T03:00:00", morning: 242, afternoon: 260 },
-    { date: "2025-05-01T04:00:00", morning: 373, afternoon: 290 },
-    { date: "2025-05-01T05:00:00", morning: 301, afternoon: 340 },
-    { date: "2025-05-01T06:00:00", morning: 245, afternoon: 180 },
-    { date: "2025-05-01T07:00:00", morning: 409, afternoon: 320 },
-    { date: "2025-05-01T08:00:00", morning: 59, afternoon: 110 },
-    { date: "2025-05-01T09:00:00", morning: 261, afternoon: 190 },
-    { date: "2025-05-01T10:00:00", morning: 327, afternoon: 350 },
-    { date: "2025-05-01T11:00:00", morning: 292, afternoon: 210 },
-    { date: "2025-05-01T12:00:00", morning: 342, afternoon: 380 },
-    { date: "2025-05-01T13:00:00", morning: 137, afternoon: 220 },
-    { date: "2025-05-01T14:00:00", morning: 120, afternoon: 170 },
-    { date: "2025-05-01T15:00:00", morning: 138, afternoon: 190 },
-    { date: "2025-05-01T16:00:00", morning: 446, afternoon: 360 },
-    { date: "2025-05-01T17:00:00", morning: 364, afternoon: 410 },
-    { date: "2025-05-01T18:00:00", morning: 243, afternoon: 180 },
-    { date: "2025-05-01T19:00:00", morning: 89, afternoon: 150 },
-    { date: "2025-05-01T20:00:00", morning: 137, afternoon: 200 },
-    { date: "2025-05-01T21:00:00", morning: 224, afternoon: 170 },
-    { date: "2025-05-01T22:00:00", morning: 138, afternoon: 230 },
-    { date: "2025-05-01T23:00:00", morning: 387, afternoon: 290 },
-    { date: "2025-05-02T00:00:00", morning: 215, afternoon: 250 },
-    { date: "2025-05-02T01:00:00", morning: 75, afternoon: 130 },
-    { date: "2025-05-02T02:00:00", morning: 383, afternoon: 420 },
-    { date: "2025-05-02T03:00:00", morning: 122, afternoon: 180 },
-    { date: "2025-05-02T04:00:00", morning: 315, afternoon: 240 },
-    { date: "2025-05-02T05:00:00", morning: 454, afternoon: 380 },
-    { date: "2025-05-02T06:00:00", morning: 165, afternoon: 220 },
-    { date: "2025-05-02T07:00:00", morning: 293, afternoon: 310 },
-    { date: "2025-05-02T08:00:00", morning: 247, afternoon: 190 },
-    { date: "2025-05-02T09:00:00", morning: 385, afternoon: 420 },
-    { date: "2025-05-02T10:00:00", morning: 481, afternoon: 390 },
-    { date: "2025-05-02T11:00:00", morning: 498, afternoon: 520 },
-    { date: "2025-05-02T12:00:00", morning: 388, afternoon: 300 },
-    { date: "2025-05-02T13:00:00", morning: 149, afternoon: 210 },
-    { date: "2025-05-02T14:00:00", morning: 227, afternoon: 180 },
-    { date: "2025-05-02T15:00:00", morning: 293, afternoon: 330 },
-    { date: "2025-05-02T16:00:00", morning: 335, afternoon: 270 },
-    { date: "2025-05-02T17:00:00", morning: 197, afternoon: 240 },
-    { date: "2025-05-02T18:00:00", morning: 197, afternoon: 160 },
-    { date: "2025-05-02T19:00:00", morning: 448, afternoon: 490 },
-    { date: "2025-05-02T20:00:00", morning: 473, afternoon: 380 },
-    { date: "2025-05-02T21:00:00", morning: 338, afternoon: 400 },
-    { date: "2025-05-02T22:00:00", morning: 499, afternoon: 420 },
-    { date: "2025-05-02T23:00:00", morning: 315, afternoon: 350 },
-    { date: "2025-05-03T00:00:00", morning: 235, afternoon: 180 },
-    { date: "2025-05-03T01:00:00", morning: 177, afternoon: 230 },
-    { date: "2025-05-03T02:00:00", morning: 82, afternoon: 140 },
-    { date: "2025-05-03T03:00:00", morning: 81, afternoon: 120 },
-    { date: "2025-05-03T04:00:00", morning: 252, afternoon: 290 },
-    { date: "2025-05-03T05:00:00", morning: 294, afternoon: 220 },
-    { date: "2025-05-03T06:00:00", morning: 201, afternoon: 250 },
-    { date: "2025-05-03T07:00:00", morning: 213, afternoon: 170 },
-    { date: "2025-05-03T08:00:00", morning: 420, afternoon: 460 },
-    { date: "2025-05-03T09:00:00", morning: 233, afternoon: 190 },
-    { date: "2025-05-03T10:00:00", morning: 78, afternoon: 130 },
-    { date: "2025-05-03T11:00:00", morning: 340, afternoon: 280 },
-    { date: "2025-05-03T12:00:00", morning: 178, afternoon: 230 },
-    { date: "2025-05-03T13:00:00", morning: 178, afternoon: 200 },
-    { date: "2025-05-03T14:00:00", morning: 470, afternoon: 410 },
-    { date: "2025-05-03T15:00:00", morning: 103, afternoon: 160 },
-    { date: "2025-05-03T16:00:00", morning: 439, afternoon: 380 },
-    { date: "2025-05-03T17:00:00", morning: 88, afternoon: 140 },
-    { date: "2025-05-03T18:00:00", morning: 294, afternoon: 250 },
-    { date: "2025-05-03T19:00:00", morning: 323, afternoon: 370 },
-    { date: "2025-05-03T20:00:00", morning: 385, afternoon: 320 },
-    { date: "2025-05-03T21:00:00", morning: 438, afternoon: 480 },
-    { date: "2025-05-03T22:00:00", morning: 155, afternoon: 200 },
-    { date: "2025-05-03T23:00:00", morning: 92, afternoon: 150 },
-    { date: "2025-05-04T00:00:00", morning: 492, afternoon: 420 },
-    { date: "2025-05-04T01:00:00", morning: 81, afternoon: 130 },
-    { date: "2025-05-04T02:00:00", morning: 426, afternoon: 380 },
-    { date: "2025-05-05T03:00:00", morning: 307, afternoon: 350 },
-    { date: "2025-05-05T04:00:00", morning: 371, afternoon: 310 },
-    { date: "2025-05-05T05:00:00", morning: 475, afternoon: 520 },
-    { date: "2025-05-05T06:00:00", morning: 107, afternoon: 170 },
-    { date: "2025-05-05T06:00:00", morning: 341, afternoon: 290 },
-    { date: "2025-05-05T07:00:00", morning: 408, afternoon: 450 },
-    { date: "2025-05-05T08:00:00", morning: 169, afternoon: 210 },
-    { date: "2025-05-05T09:00:00", morning: 317, afternoon: 270 },
-    { date: "2025-05-05T10:00:00", morning: 480, afternoon: 530 },
-    { date: "2025-05-05T11:00:00", morning: 132, afternoon: 180 },
-    { date: "2025-05-05T12:00:00", morning: 141, afternoon: 190 },
-    { date: "2025-05-05T13:00:00", morning: 434, afternoon: 380 },
-    { date: "2025-05-05T14:00:00", morning: 448, afternoon: 490 },
-    { date: "2025-05-05T15:00:00", morning: 149, afternoon: 200 },
-    { date: "2025-05-05T16:00:00", morning: 103, afternoon: 160 },
-    { date: "2025-05-05T17:00:00", morning: 446, afternoon: 400 },
-    { date: "2025-05-05T18:00:00", morning: 385, afternoon: 320 },
-    { date: "2025-05-05T19:00:00", morning: 438, afternoon: 480 },
-    { date: "2025-05-05T20:00:00", morning: 155, afternoon: 200 },
-    { date: "2025-05-05T23:00:00", morning: 92, afternoon: 150 },
+    // ... (autres données d'exemple)
 ]
 
 // Interface pour les composants Select
@@ -193,6 +104,7 @@ interface CustomTooltipProps {
         value: number;
         dataKey: string;
         color: string;
+        payload?: any;
     }>;
     label?: string;
     viewMode?: ViewMode;
@@ -206,13 +118,23 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, v
         const value = data.value;
         const dataKey = data.dataKey;
         const color = data.color || "hsl(var(--chart-1))";
+        const customTime = data.payload?.time; // Pour les données provenant du hook
 
-        // Formatter la date
+        // Formatter la date - s'assurer que label n'est pas undefined
         const date = new Date(label || "");
         let formattedDate;
         let timeInfo;
 
-        if (viewMode === "hour") {
+        if (customTime) {
+            // Utiliser le temps personnalisé si disponible (pour les données du hook)
+            formattedDate = date.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            timeInfo = customTime;
+        } else if (viewMode === "hour") {
             formattedDate = date.toLocaleDateString('fr-FR', {
                 weekday: 'long',
                 day: 'numeric',
@@ -259,10 +181,34 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, v
 // Composant Bar Chart réutilisable avec options avancées
 export function BarChartComponent({
     title = "Fréquentation des plages",
-    data = chartData,
+    data,
     dataKeys = ["morning", "afternoon"],
     chartConfig = defaultChartConfig
 }: BarChartProps) {
+    // Si aucune donnée n'est fournie, utiliser le hook pour récupérer les données
+    const {
+        dates,
+        morningAttendance,
+        afternoonAttendance,
+        isLoading,
+        error
+    } = useBeachAttendanceData(false);
+
+    // Préparer les données du hook si aucune donnée n'est fournie
+    const hookData = React.useMemo(() => {
+        if (!dates.length) return [];
+        
+        return dates.map((date, index) => ({
+            date: date.toISOString(),
+            time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            morning: morningAttendance[index] || 0,
+            afternoon: afternoonAttendance[index] || 0
+        }));
+    }, [dates, morningAttendance, afternoonAttendance]);
+
+    // Utiliser les données fournies en priorité, sinon utiliser les données du hook ou les données par défaut
+    const effectiveData = data || (hookData.length > 0 ? hookData : chartData);
+
     // États pour la gestion des données et modes d'affichage
     const [activeChart, setActiveChart] = React.useState<string>(dataKeys[0]);
     const [timeRange, setTimeRange] = React.useState<TimeRange>("today");
@@ -292,9 +238,87 @@ export function BarChartComponent({
         }
     }, [timeRange, viewMode]);
 
+    // Déterminer si les données viennent du hook ou sont fournies
+    const isHookData = !data && hookData.length > 0;
+
     // Traitement des données en fonction du mode de vue et de la plage de temps
     const processedData = React.useMemo(() => {
-        // Pour les besoins de la démonstration, nous utilisons une date fixe
+        // Si les données sont en cours de chargement, renvoyer un tableau vide
+        if (!data && isLoading) return [];
+        
+        // Si les données proviennent du hook
+        if (isHookData) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            let filteredDates: DataPoint[] = [];
+            
+            if (timeRange === "today") {
+                // Aujourd'hui
+                const todayStr = today.toISOString().split('T')[0];
+                
+                filteredDates = hookData.filter(item => {
+                    return item.date.startsWith(todayStr);
+                });
+            } 
+            else if (timeRange === "in3days") {
+                // 3 prochains jours
+                const endDate = new Date(today);
+                endDate.setDate(today.getDate() + 3);
+                
+                filteredDates = hookData.filter(item => {
+                    const itemDate = new Date(item.date);
+                    return itemDate >= today && itemDate <= endDate;
+                });
+            }
+            else { // "in5days"
+                // 5 prochains jours
+                const endDate = new Date(today);
+                endDate.setDate(today.getDate() + 5);
+                
+                filteredDates = hookData.filter(item => {
+                    const itemDate = new Date(item.date);
+                    return itemDate >= today && itemDate <= endDate;
+                });
+            }
+            
+            if (viewMode === "day" && filteredDates.length > 0) {
+                // Regrouper par jour pour le mode jour
+                const dayMap = new Map<string, {
+                    date: string;
+                    morningMax: number;
+                    afternoonMax: number;
+                }>();
+                
+                filteredDates.forEach(item => {
+                    const day = item.date.split('T')[0];
+                    const morningVal = typeof item.morning === 'number' ? item.morning : 0;
+                    const afternoonVal = typeof item.afternoon === 'number' ? item.afternoon : 0;
+                    
+                    if (dayMap.has(day)) {
+                        const dayData = dayMap.get(day)!;
+                        dayData.morningMax = Math.max(dayData.morningMax, morningVal);
+                        dayData.afternoonMax = Math.max(dayData.afternoonMax, afternoonVal);
+                    } else {
+                        dayMap.set(day, {
+                            date: `${day}T12:00:00`,
+                            morningMax: morningVal,
+                            afternoonMax: afternoonVal
+                        });
+                    }
+                });
+                
+                return Array.from(dayMap.values()).map(item => ({
+                    date: item.date,
+                    morning: item.morningMax,
+                    afternoon: item.afternoonMax
+                }));
+            }
+            
+            return filteredDates;
+        }
+        
+        // Pour les données fournies ou data par défaut
         if (viewMode === "hour") {
             // En mode horaire
             if (timeRange === "today") {
@@ -302,14 +326,14 @@ export function BarChartComponent({
                 const targetDate = new Date("2025-05-05");
                 const targetDateStr = targetDate.toISOString().split('T')[0]; // "2025-05-05"
 
-                return data.filter(item => {
+                return effectiveData.filter(item => {
                     return item.date.startsWith(targetDateStr);
                 });
             } else if (timeRange === "in3days") {
                 // Pour "3 prochains jours", montrer les données horaires des 3 jours
                 const relevantDays = ["2025-05-03", "2025-05-04", "2025-05-05"];
 
-                return data.filter(item => {
+                return effectiveData.filter(item => {
                     const itemDateStr = item.date.split('T')[0];
                     return relevantDays.includes(itemDateStr);
                 });
@@ -317,7 +341,7 @@ export function BarChartComponent({
                 // Pour "5 prochains jours", montrer les données horaires des 5 jours
                 const relevantDays = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05"];
 
-                return data.filter(item => {
+                return effectiveData.filter(item => {
                     const itemDateStr = item.date.split('T')[0];
                     return relevantDays.includes(itemDateStr);
                 });
@@ -346,7 +370,7 @@ export function BarChartComponent({
                 // Créer un tableau agrégé par jour
                 const dailyData = relevantDays.map(day => {
                     // Filtrer les entrées pour ce jour
-                    const dayEntries = data.filter(item => item.date.startsWith(day));
+                    const dayEntries = effectiveData.filter(item => item.date.startsWith(day));
 
                     // Calculer les MAXIMUMS pour ce jour
                     const morningMax = Math.max(...dayEntries.map(entry => (typeof entry.morning === 'number' ? entry.morning : 0)));
@@ -364,7 +388,7 @@ export function BarChartComponent({
 
             return [];
         }
-    }, [data, timeRange, viewMode]);
+    }, [effectiveData, timeRange, viewMode, isHookData, hookData, isLoading, data]);
 
     // Calculer les totaux pour chaque clé de données
     const total = React.useMemo(() => {
@@ -404,6 +428,40 @@ export function BarChartComponent({
 
     // Déterminer si le sélecteur de vue doit être affiché
     const showViewModeSelector = timeRange !== "today";
+
+    // Gestion de l'état de chargement
+    if (!data && isLoading) {
+        return (
+            <Card>
+                <CardHeader className="flex flex-col space-y-2 border-b p-5">
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>Chargement des données de fréquentation...</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-[300px]">
+                    <div className="text-center">
+                        <p>Chargement en cours...</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Gestion des erreurs
+    if (!data && error) {
+        return (
+            <Card>
+                <CardHeader className="flex flex-col space-y-2 border-b p-5">
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>Erreur lors du chargement des données</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-[300px]">
+                    <div className="text-center text-red-500">
+                        <p>Erreur: {error}</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
@@ -450,70 +508,76 @@ export function BarChartComponent({
             </div>
 
             <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6 pb-6">
-                <ChartContainer
-                    config={chartConfig}
-                    className="aspect-auto h-[300px] w-full"
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <RechartsBarChart
-                            accessibilityLayer
-                            data={processedData}
-                            margin={{
-                                left: 40,
-                                right: 12,
-                                top: 10,
-                                bottom: 20
-                            }}
-                        >
-                            <CartesianGrid 
-                                vertical={true} 
-                                horizontal={true} 
-                                strokeDasharray="3 3" 
-                                opacity={0.4} 
-                            />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={true}
-                                tickMargin={8}
-                                minTickGap={viewMode === "hour" ? 25 : 10}
-                                tickFormatter={formatXAxisTick}
-                                interval={viewMode === "hour" ? 2 : 0}
-                            />
-                            <YAxis 
-                                tickFormatter={formatYAxisTick} 
-                                tickLine={false}
-                                axisLine={true}
-                                tickMargin={8}
-                                label={{ 
-                                    value: 'Visiteurs', 
-                                    angle: -90, 
-                                    position: 'insideLeft',
-                                    offset: -20,
-                                    style: {
-                                        textAnchor: 'middle',
-                                        fill: 'var(--foreground)',
-                                        fontSize: 12
-                                    }
+                {processedData.length === 0 ? (
+                    <div className="flex items-center justify-center h-[300px]">
+                        <p className="text-gray-500">Aucune donnée disponible pour la période sélectionnée</p>
+                    </div>
+                ) : (
+                    <ChartContainer
+                        config={chartConfig}
+                        className="aspect-auto h-[300px] w-full"
+                    >
+                        <ResponsiveContainer width="100%" height="100%">
+                            <RechartsBarChart
+                                accessibilityLayer
+                                data={processedData}
+                                margin={{
+                                    left: 40,
+                                    right: 12,
+                                    top: 10,
+                                    bottom: 20
                                 }}
-                            />
-                            <Tooltip
-                                content={<CustomTooltip viewMode={viewMode} />}
-                                cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-                            />
-                            <Bar
-                                dataKey={activeChart}
-                                fill={activeChart === "morning"
-                                    ? "hsl(214, 82.10%, 60.60%)" // Bleu pour le matin
-                                    : "hsl(207, 100.00%, 39.00%)" // Bleu légèrement plus foncé pour l'après-midi
-                                }
-                                radius={[4, 4, 0, 0]}
-                                animationDuration={500}
-                                animationEasing="ease-out"
-                            />
-                        </RechartsBarChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
+                            >
+                                <CartesianGrid 
+                                    vertical={true} 
+                                    horizontal={true} 
+                                    strokeDasharray="3 3" 
+                                    opacity={0.4} 
+                                />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    axisLine={true}
+                                    tickMargin={8}
+                                    minTickGap={viewMode === "hour" ? 25 : 10}
+                                    tickFormatter={formatXAxisTick}
+                                    interval={viewMode === "hour" ? 2 : 0}
+                                />
+                                <YAxis 
+                                    tickFormatter={formatYAxisTick} 
+                                    tickLine={false}
+                                    axisLine={true}
+                                    tickMargin={8}
+                                    label={{ 
+                                        value: 'Visiteurs', 
+                                        angle: -90, 
+                                        position: 'insideLeft',
+                                        offset: -20,
+                                        style: {
+                                            textAnchor: 'middle',
+                                            fill: 'var(--foreground)',
+                                            fontSize: 12
+                                        }
+                                    }}
+                                />
+                                <Tooltip
+                                    content={<CustomTooltip viewMode={viewMode} />}
+                                    cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+                                />
+                                <Bar
+                                    dataKey={activeChart}
+                                    fill={activeChart === "morning"
+                                        ? "hsl(214, 82.10%, 60.60%)" // Bleu pour le matin
+                                        : "hsl(207, 100.00%, 39.00%)" // Bleu légèrement plus foncé pour l'après-midi
+                                    }
+                                    radius={[4, 4, 0, 0]}
+                                    animationDuration={500}
+                                    animationEasing="ease-out"
+                                />
+                            </RechartsBarChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                )}
 
                 <div className="mt-4 text-sm text-center text-gray-500">
                     <p>Les données affichées représentent la fréquentation des plages durant la saison estivale 2025.</p>
@@ -533,7 +597,6 @@ export function Component() {
         <BarChartComponent
             title="Fréquentation des plages"
             description="Nombre de visiteurs par période"
-            data={chartData}
             dataKeys={["morning", "afternoon"]}
         />
     )

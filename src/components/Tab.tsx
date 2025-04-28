@@ -6,7 +6,8 @@ import { ChartAllData } from "./ChartAllData";
 import Bilan from "./Bilan";
 import { SecurityIndexChart } from "./SecurityIndexChart";
 import { useWeather } from "../context/WeatherContext";
-import { useShoreBreakData } from "../hooks/useShoreBreakData"; // Import du nouveau hook
+import { useShoreBreakData } from "../hooks/useShoreBreakData";
+import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData"; // Import du nouveau hook
 import { BarChart } from "./BarChart";
 import Toggle from "./Toggle";
 
@@ -51,7 +52,21 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     }, []);
 
     // Utiliser le hook useShoreBreakData pour obtenir les indices shore break
-    const { indices: shoreBreakIndices, dates: shoreBreakDates, isLoading: shoreBreakLoading, error: shoreBreakError } = useShoreBreakData();
+    const {
+        indices: shoreBreakIndices,
+        dates: shoreBreakDates,
+        isLoading: shoreBreakLoading,
+        error: shoreBreakError
+    } = useShoreBreakData();
+
+    // Utiliser notre nouveau hook pour obtenir les données de fréquentation
+    const {
+        dates: attendanceDates,
+        morningAttendance,
+        afternoonAttendance,
+        isLoading: attendanceLoading,
+        error: attendanceError
+    } = useBeachAttendanceData();
 
     // Utiliser le contexte weather pour obtenir les heures
     const { hours } = useWeather();
@@ -97,6 +112,22 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // Pour la visualisation, utiliser soit les dates du shore break soit les heures du contexte météo
     const displayHours = shoreBreakDates.length > 0 ? shoreBreakDates : hours;
 
+    // Préparer les données pour le BarChart (utilisé quand chartType est 'bar')
+    // Convertir les données du hook useBeachAttendanceData au format attendu par BarChart
+    const barChartData = React.useMemo(() => {
+        if (attendanceLoading || attendanceDates.length === 0) {
+            return [];
+        }
+
+        // Créer des données adaptées pour BarChart
+        return attendanceDates.map((date, index) => ({
+            date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+            time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            morning: morningAttendance[index] || 0,
+            afternoon: afternoonAttendance[index] || 0,
+        }));
+    }, [attendanceDates, morningAttendance, afternoonAttendance, attendanceLoading]);
+
     return (
         <div className="tabs tabs-lift w-full max-w-full flex flex-wrap">
             <input
@@ -141,11 +172,20 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                 onChange={togglePrevisionChartType}
                                 className="m-2 ml-2 w-53"
                             />
-                            {previsionChartType === 'bar' ? (
+                            {attendanceLoading ? (
+                                <div className="h-[300px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données de fréquentation...</p>
+                                </div>
+                            ) : attendanceError ? (
+                                <div className="h-[300px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {attendanceError}</p>
+                                </div>
+                            ) : previsionChartType === 'bar' ? (
                                 <BarChart
                                     title="Fréquentation des plages"
                                     description="Nombre de visiteurs par période"
                                     dataKeys={["morning", "afternoon"]}
+                                    data={barChartData}
                                 />
                             ) : (
                                 <ChartAllData />
@@ -182,7 +222,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 onChange={() => handleTabChange("frequentation")}
             />
             <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <div className="flex items-center  flex-wrap gap-2 mb-4">
+                <div className="flex items-center flex-wrap gap-2 mb-4">
                     <h2 className="text-xl font-bold text-slate-950">Fréquentation des plages</h2>
                     <Toggle
                         leftLabel="Courbes"
@@ -194,7 +234,15 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 </div>
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex justify-center w-full">
-                        {chartType === 'line' ? (
+                        {attendanceLoading ? (
+                            <div className="h-[300px] w-full flex items-center justify-center bg-slate-100 rounded">
+                                <p>Chargement des données de fréquentation...</p>
+                            </div>
+                        ) : attendanceError ? (
+                            <div className="h-[300px] w-full flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                <p>Erreur: {attendanceError}</p>
+                            </div>
+                        ) : chartType === 'line' ? (
                             <ChartAllData />
                         ) : (
                             <div className="w-full">
@@ -202,6 +250,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                     title="Fréquentation des plages"
                                     description="Nombre de visiteurs par période"
                                     dataKeys={["morning", "afternoon"]}
+                                    data={barChartData}
                                 />
                             </div>
                         )}
