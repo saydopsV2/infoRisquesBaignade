@@ -321,33 +321,6 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
 
-              {/* Shore Break Hazard Level */}
-              <tr className="bg-blue-100">
-                <td className={titleCellClass}>Danger Shore Break</td>
-                {safeShoreBreakHazardLevels.map((level, index) => (
-                  index < allDisplayHours.length && (
-                    <td
-                      key={`shore-hazard-${index}`}
-                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
-                    >
-                      {level}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr>
-                <td className={titleCellClass}>Graph. Shore Break</td>
-                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
-                  <ShoreBreakHazardChart hours={allDisplayHours} indices={safeIndices.slice(0, allDisplayHours.length).map(index => index === null ? 0 : index)} />
-                </td>
-              </tr>
-              <tr className="h-2">
-                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {allDisplayHours.map((_, index) => (
-                  <td key={`spacer-sb-rip-${index}`} className="border-r bg-gray-300"></td>
-                ))}
-              </tr>
-
               {/* Rip Current Hazard Level */}
               <tr className="bg-blue-50">
                 <td className={titleCellClass}>Danger Courant</td>
@@ -370,6 +343,33 @@ const Table: React.FC<TableProps> = ({ location }) => {
                     velocities={safeVelocities.slice(0, allDisplayHours.length).map(v => v === null ? 0 : v)}
                     hazardLevels={safeRipCurrentHazardLevels.slice(0, allDisplayHours.length).map(h => h === null ? 0 : h)}
                   />
+                </td>
+              </tr>
+              <tr className="h-2">
+                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                {allDisplayHours.map((_, index) => (
+                  <td key={`spacer-sb-rip-${index}`} className="border-r bg-gray-300"></td>
+                ))}
+              </tr>
+
+              {/* Shore Break Hazard Level */}
+              <tr className="bg-blue-100">
+                <td className={titleCellClass}>Danger Shore Break</td>
+                {safeShoreBreakHazardLevels.map((level, index) => (
+                  index < allDisplayHours.length && (
+                    <td
+                      key={`shore-hazard-${index}`}
+                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                    >
+                      {level}
+                    </td>
+                  )
+                ))}
+              </tr>
+              <tr>
+                <td className={titleCellClass}>Graph. Shore Break</td>
+                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
+                  <ShoreBreakHazardChart hours={allDisplayHours} indices={safeIndices.slice(0, allDisplayHours.length).map(index => index === null ? 0 : index)} />
                 </td>
               </tr>
               <tr className="h-2">
@@ -430,12 +430,6 @@ const Table: React.FC<TableProps> = ({ location }) => {
                     </td>
                   )
                 ))}
-              </tr>
-              <tr>
-                <td className={titleCellClass}>Graph. Temp.</td>
-                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
-                  <TemperatureChart />
-                </td>
               </tr>
               <tr className="bg-blue-50">
                 <td className={titleCellClass}>Indice UV</td>

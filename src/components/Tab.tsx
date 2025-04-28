@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
-import { TemperatureChart } from "./TemperatureChart";
 import { ChartAllData } from "./BeachAttendanceLineChart";
 import Bilan from "./Bilan";
 import { ShoreBreakHazardChart } from "./ShoreBreakHazardChart";
@@ -81,16 +80,12 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // États pour gérer les onglets actifs
     const [activeTab, setActiveTab] = useState<string>("tableau");
 
-    // État pour gérer le type de graphique dans l'onglet Fréquentation
-    const [chartType, setChartType] = useState<'line' | 'bar'>('line');
+    
 
     // État pour gérer le type de graphique dans l'onglet Prévisions
     const [previsionChartType, setPrevisionChartType] = useState<'line' | 'bar'>('bar');
 
-    // Fonction pour basculer entre les types de graphiques (fréquentation)
-    const toggleChartType = () => {
-        setChartType(prevType => prevType === 'line' ? 'bar' : 'line');
-    };
+    
 
     // Fonction pour basculer entre les types de graphiques (prévisions)
     const togglePrevisionChartType = () => {
@@ -155,6 +150,40 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 </div>
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex flex-col space-y-8">
+                        <div className="w-full bg-white rounded shadow-md p-4">
+                            <h3 className="text-lg font-semibold mb-2">Risque Courant d'Arrachement</h3>
+                            {ripCurrentLoading ? (
+                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données de courant...</p>
+                                </div>
+                            ) : ripCurrentError ? (
+                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {ripCurrentError}</p>
+                                </div>
+                            ) : (
+                                <RipCurrentHazardChart 
+                                    hours={displayHours} 
+                                    velocities={ripCurrentVelocities} 
+                                    hazardLevels={ripCurrentHazardLevels} 
+                                />
+                            )}
+                        </div>
+                        <div className="w-full bg-white rounded shadow-md p-4">
+                            <h3 className="text-lg font-semibold mb-2">Indice Risques Shore Break</h3>
+                            {shoreBreakLoading ? (
+                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données...</p>
+                                </div>
+                            ) : shoreBreakError ? (
+                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {shoreBreakError}</p>
+                                </div>
+                            ) : (
+                                <ShoreBreakHazardChart hours={displayHours} indices={shoreBreakIndices} />
+                            )}
+                        </div>
+
+                        
                         <div className="w-full">
                             <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
                             <Toggle
@@ -178,84 +207,6 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                 <ChartAllData />
                             )}
                         </div>
-                        <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Indice Risques Shore Break</h3>
-                            {shoreBreakLoading ? (
-                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
-                                    <p>Chargement des données...</p>
-                                </div>
-                            ) : shoreBreakError ? (
-                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
-                                    <p>Erreur: {shoreBreakError}</p>
-                                </div>
-                            ) : (
-                                <ShoreBreakHazardChart hours={displayHours} indices={shoreBreakIndices} />
-                            )}
-                        </div>
-
-                        <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Risque Courant d'Arrachement</h3>
-                            {ripCurrentLoading ? (
-                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
-                                    <p>Chargement des données de courant...</p>
-                                </div>
-                            ) : ripCurrentError ? (
-                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
-                                    <p>Erreur: {ripCurrentError}</p>
-                                </div>
-                            ) : (
-                                <RipCurrentHazardChart 
-                                    hours={displayHours} 
-                                    velocities={ripCurrentVelocities} 
-                                    hazardLevels={ripCurrentHazardLevels} 
-                                />
-                            )}
-                        </div>
-                        
-                        <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Températures</h3>
-                            <TemperatureChart />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <input
-                type="radio"
-                name="my_tabs_3"
-                className={getTabClass("frequentation")}
-                style={responsiveStyle}
-                aria-label="Fréquentation des plages"
-                onChange={() => handleTabChange("frequentation")}
-            />
-            <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <div className="flex items-center flex-wrap gap-2 mb-4">
-                    <h2 className="text-xl font-bold text-slate-950">Fréquentation des plages</h2>
-                    <Toggle
-                        leftLabel="Courbes"
-                        rightLabel="Histogrammes"
-                        isChecked={chartType === 'bar'}
-                        onChange={toggleChartType}
-                        className="ml-2"
-                    />
-                </div>
-                <div className="beach-data w-full overflow-hidden">
-                    <div className="mt-4 flex justify-center w-full">
-                        {attendanceLoading ? (
-                            <div className="h-[300px] w-full flex items-center justify-center bg-slate-100 rounded">
-                                <p>Chargement des données de fréquentation...</p>
-                            </div>
-                        ) : attendanceError ? (
-                            <div className="h-[300px] w-full flex items-center justify-center bg-red-100 text-red-700 rounded">
-                                <p>Erreur: {attendanceError}</p>
-                            </div>
-                        ) : chartType === 'line' ? (
-                            <ChartAllData />
-                        ) : (
-                            <div className="w-full">
-                                <BeachAttendanceBarChart/>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
