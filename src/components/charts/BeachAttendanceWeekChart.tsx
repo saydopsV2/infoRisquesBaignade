@@ -239,7 +239,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                         margin={{
                             top: 10,
                             right: 30,
-                            left: inTable ? -45 : 10, // Marge gauche négative si dans tableau
+                            left: inTable ? -45 : 5, // Marge gauche négative si dans tableau
                             bottom: 0,
                         }}
                     >
