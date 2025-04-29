@@ -28,7 +28,6 @@ const DAYS_TO_DISPLAY = 7;
 const DAYS_TO_DISPLAY_FORECAST = 4; // Nouveau : pour les graphiques des indices
 const HOURS_PER_DAY = 24;
 const TOTAL_HOURS = DAYS_TO_DISPLAY * HOURS_PER_DAY;
-const FORECAST_TOTAL_HOURS = DAYS_TO_DISPLAY_FORECAST * HOURS_PER_DAY;
 
 // Components
 const LegendItem: React.FC<{ item: LegendItem }> = ({ item }) => (
@@ -73,7 +72,7 @@ const formatDate = (date: Date): string => {
 const Table: React.FC<TableProps> = ({ location }) => {
   const [currentDate] = useState(new Date());
   const [displayDays, setDisplayDays] = useState<Date[]>([]);
-  const [forecastDays, setForecastDays] = useState<Date[]>([]);
+  const [_, setForecastDays] = useState<Date[]>([]);
 
   // Utilisation du hook pour obtenir les données shore break
   const {
@@ -202,8 +201,6 @@ const Table: React.FC<TableProps> = ({ location }) => {
   // Obtenir toutes les heures pour les 7 jours
   const allDisplayHours = generateHoursForDays(displayDays);
   
-  // Obtenir les heures pour les 4 jours de prévision
-  const forecastDisplayHours = generateHoursForDays(forecastDays);
 
   // Ensure we have data for all days
   const extendDataArray = (dataArray: number[], defaultValue: number | null = 0): (number | null)[] => {
