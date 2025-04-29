@@ -1,7 +1,7 @@
 const HeadBand = () => {
   return (
     <div className="bg-yellow-50 shadow-md py-4 px-6 rounded-lg my-4 mx-auto max-w-7xl">
-      <div className="text-center mb-2 text-lg text-slate-600 font-medium">
+      <div className="text-center mb-2 text-lg text-slate-600 font-bold">
         Projet soutenu par :
       </div>
       <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
@@ -75,6 +75,23 @@ const HeadBand = () => {
             src={`${import.meta.env.BASE_URL}img/logoRegion.png`} 
             alt="Region Logo" 
             className="h-12 md:h-16 object-contain"
+          />
+        </a>
+      </div>
+      <div className="text-center mt-6 text-lg text-slate-600 font-bold">
+        Projet Réalisé par :
+      </div>
+      <div className="flex flex-wrap items-center justify-center ">
+        <a 
+          href="https://www.epoc.u-bordeaux.fr/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="transition-transform hover:scale-105 focus:scale-105"
+        >
+          <img 
+            src={`${import.meta.env.BASE_URL}img/logoEpoc.png`} 
+            alt="Logo Epoc" 
+            className="h-80 md:h-30 object-contain"
           />
         </a>
       </div>
