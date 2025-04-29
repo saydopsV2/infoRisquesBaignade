@@ -14,6 +14,7 @@ interface RipCurrentChartProps {
     velocities?: number[];
     hazardLevels?: number[];
     inTable?: boolean;
+    showDayNightZones?: boolean; // Ajout de cette propriété
 }
 
 // Configuration du graphique
@@ -83,7 +84,13 @@ export const getRipCurrentColorClass = (velocity: number | null): string => {
 };
 
 // Version autonome du graphique de courant d'arrachement
-export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevels = [], inTable = false }: RipCurrentChartProps) {
+export function RipCurrentHazardChart({ 
+    hours = [], 
+    velocities = [], 
+    hazardLevels = [], 
+    inTable = false,
+    showDayNightZones = true // Valeur par défaut à true pour maintenir le comportement actuel
+}: RipCurrentChartProps) {
     // État pour s'assurer que le graphique est complètement rendu avant d'afficher les zones grisées
     const [isChartReady, setIsChartReady] = useState(false);
 
@@ -136,7 +143,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                         margin={{
                             top: 10,
                             right: 30,
-                            left: inTable ? -45 : 10, // Marge gauche négative si dans tableau
+                            left: inTable ? -45 : -55, // Marge gauche négative si dans tableau
                             bottom: 0,
                         }}
                     >
@@ -230,8 +237,8 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                 </ResponsiveContainer>
             </ChartContainer>
 
-            {/* Afficher les zones grisées seulement quand le graphique est prêt */}
-            {isChartReady && (
+            {/* Afficher les zones grisées seulement quand le graphique est prêt et si showDayNightZones est true */}
+            {isChartReady && showDayNightZones && (
                 <DayNightZones
                     numberOfDays={numberOfDays}
                     nightStartHour={20}
