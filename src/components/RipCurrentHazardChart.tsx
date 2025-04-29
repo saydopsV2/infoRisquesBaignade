@@ -209,7 +209,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                             stroke="url(#ripCurrentGradient)"
                             fill="url(#ripCurrentPattern)"
                             fillOpacity={1}
-                            strokeWidth={4}
+                            strokeWidth={6}
                             name="Courant de baïne"
                             activeDot={(props) => {
                                 const { cx, cy, payload } = props;

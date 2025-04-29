@@ -318,7 +318,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                             dataKey="beachAttendance"
                             stroke="url(#attendanceGradient)"
                             fill="url(#attendancePattern)"
-                            strokeWidth={3}
+                            strokeWidth={6}
                             dot={false} // Pas de points pour les 4 jours
                             activeDot={(props: any) => {
                                 const { cx, cy, payload } = props;
@@ -327,9 +327,9 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                                 return (
                                     <g>
                                         {/* Cercle extérieur blanc */}
-                                        <circle cx={cx} cy={cy} r={7} fill="white" />
+                                        <circle cx={cx} cy={cy} r={10} fill="white" />
                                         {/* Cercle intérieur coloré */}
-                                        <circle cx={cx} cy={cy} r={5} fill={color} />
+                                        <circle cx={cx} cy={cy} r={8} fill={color} />
                                     </g>
                                 );
                             }}
