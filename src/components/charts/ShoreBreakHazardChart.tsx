@@ -6,7 +6,7 @@ import {
     ChartContainer,
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
-import { DayNightZones } from "./DayNightZone"; // Importation de votre composant DayNightZones existant
+import { DayNightZones } from "../DayNightZone"; // Importation de votre composant DayNightZones existant
 
 // Interface pour les props
 interface ShoreBreakHazardChartProps {

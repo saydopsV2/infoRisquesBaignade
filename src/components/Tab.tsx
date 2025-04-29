@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
-import { ChartAllData } from "./BeachAttendanceLineChart";
+import { ChartAllData } from "./charts/BeachAttendanceLineChart";
 import Bilan from "./Bilan";
-import { ShoreBreakHazardChart } from "./ShoreBreakHazardChart";
+import { ShoreBreakHazardChart } from "./charts/ShoreBreakHazardChart";
 import { useShoreBreakData } from "../hooks/useShoreBreakData";
 import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData";
-import { RipCurrentHazardChart } from "./RipCurrentHazardChart";
+import { RipCurrentHazardChart } from "./charts/RipCurrentHazardChart";
 import { useRipCurrentData } from "../hooks/useRipCurrentData";
 import {
     Select,

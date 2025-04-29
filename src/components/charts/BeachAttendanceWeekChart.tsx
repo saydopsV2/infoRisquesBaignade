@@ -4,7 +4,7 @@ import {
     ChartContainer,
 } from "@/components/ui/chart";
 import { useBeachAttendanceData } from "@/hooks/useBeachAttendanceData";
-import { DayNightZones } from "./DayNightZone"; 
+import { DayNightZones } from "../DayNightZone"; 
 // Configuration du graphique
 const chartConfig = {
     beachAttendance: {

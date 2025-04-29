@@ -5,8 +5,8 @@ import {
   ChartConfig,
   ChartContainer,
 } from "@/components/ui/chart";
-import { useWeather } from "../context/WeatherContext";
-import { DayNightZones } from "./DayNightZone"; 
+import { useWeather } from "../../context/WeatherContext";
+import { DayNightZones } from "../DayNightZone"; 
 
 // Interface pour les données du graphique explicites
 interface ChartProps {

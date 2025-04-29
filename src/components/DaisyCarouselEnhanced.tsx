@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import TiltedCard from "./TiltedCard";
+import TiltedCard from "./charts/TiltedCard";
 
 interface CarouselItem {
     imageSrc: string;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Beach from '../interface/Beach';
-import { ShoreBreakHazardChart } from './ShoreBreakHazardChart';
-import { RipCurrentHazardChart } from './RipCurrentHazardChart';
+import { ShoreBreakHazardChart } from './charts/ShoreBreakHazardChart';
+import { RipCurrentHazardChart } from './charts/RipCurrentHazardChart';
 import { useWeather } from '../context/WeatherContext';
 import { useWindForecast } from '../context/WindForecastContext';
 import { useWaveForecast } from '../context/WaveForecastContext';
@@ -9,7 +9,7 @@ import DirectionArrow from './DirectionArrow';
 import { useShoreBreakData } from '../hooks/useShoreBreakData';
 import { useRipCurrentData } from '../hooks/useRipCurrentData';
 import { useBeachAttendanceData } from '../hooks/useBeachAttendanceData';
-import { ChartAllDataWeek } from './BeachAttendanceWeekChart';
+import { ChartAllDataWeek } from './charts/BeachAttendanceWeekChart';
 
 // Types
 interface TableProps {
