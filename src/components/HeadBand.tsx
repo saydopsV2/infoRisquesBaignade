@@ -91,7 +91,7 @@ const HeadBand = () => {
           <img 
             src={`${import.meta.env.BASE_URL}img/logoEpoc.png`} 
             alt="Logo Epoc" 
-            className="h-80 md:h-30 object-contain"
+            className="h-30 md:h-40 object-contain"
           />
         </a>
       </div>
