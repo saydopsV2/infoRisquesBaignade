@@ -32,7 +32,7 @@ interface ShapeProps {
 }
 
 // Type pour les vues temporelles
-type TimeView = "today" | "plus3days" | "plus5days";
+type TimeView = "today" | "plus3days" | "plus5days" | "plus7days";
 
 // Fonction pour obtenir la couleur basée sur le niveau de risque
 const getHazardLevelColor = (level: number | null): string => {
@@ -141,7 +141,7 @@ const createLevelShape = (level: number) => {
 
 export function ChartAllData() {
     // État pour la vue temporelle actuelle
-    const [activeView, setActiveView] = useState<TimeView>("plus5days");
+    const [activeView, setActiveView] = useState<TimeView>("plus7days");
     
     // Utiliser le hook pour récupérer les données
     const { 
@@ -191,7 +191,10 @@ export function ChartAllData() {
                 limitDate.setDate(today.getDate() + 3); // +3 jours
                 break;
             case "plus5days":
-                limitDate.setDate(today.getDate() + 4); // +4 jours
+                limitDate.setDate(today.getDate() + 5); // +5 jours
+                break;
+            case "plus7days":
+                limitDate.setDate(today.getDate() + 7); // +7 jours
                 break;
         }
         
@@ -250,7 +253,8 @@ export function ChartAllData() {
                             <SelectValue placeholder="Sélectionner une période" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="plus5days">+4 jours</SelectItem>
+                            <SelectItem value="plus7days">+7 jours</SelectItem>
+                            <SelectItem value="plus5days">+5 jours</SelectItem>
                             <SelectItem value="plus3days">+3 jours</SelectItem>
                             <SelectItem value="today">Aujourd'hui</SelectItem>
                         </SelectContent>
@@ -356,7 +360,7 @@ export function ChartAllData() {
                             dataKey="beachAttendance"
                             stroke="url(#attendanceGradient)"
                             fill="url(#attendancePattern)"
-                            strokeWidth={3}
+                            strokeWidth={4}
                             dot={{ r: 1 }}
                             activeDot={(props: any) => {
                                 const { cx, cy, payload } = props;

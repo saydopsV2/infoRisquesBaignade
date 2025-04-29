@@ -4,8 +4,7 @@ import {
     ChartContainer,
 } from "@/components/ui/chart";
 import { useBeachAttendanceData } from "@/hooks/useBeachAttendanceData";
-import { useEffect, useRef, useState } from "react";
-
+import { DayNightZones } from "./DayNightZone"; 
 // Configuration du graphique
 const chartConfig = {
     beachAttendance: {
@@ -25,8 +24,8 @@ interface ShapeProps {
 // Fonction pour obtenir la couleur basée sur le niveau de risque
 const getHazardLevelColor = (level: number | null): string => {
     if (level === null) return "#94a3b8"; // Gris par défaut
-    
-    switch(level) {
+
+    switch (level) {
         case 0: return "#e5e7eb"; // Gris clair - Niveau 0
         case 1: return "#51a336"; // Vert - Niveau 1
         case 2: return "#ebe102"; // Jaune - Niveau 2
@@ -53,24 +52,24 @@ const CustomTooltip = ({ active, payload }: any) => {
         const hazardLevel = payload.length > 1 && payload[0]?.payload?.hazardLevel !== undefined
             ? payload[0].payload.hazardLevel
             : null;
-        
+
         // Récupérer la date complète
         const item = payload[0].payload;
         const dateObj = item?.originalDate instanceof Date ? item.originalDate : new Date();
-        
+
         // Formater la date pour afficher le jour et l'heure
         const formattedDate = dateObj.toLocaleDateString('fr-FR', {
             weekday: 'long',
             month: 'long',
             day: 'numeric'
         });
-        
+
         // Formater l'heure
         const formattedTime = dateObj.toLocaleTimeString('fr-FR', {
             hour: '2-digit',
             minute: '2-digit'
         });
-        
+
         // Première lettre en majuscule
         const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
 
@@ -107,93 +106,40 @@ const CustomTooltip = ({ active, payload }: any) => {
 const createLevelShape = (level: number) => {
     return (props: ShapeProps) => {
         const { cx = 0, cy = 0, payload } = props;
-        
+
         // Si le niveau de risque correspond, afficher le point
         if (payload?.hazardLevel === level) {
             return (
-                <circle 
-                    cx={cx} 
-                    cy={cy} 
-                    r={5} 
+                <circle
+                    cx={cx}
+                    cy={cy}
+                    r={5}
                     fill={getHazardLevelColor(level)}
                     stroke="#fff"
                     strokeWidth={1}
                 />
             );
         }
-        
+
         // Si le niveau ne correspond pas, retourner un élément vide au lieu de null
         return <circle cx={0} cy={0} r={0} opacity={0} />;
     };
 };
 
-// Composant pour les zones grisées en dehors de 11h-20h
-const DayNightZones = () => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState(0);
-    
-    useEffect(() => {
-        const updateWidth = () => {
-            if (containerRef.current) {
-                setContainerWidth(containerRef.current.clientWidth);
-            }
-        };
-        
-        updateWidth();
-        window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
-    }, []);
-
-    // Pour la vue semaine, limité à 4 jours
-    const numberOfDays = 4;
-    const dayWidth = containerWidth / numberOfDays;
-    
-    return (
-        <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
-            {Array.from({ length: numberOfDays }).map((_, dayIndex) => {
-                const dayStart = dayIndex * dayWidth;
-                const hourWidth = dayWidth / 24;
-                
-                return (
-                    <div key={dayIndex}>
-                        {/* Zone grisée de 0h à 11h */}
-                        <div 
-                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
-                            style={{ 
-                                left: `${dayStart}px`,
-                                width: `${hourWidth * 11}px`
-                            }}
-                        />
-                        
-                        {/* Zone grisée de 20h à 24h */}
-                        <div 
-                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
-                            style={{ 
-                                left: `${dayStart + hourWidth * 20}px`,
-                                width: `${hourWidth * 4}px`
-                            }}
-                        />
-                    </div>
-                );
-            })}
-        </div>
-    );
-};
-
 // Ajoutez inTable à l'interface des props
 interface ChartAllDataWeekProps {
-  inTable?: boolean;
+    inTable?: boolean;
 }
 
 // Assurez-vous que le composant accepte cette prop
 export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
     // Utiliser le hook pour récupérer les données
-    const { 
-        attendanceValues: originalAttendanceValues, 
-        hazardLevels, 
-        dates, 
-        isLoading, 
-        error 
+    const {
+        attendanceValues: originalAttendanceValues,
+        hazardLevels,
+        dates,
+        isLoading,
+        error
     } = useBeachAttendanceData();
 
     // Si les données sont en cours de chargement, afficher un indicateur
@@ -220,15 +166,15 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
         );
     }
 
-    // Fonction pour filtrer les données sur 4 jours
-    const filterDataFor4Days = () => {
+    // Fonction pour filtrer les données sur 7 jours au lieu de 4
+    const filterDataFor7Days = () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        // Date limite à 4 jours
+
+        // Date limite à 7 jours
         const limitDate = new Date(today);
-        limitDate.setDate(today.getDate() + 4); // limiter à 4 jours
-        
+        limitDate.setDate(today.getDate() + 7); // limiter à 7 jours
+
         // Filtrer les données selon la limite de date
         return dates.map((date, index) => {
             // Ne garder que les données jusqu'à la date limite
@@ -242,11 +188,11 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
         }).filter(item => item !== null) as { index: number; date: Date }[];
     };
 
-    // Filtrer les données pour 4 jours
-    const filteredDateIndices = filterDataFor4Days();
-    
+    // Filtrer les données pour 7 jours
+    const filteredDateIndices = filterDataFor7Days();
+
     // Convertir les valeurs de fréquentation de visiteurs (0-500) en pourcentage (0-100)
-    const attendanceValues = originalAttendanceValues.map(value => 
+    const attendanceValues = originalAttendanceValues.map(value =>
         value !== null ? (value / 500) * 100 : null
     );
 
@@ -255,14 +201,14 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
         const date = dates[index];
         // Si la valeur est 0, on la remplace par null pour couper la ligne
         const rawAttendancePercent = attendanceValues[index];
-        const attendancePercent = (rawAttendancePercent !== undefined && rawAttendancePercent !== 0) 
-            ? rawAttendancePercent 
+        const attendancePercent = (rawAttendancePercent !== undefined && rawAttendancePercent !== 0)
+            ? rawAttendancePercent
             : null;
         const hazardLevel = hazardLevels[index] !== undefined ? hazardLevels[index] : null;
-        
+
         // Formater la date pour l'axe X
         const xAxisDate = date instanceof Date ? formatXAxisDate(date) : "";
-        
+
         return {
             xAxisDate,
             beachAttendance: attendancePercent,
@@ -304,7 +250,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                                     );
                                 })}
                             </linearGradient>
-                            
+
                             {/* Gradients verticaux pour l'aire sous la courbe */}
                             {chartData.map((item, index) => (
                                 <linearGradient
@@ -319,7 +265,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                                     <stop offset="100%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.1} />
                                 </linearGradient>
                             ))}
-                            
+
                             {/* Pattern qui combine les gradients verticaux */}
                             <pattern id="attendancePattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
                                 {chartData.map((_, index, arr) => {
@@ -327,7 +273,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                                     const width = index < arr.length - 1
                                         ? (1 / (arr.length - 1)) * 100
                                         : (1 / arr.length) * 100;
-                                    
+
                                     return (
                                         <rect
                                             key={index}
@@ -343,7 +289,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                         </defs>
 
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
+                        <XAxis
                             dataKey="xAxisDate"
                             tickLine={false}
                             axisLine={true}
@@ -365,7 +311,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                         />
                         <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
                         <Legend align="right" verticalAlign="top" iconSize={12} wrapperStyle={{ paddingBottom: 10 }} />
-                        
+
                         {/* Ligne continue de fréquentation avec gradient de couleur */}
                         <Line
                             type="monotone"
@@ -389,7 +335,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                             }}
                             name="Prévision d'affluence"
                         />
-                        
+
                         {/* Points colorés par niveau de risque */}
                         {[0, 1, 2, 3, 4].map(level => {
                             const levelNames = [
@@ -413,9 +359,13 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                     </ComposedChart>
                 </ResponsiveContainer>
             </ChartContainer>
-            
-            {/* Zones grisées en dehors de 11h-20h */}
-            <DayNightZones />
+
+            {/* Zones grisées avec les nouvelles heures [20h-9h] */}
+            <DayNightZones
+                numberOfDays={7}
+                nightStartHour={20}
+                nightEndHour={9}
+            />
         </div>
     );
 }

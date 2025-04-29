@@ -323,40 +323,29 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
 
-              {/* Rip Current Hazard Level - Seulement 4 jours */}
+              {/* Rip Current Hazard Level - Sur tous les jours */}
               <tr className="bg-blue-50">
                 <td className={titleCellClass}>Danger Courant</td>
-                {safeRipCurrentHazardLevels.map((level, index) => {
-                  // Vérifier si on est dans les 4 premiers jours
-                  const isInForecastDays = index < FORECAST_TOTAL_HOURS;
-                  
-                  if (!isInForecastDays) {
-                    return <td key={`rip-hazard-${index}`} className="border-r"></td>;
-                  }
-                  
-                  return (
-                    <td
-                      key={`rip-hazard-${index}`}
-                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
-                    >
-                      {level}
-                    </td>
-                  );
-                })}
+                {safeRipCurrentHazardLevels.map((level, index) => (
+                  <td
+                    key={`rip-hazard-${index}`}
+                    className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                  >
+                    {level}
+                  </td>
+                ))}
               </tr>
               <tr>
                 <td className={titleCellClass}>Graph. Courant</td>
-                {/* Graphique sur 4 jours seulement */}
-                <td colSpan={FORECAST_TOTAL_HOURS} className="p-0 border-r h-24">
+                {/* Graphique sur tous les jours */}
+                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
                   <RipCurrentHazardChart
-                    hours={forecastDisplayHours}
-                    velocities={safeVelocities.slice(0, FORECAST_TOTAL_HOURS).map(v => v === null ? 0 : v)}
-                    hazardLevels={safeRipCurrentHazardLevels.slice(0, FORECAST_TOTAL_HOURS).map(h => h === null ? 0 : h)}
+                    hours={allDisplayHours}
+                    velocities={safeVelocities.map(v => v === null ? 0 : v)}
+                    hazardLevels={safeRipCurrentHazardLevels.map(h => h === null ? 0 : h)}
                     inTable={true}
                   />
                 </td>
-                {/* Cellules vides pour les 3 jours restants */}
-                <td colSpan={TOTAL_HOURS - FORECAST_TOTAL_HOURS} className="p-0 border-r"></td>
               </tr>
               <tr className="h-2">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
@@ -365,39 +354,28 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
 
-              {/* Shore Break Hazard Level - Seulement 4 jours */}
+              {/* Shore Break Hazard Level - Affichage sur tous les jours */}
               <tr className="bg-blue-100">
                 <td className={titleCellClass}>Danger Shore Break</td>
-                {safeShoreBreakHazardLevels.map((level, index) => {
-                  // Vérifier si on est dans les 4 premiers jours
-                  const isInForecastDays = index < FORECAST_TOTAL_HOURS;
-                  
-                  if (!isInForecastDays) {
-                    return <td key={`shore-hazard-${index}`} className="border-r"></td>;
-                  }
-                  
-                  return (
-                    <td
-                      key={`shore-hazard-${index}`}
-                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
-                    >
-                      {level}
-                    </td>
-                  );
-                })}
+                {safeShoreBreakHazardLevels.map((level, index) => (
+                  <td
+                    key={`shore-hazard-${index}`}
+                    className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                  >
+                    {level}
+                  </td>
+                ))}
               </tr>
               <tr>
                 <td className={titleCellClass}>Graph. Shore Break</td>
-                {/* Graphique sur 4 jours seulement */}
-                <td colSpan={FORECAST_TOTAL_HOURS} className="p-0 border-r h-24">
+                {/* Graphique sur tous les jours */}
+                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
                   <ShoreBreakHazardChart
-                    hours={forecastDisplayHours}
-                    indices={safeIndices.slice(0, FORECAST_TOTAL_HOURS).map(index => index === null ? 0 : index)}
+                    hours={allDisplayHours}
+                    indices={safeIndices.map(index => index === null ? 0 : index)}
                     inTable={true}
                   />
                 </td>
-                {/* Cellules vides pour les 3 jours restants */}
-                <td colSpan={TOTAL_HOURS - FORECAST_TOTAL_HOURS} className="p-0 border-r"></td>
               </tr>
               <tr className="h-2">
                 <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
@@ -406,32 +384,23 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 ))}
               </tr>
 
-              {/* Fréquentation - Seulement 4 jours */}
+              {/* Fréquentation - Sur tous les jours */}
               <tr className="bg-blue-50">
                 <td className={titleCellClass}>Indice Fréquentation</td>
-                {safeAttendanceHazardLevels.map((level, index) => {
-                  // Vérifier si on est dans les 4 premiers jours
-                  const isInForecastDays = index < FORECAST_TOTAL_HOURS;
-                  
-                  if (!isInForecastDays) {
-                    return <td key={`attendance-hazard-${index}`} className="border-r"></td>;
-                  }
-                  
-                  return (
-                    <td
-                      key={`attendance-hazard-${index}`}
-                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
-                    >
-                      {level}
-                    </td>
-                  );
-                })}
+                {safeAttendanceHazardLevels.map((level, index) => (
+                  <td
+                    key={`attendance-hazard-${index}`}
+                    className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                  >
+                    {level}
+                  </td>
+                ))}
               </tr>
 
-              {/* Ajout du graphique de fréquentation des plages sur 4 jours */}
+              {/* Ajout du graphique de fréquentation des plages sur tous les jours */}
               <tr>
                 <td className={titleCellClass}>Graph. Fréquentation</td>
-                <td colSpan={FORECAST_TOTAL_HOURS} className="p-0 border-r h-64">
+                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-64">
                   {attendanceLoading ? (
                     <div className="h-full flex items-center justify-center bg-slate-100">
                       <p>Chargement des données de fréquentation...</p>
@@ -444,8 +413,6 @@ const Table: React.FC<TableProps> = ({ location }) => {
                     <ChartAllDataWeek inTable={true} />
                   )}
                 </td>
-                {/* Cellules vides pour les 3 jours restants */}
-                <td colSpan={TOTAL_HOURS - FORECAST_TOTAL_HOURS} className="p-0 border-r"></td>
               </tr>
 
               <tr className="h-2">

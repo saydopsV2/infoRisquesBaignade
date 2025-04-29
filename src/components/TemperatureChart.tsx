@@ -6,7 +6,7 @@ import {
   ChartContainer,
 } from "@/components/ui/chart";
 import { useWeather } from "../context/WeatherContext";
-import { useEffect, useRef, useState } from "react";
+import { DayNightZones } from "./DayNightZone"; 
 
 // Interface pour les données du graphique explicites
 interface ChartProps {
@@ -29,11 +29,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     // Déterminer la couleur du tooltip en fonction de la température
     const temperature = payload[0].value;
     const color = getTemperatureColor(temperature);
-    
+
     // Récupérer l'heure complète à partir des données du graphique
     const item = payload[0].payload;
     const dateObj = item.originalDate instanceof Date ? item.originalDate : new Date();
-    
+
     // Formater la date pour afficher le jour et l'heure
     const formattedDate = dateObj.toLocaleDateString('fr-FR', {
       weekday: 'long',
@@ -41,10 +41,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       month: 'long',
       day: 'numeric'
     });
-    
+
     // Première lettre en majuscule
     const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-    
+
     return (
       <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
         <p className="font-bold">{capitalizedDate}</p>
@@ -67,58 +67,6 @@ const getTemperatureColor = (temp: number | null): string => {
   if (temp < 25) return "#f59e0b"; // Orange
   if (temp < 30) return "#f97316"; // Orange foncé
   return "#ef4444"; // Rouge pour les températures chaudes
-};
-
-// Composant pour les zones grisées en dehors de 11h-20h
-const DayNightZones = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
-  
-  useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.clientWidth);
-      }
-    };
-    
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
-
-  // On suppose 7 jours au total
-  const dayWidth = containerWidth / 7;
-  
-  return (
-    <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
-      {Array.from({ length: 7 }).map((_, dayIndex) => {
-        const dayStart = dayIndex * dayWidth;
-        const hourWidth = dayWidth / 24;
-        
-        return (
-          <div key={dayIndex}>
-            {/* Zone grisée de 0h à 11h */}
-            <div 
-              className="absolute top-0 h-full bg-gray-300 opacity-50" 
-              style={{ 
-                left: `${dayStart}px`,
-                width: `${hourWidth * 11}px`
-              }}
-            />
-            
-            {/* Zone grisée de 20h à 24h */}
-            <div 
-              className="absolute top-0 h-full bg-gray-300 opacity-50" 
-              style={{ 
-                left: `${dayStart + hourWidth * 20}px`,
-                width: `${hourWidth * 4}px`
-              }}
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
 };
 
 // Version qui utilise les props explicites
@@ -147,13 +95,13 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
         color: getTemperatureColor(temp)
       };
     });
-    
+
   // Identifier les positions des changements de jour pour les lignes verticales
   const dayBreaks = chartData.reduce((breaks, item, index) => {
     if (index > 0) {
       const prevDate = chartData[index - 1].originalDate;
       const currentDate = item.originalDate;
-      
+
       if (prevDate instanceof Date && currentDate instanceof Date) {
         if (prevDate.getDate() !== currentDate.getDate()) {
           breaks.push({
@@ -165,7 +113,26 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
       }
     }
     return breaks;
-  }, [] as {index: number, hour: string, date: Date}[]);
+  }, [] as { index: number, hour: string, date: Date }[]);
+
+  // Déterminer le nombre de jours en fonction des données
+  const calculateNumberOfDays = (): number => {
+    if (hours.length === 0) return 7; // Par défaut 7 jours
+
+    const firstDate = hours[0];
+    const lastDate = hours[hours.length - 1];
+
+    if (!(firstDate instanceof Date) || !(lastDate instanceof Date)) return 7;
+
+    // Calculer la différence en millisecondes, puis convertir en jours et arrondir au supérieur
+    const diffTime = Math.abs(lastDate.getTime() - firstDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return Math.max(diffDays, 1); // Au moins 1 jour
+  };
+
+  // Nombre de jours à afficher
+  const numberOfDays = calculateNumberOfDays();
 
   return (
     <div className="relative">
@@ -185,16 +152,16 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
               {/* Gradient horizontal pour le contour de la ligne */}
               <linearGradient id="temperatureGradient" x1="0" y1="0" x2="1" y2="0">
                 {gradientStops.map((stop, index) => (
-                  <stop 
+                  <stop
                     key={index}
-                    offset={stop.offset} 
-                    stopColor={stop.color} 
-                    stopOpacity={1} 
+                    offset={stop.offset}
+                    stopColor={stop.color}
+                    stopOpacity={1}
                   />
                 ))}
               </linearGradient>
             </defs>
-            
+
             {/* Lignes verticales pour séparer les jours */}
             {dayBreaks.map((dayBreak, index) => (
               <ReferenceLine
@@ -203,14 +170,14 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
                 stroke="#94a3b8"
                 strokeDasharray="3 3"
                 label={{
-                  value: dayBreak.date.toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric'}),
+                  value: dayBreak.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
                   position: 'top',
                   fill: '#64748b',
                   fontSize: 10
                 }}
               />
             ))}
-            
+
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="hour"
@@ -250,9 +217,13 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
           </AreaChart>
         </ResponsiveContainer>
       </ChartContainer>
-      
-      {/* Zones grisées en dehors de 11h-20h */}
-      <DayNightZones />
+
+      {/* Zones grisées entre 20h et 9h */}
+      <DayNightZones
+        numberOfDays={numberOfDays}
+        nightStartHour={20}
+        nightEndHour={9}
+      />
     </div>
   );
 }
@@ -260,7 +231,7 @@ export function Chart({ hours = [], temperatures = [], tempUnit = "°C" }: Chart
 // Version standalone qui utilise directement le contexte
 export function TemperatureChart() {
   const { hours, temperatures, tempUnit } = useWeather();
-  
+
   // Préparer les données pour le graphique en combinant heures et températures
   const chartData = hours.map((hour, index) => {
     const temp = temperatures[index] !== undefined ? temperatures[index] : null;
@@ -273,7 +244,7 @@ export function TemperatureChart() {
       originalDate: hour
     }
   });
-  
+
   // Créer des stops de dégradé pour chaque point de température (pour la ligne)
   const gradientStops = temperatures
     .filter(temp => temp !== null)
@@ -291,7 +262,7 @@ export function TemperatureChart() {
     if (index > 0) {
       const prevDate = chartData[index - 1].originalDate;
       const currentDate = item.originalDate;
-      
+
       if (prevDate instanceof Date && currentDate instanceof Date) {
         if (prevDate.getDate() !== currentDate.getDate()) {
           breaks.push({
@@ -303,7 +274,10 @@ export function TemperatureChart() {
       }
     }
     return breaks;
-  }, [] as {index: number, hour: string, date: Date}[]);
+  }, [] as { index: number, hour: string, date: Date }[]);
+
+  // Calculer le nombre de jours à afficher
+  const numberOfDays = 7; // On utilise une valeur fixe de 7 jours qui correspond à ce que récupère le contexte
 
   return (
     <div className="relative">
@@ -322,16 +296,16 @@ export function TemperatureChart() {
               {/* Gradient horizontal pour le contour de la ligne */}
               <linearGradient id="temperatureGradientStandalone" x1="0" y1="0" x2="1" y2="0">
                 {gradientStops.map((stop, index) => (
-                  <stop 
+                  <stop
                     key={index}
-                    offset={stop.offset} 
-                    stopColor={stop.color} 
-                    stopOpacity={1} 
+                    offset={stop.offset}
+                    stopColor={stop.color}
+                    stopOpacity={1}
                   />
                 ))}
               </linearGradient>
             </defs>
-            
+
             {/* Lignes verticales pour séparer les jours */}
             {dayBreaks.map((dayBreak, index) => (
               <ReferenceLine
@@ -340,14 +314,14 @@ export function TemperatureChart() {
                 stroke="#94a3b8"
                 strokeDasharray="3 3"
                 label={{
-                  value: dayBreak.date.toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric'}),
+                  value: dayBreak.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
                   position: 'top',
                   fill: '#64748b',
                   fontSize: 10
                 }}
               />
             ))}
-            
+
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="hour"
@@ -387,9 +361,13 @@ export function TemperatureChart() {
           </AreaChart>
         </ResponsiveContainer>
       </ChartContainer>
-      
-      {/* Zones grisées en dehors de 11h-20h */}
-      <DayNightZones />
+
+      {/* Zones grisées entre 20h et 9h */}
+      <DayNightZones
+        numberOfDays={numberOfDays}
+        nightStartHour={20}
+        nightEndHour={9}
+      />
     </div>
   );
 }

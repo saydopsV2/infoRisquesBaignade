@@ -5,14 +5,15 @@ import {
     ChartConfig,
     ChartContainer,
 } from "@/components/ui/chart";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { DayNightZones } from "./DayNightZone"; // Importation de votre composant DayNightZones existant
 
 // Interface pour les props
 interface ShoreBreakHazardChartProps {
     hours: Date[];
     indices: number[];
     inTable?: boolean;
-    showDayNightZones?: boolean; // Nouvelle prop pour contrôler l'affichage des zones grisées
+    showDayNightZones?: boolean; // Prop pour contrôler l'affichage des zones grisées
 }
 
 // Configuration du graphique
@@ -81,59 +82,6 @@ const getHazardText = (index: number | null): string => {
     return "Très élevé";
 };
 
-// Composant pour les zones grisées en dehors de 11h-20h
-const DayNightZones = () => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState(0);
-    
-    useEffect(() => {
-        const updateWidth = () => {
-            if (containerRef.current) {
-                setContainerWidth(containerRef.current.clientWidth);
-            }
-        };
-        
-        updateWidth();
-        window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
-    }, []);
-
-    // Forcer à 4 jours pour correspondre à Table.tsx
-    const numberOfDays = 4;
-    const dayWidth = containerWidth / numberOfDays;
-    
-    return (
-        <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
-            {Array.from({ length: numberOfDays }).map((_, dayIndex) => {
-                const dayStart = dayIndex * dayWidth;
-                const hourWidth = dayWidth / 24;
-                
-                return (
-                    <div key={dayIndex}>
-                        {/* Zone grisée de 0h à 11h (matin) */}
-                        <div 
-                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
-                            style={{ 
-                                left: `${dayStart}px`,
-                                width: `${hourWidth * 11}px`
-                            }}
-                        />
-                        
-                        {/* Zone grisée de 20h à 24h (soir) - Modifié pour commencer à 20h */}
-                        <div 
-                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
-                            style={{ 
-                                left: `${dayStart + hourWidth * 20}px`,
-                                width: `${hourWidth * 4}px`
-                            }}
-                        />
-                    </div>
-                );
-            })}
-        </div>
-    );
-};
-
 // Composant du graphique d'indice de sécurité
 export function ShoreBreakHazardChart({ 
     hours, 
@@ -141,6 +89,17 @@ export function ShoreBreakHazardChart({
     inTable = false, 
     showDayNightZones = true // Valeur par défaut à true pour maintenir le comportement actuel
 }: ShoreBreakHazardChartProps) {
+    // État pour s'assurer que le graphique est complètement rendu avant d'afficher les zones grisées
+    const [isChartReady, setIsChartReady] = useState(false);
+
+    // Déclencher le rendu des zones grisées après un court délai pour permettre au graphique de se rendre
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsChartReady(true);
+        }, 300); // Légère latence pour s'assurer que le graphique est bien rendu
+        return () => clearTimeout(timer);
+    }, []);
+
     // Préparer les données pour le graphique en combinant heures et indices
     const chartData = hours.map((hour, index) => {
         const shoreBreakIndex = indices[index] !== undefined ? indices[index] : null;
@@ -164,6 +123,10 @@ export function ShoreBreakHazardChart({
                 color: getShoreBreakColor(index)
             };
         });
+
+    // Nombre de jours pour le grisage
+    // Utiliser 7 jours pour correspondre au nombre de jours récupérés dans useShoreBreakData
+    const numberOfDays = 7;
 
     return (
         <div className="relative">
@@ -245,7 +208,7 @@ export function ShoreBreakHazardChart({
                             stroke="url(#shoreBreakGradient)"
                             fill="url(#shoreBreakPattern)"
                             fillOpacity={1}
-                            strokeWidth={2}
+                            strokeWidth={6}
                             name="Indice Shore Break"
                             activeDot={(props) => {
                                 const { cx, cy, payload } = props;
@@ -266,8 +229,14 @@ export function ShoreBreakHazardChart({
                 </ResponsiveContainer>
             </ChartContainer>
             
-            {/* Afficher les zones grisées seulement si showDayNightZones est true */}
-            {showDayNightZones && <DayNightZones />}
+            {/* Afficher les zones grisées seulement quand le graphique est prêt et si showDayNightZones est true */}
+            {isChartReady && showDayNightZones && (
+                <DayNightZones 
+                    numberOfDays={numberOfDays}
+                    nightStartHour={20}
+                    nightEndHour={9}
+                />
+            )}
         </div>
     );
 }

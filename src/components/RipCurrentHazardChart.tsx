@@ -5,14 +5,15 @@ import {
     ChartConfig,
     ChartContainer,
 } from "@/components/ui/chart";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { DayNightZones } from "./DayNightZone"; // Importation de votre composant DayNightZones existant
 
 // Interface pour les données du graphique
 interface RipCurrentChartProps {
     hours?: Date[];
     velocities?: number[];
     hazardLevels?: number[];
-    inTable?: boolean; 
+    inTable?: boolean;
 }
 
 // Configuration du graphique
@@ -29,11 +30,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         // Déterminer la couleur du tooltip en fonction de la vitesse du courant
         const velocity = payload[0].value;
         const color = getRipCurrentColor(velocity);
-        
+
         // Récupérer la date complète à partir des données du graphique
         const item = payload[0].payload;
         const dateObj = item.originalDate instanceof Date ? item.originalDate : new Date();
-        
+
         // Formater la date pour afficher le jour et l'heure
         const formattedDate = dateObj.toLocaleDateString('fr-FR', {
             weekday: 'long',
@@ -41,7 +42,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             month: 'long',
             day: 'numeric'
         });
-        
+
         // Première lettre en majuscule
         const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
 
@@ -81,62 +82,19 @@ export const getRipCurrentColorClass = (velocity: number | null): string => {
     return "bg-red-600 text-white"; // Rouge - Danger important
 };
 
-// Composant pour les zones grisées en dehors de 11h-18h
-const DayNightZones = () => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState(0);
-    
-    useEffect(() => {
-        const updateWidth = () => {
-            if (containerRef.current) {
-                setContainerWidth(containerRef.current.clientWidth);
-            }
-        };
-        
-        updateWidth();
-        window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
-    }, []);
-
-    // Déterminer le nombre de jours en fonction du conteneur
-    // Pour les composants dans Table, nous utilisons toujours 4 jours
-    const numberOfDays = 4; // Forcer à 4 jours pour correspondre à Table.tsx
-    const dayWidth = containerWidth / numberOfDays;
-    
-    return (
-        <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
-            {Array.from({ length: numberOfDays }).map((_, dayIndex) => {
-                const dayStart = dayIndex * dayWidth;
-                const hourWidth = dayWidth / 24;
-                
-                return (
-                    <div key={dayIndex}>
-                        {/* Zone grisée de 0h à 11h (matin) */}
-                        <div 
-                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
-                            style={{ 
-                                left: `${dayStart}px`,
-                                width: `${hourWidth * 11}px`
-                            }}
-                        />
-                        
-                        {/* Zone grisée de 20h à 24h (soir) - Modifié pour commencer à 20h */}
-                        <div 
-                            className="absolute top-0 h-full bg-gray-300 opacity-50" 
-                            style={{ 
-                                left: `${dayStart + hourWidth * 20}px`,
-                                width: `${hourWidth * 4}px`
-                            }}
-                        />
-                    </div>
-                );
-            })}
-        </div>
-    );
-};
-
 // Version autonome du graphique de courant d'arrachement
 export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevels = [], inTable = false }: RipCurrentChartProps) {
+    // État pour s'assurer que le graphique est complètement rendu avant d'afficher les zones grisées
+    const [isChartReady, setIsChartReady] = useState(false);
+
+    // Déclencher le rendu des zones grisées après un court délai pour permettre au graphique de se rendre
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsChartReady(true);
+        }, 300); // Légère latence pour s'assurer que le graphique est bien rendu
+        return () => clearTimeout(timer);
+    }, []);
+
     // Préparer les données pour le graphique en combinant heures et vitesses
     const chartData = hours.map((hour, index) => {
         const velocity = velocities[index] !== undefined ? velocities[index] : null;
@@ -165,6 +123,10 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
             };
         });
 
+    // Nombre de jours pour le grisage
+    // Utiliser 7 jours pour correspondre au nombre de jours récupérés dans useRipCurrentData
+    const numberOfDays = 7;
+
     return (
         <div className="relative">
             <ChartContainer config={chartConfig} className="max-h-[150px] w-full">
@@ -191,7 +153,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                                 ))}
                             </linearGradient>
 
-                            {/* Créer des gradients verticaux individuels pour chaque couleur
+                            {/* Créer des gradients verticaux individuels pour chaque couleur */}
                             {gradientStops.map((stop, index) => (
                                 <linearGradient
                                     key={`ripCurrent-fill-${index}`}
@@ -204,9 +166,9 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                                     <stop offset="0%" stopColor={stop.color} stopOpacity={0.8} />
                                     <stop offset="100%" stopColor={stop.color} stopOpacity={0.1} />
                                 </linearGradient>
-                            ))} */}
+                            ))}
 
-                            {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal */}
+                            {/* Pattern qui utilise les gradients verticaux avec le mapping horizontal
                             <pattern id="ripCurrentPattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
                                 {gradientStops.map((stop, index, arr) => {
                                     const width = index < arr.length - 1
@@ -224,7 +186,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                                         />
                                     );
                                 })}
-                            </pattern>
+                            </pattern> */}
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis
@@ -247,7 +209,7 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                             stroke="url(#ripCurrentGradient)"
                             fill="url(#ripCurrentPattern)"
                             fillOpacity={1}
-                            strokeWidth={2}
+                            strokeWidth={4}
                             name="Courant de baïne"
                             activeDot={(props) => {
                                 const { cx, cy, payload } = props;
@@ -267,9 +229,15 @@ export function RipCurrentHazardChart({ hours = [], velocities = [], hazardLevel
                     </AreaChart>
                 </ResponsiveContainer>
             </ChartContainer>
-            
-            {/* Zones grisées en dehors de 11h-20h */}
-            <DayNightZones />
+
+            {/* Afficher les zones grisées seulement quand le graphique est prêt */}
+            {isChartReady && (
+                <DayNightZones
+                    numberOfDays={numberOfDays}
+                    nightStartHour={20}
+                    nightEndHour={9}
+                />
+            )}
         </div>
     );
 }

@@ -152,7 +152,6 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                     hours={displayHours}
                                     velocities={ripCurrentVelocities}
                                     hazardLevels={ripCurrentHazardLevels}
-                                    inTable={false}
                                 />
                             )}
                         </div>
@@ -170,7 +169,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                 <ShoreBreakHazardChart 
                                     hours={displayHours}
                                     indices={shoreBreakIndices}
-                                    inTable={false} />
+                                    showDayNightZones={true}/>
                             )}
                         </div>
 
