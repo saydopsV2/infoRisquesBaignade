@@ -125,13 +125,17 @@ const createLevelShape = (level: number) => {
             return <circle cx={0} cy={0} r={0} opacity={0} />;
         }
 
-        // Si le niveau de risque correspond, afficher le point
-        if (payload?.hazardLevel === level) {
+        // Vérifier si l'heure est comprise entre 11h et 20h
+        const hour = payload?.originalDate instanceof Date ? payload.originalDate.getHours() : -1;
+        const isInTimeRange = hour >= 11 && hour <= 20;
+
+        // Si le niveau de risque correspond ET l'heure est dans la plage demandée, afficher le point
+        if (payload?.hazardLevel === level && isInTimeRange) {
             return (
                 <circle
                     cx={cx}
                     cy={cy}
-                    r={5}
+                    r={6}
                     fill={getHazardLevelColor(level)}
                     stroke="#fff"
                     strokeWidth={1}
@@ -139,7 +143,7 @@ const createLevelShape = (level: number) => {
             );
         }
 
-        // Si le niveau ne correspond pas, retourner un élément vide au lieu de null
+        // Si le niveau ne correspond pas ou si l'heure n'est pas dans la plage, retourner un élément vide
         return <circle cx={0} cy={0} r={0} opacity={0} />;
     };
 };
@@ -251,7 +255,7 @@ export function ChartAllData() {
     return (
         <div className="flex flex-col gap-4 w-full h-full" style={{ minHeight: '600px' }}>
             <div className="flex flex-col mb-4 px-2">
-                <h2 className="text-xl font-semibold mb-2">Fréquentation des plages</h2>
+                <h2 className="text-xl font-semibold mb-2">Fréquentation des plages (points visibles 11h-20h)</h2>
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">Période :</span>
                     <Select

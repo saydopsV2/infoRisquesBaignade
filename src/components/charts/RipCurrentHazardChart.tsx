@@ -217,19 +217,56 @@ export function RipCurrentHazardChart({
                             fill="url(#ripCurrentPattern)"
                             fillOpacity={1}
                             strokeWidth={6}
-                            name="Courant de baïne"
+                            name="Courant de baïne (points visibles 11h-20h)"
                             activeDot={(props) => {
                                 const { cx, cy, payload } = props;
+                                
+                                // Vérifier si l'heure est comprise entre 11h et 20h
+                                const hour = payload?.originalDate instanceof Date ? payload.originalDate.getHours() : -1;
+                                const isInTimeRange = hour >= 11 && hour <= 20;
+                                
+                                // Ne pas afficher de point si la valeur est null ou si l'heure n'est pas dans la plage
+                                if (payload.ripCurrentVelocity === null || !isInTimeRange) {
+                                    return <circle cx={0} cy={0} r={0} opacity={0} />;
+                                }
+                                
                                 // Obtenir la couleur en fonction de la valeur de vitesse
                                 const color = getRipCurrentColor(payload.ripCurrentVelocity);
 
                                 return (
                                     <g>
                                         {/* Cercle extérieur blanc */}
-                                        <circle cx={cx} cy={cy} r={7} fill="white" />
+                                        <circle cx={cx} cy={cy} r={10} fill="white" />
                                         {/* Cercle intérieur coloré */}
-                                        <circle cx={cx} cy={cy} r={5} fill={color} />
+                                        <circle cx={cx} cy={cy} r={8} fill={color} />
                                     </g>
+                                );
+                            }}
+                            // Ajouter des marqueurs pour les heures entre 11h et 20h
+                            dot={(props) => {
+                                const { cx, cy, payload } = props;
+                                
+                                // Vérifier si l'heure est comprise entre 11h et 20h
+                                const hour = payload?.originalDate instanceof Date ? payload.originalDate.getHours() : -1;
+                                const isInTimeRange = hour >= 11 && hour <= 20;
+                                
+                                // Ne pas afficher de point si la valeur est null ou si l'heure n'est pas dans la plage
+                                if (payload.ripCurrentVelocity === null || !isInTimeRange) {
+                                    return <circle cx={0} cy={0} r={0} opacity={0} />;
+                                }
+                                
+                                // Obtenir la couleur en fonction de la valeur de vitesse
+                                const color = getRipCurrentColor(payload.ripCurrentVelocity);
+
+                                return (
+                                    <circle
+                                        cx={cx}
+                                        cy={cy}
+                                        r={6}
+                                        fill={color}
+                                        stroke="#fff"
+                                        strokeWidth={1}
+                                    />
                                 );
                             }}
                         />
