@@ -463,7 +463,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
             {maxValues && (
               <>
                 <div className="mt-2 pt-2 border-t border-rose-200">
-                  <p className="text-md text-rose-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
+                  <p className="text-md text-sky-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
                   <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
                     <span className="font-medium">Fréquentation max:</span>
                     <span>
