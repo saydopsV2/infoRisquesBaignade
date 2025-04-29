@@ -32,13 +32,13 @@ interface ShapeProps {
 }
 
 // Type pour les vues temporelles
-type TimeView = "today" | "plus3days" | "plus5days";
+type TimeView = "today" | "plus3days" | "plus5days" | "plus7days";
 
 // Fonction pour obtenir la couleur basée sur le niveau de risque
 const getHazardLevelColor = (level: number | null): string => {
     if (level === null) return "#94a3b8"; // Gris par défaut
-    
-    switch(level) {
+
+    switch (level) {
         case 0: return "#e5e7eb"; // Gris clair - Niveau 0
         case 1: return "#51a336"; // Vert - Niveau 1
         case 2: return "#ebe102"; // Jaune - Niveau 2
@@ -65,24 +65,24 @@ const CustomTooltip = ({ active, payload }: any) => {
         const hazardLevel = payload.length > 1 && payload[0]?.payload?.hazardLevel !== undefined
             ? payload[0].payload.hazardLevel
             : null;
-        
+
         // Récupérer la date complète
         const item = payload[0].payload;
         const dateObj = item?.originalDate instanceof Date ? item.originalDate : new Date();
-        
+
         // Formater la date pour afficher le jour et l'heure
         const formattedDate = dateObj.toLocaleDateString('fr-FR', {
             weekday: 'long',
             month: 'long',
             day: 'numeric'
         });
-        
+
         // Formater l'heure
         const formattedTime = dateObj.toLocaleTimeString('fr-FR', {
             hour: '2-digit',
             minute: '2-digit'
         });
-        
+
         // Première lettre en majuscule
         const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
 
@@ -119,37 +119,46 @@ const CustomTooltip = ({ active, payload }: any) => {
 const createLevelShape = (level: number) => {
     return (props: ShapeProps) => {
         const { cx = 0, cy = 0, payload } = props;
-        
-        // Si le niveau de risque correspond, afficher le point
-        if (payload?.hazardLevel === level) {
+
+        // Ne pas afficher de point si la valeur est null ou 0
+        if (payload?.beachAttendance === null) {
+            return <circle cx={0} cy={0} r={0} opacity={0} />;
+        }
+
+        // Vérifier si l'heure est comprise entre 11h et 20h
+        const hour = payload?.originalDate instanceof Date ? payload.originalDate.getHours() : -1;
+        const isInTimeRange = hour >= 11 && hour <= 20;
+
+        // Si le niveau de risque correspond ET l'heure est dans la plage demandée, afficher le point
+        if (payload?.hazardLevel === level && isInTimeRange) {
             return (
-                <circle 
-                    cx={cx} 
-                    cy={cy} 
-                    r={5} 
+                <circle
+                    cx={cx}
+                    cy={cy}
+                    r={6}
                     fill={getHazardLevelColor(level)}
                     stroke="#fff"
                     strokeWidth={1}
                 />
             );
         }
-        
-        // Si le niveau ne correspond pas, retourner un élément vide au lieu de null
+
+        // Si le niveau ne correspond pas ou si l'heure n'est pas dans la plage, retourner un élément vide
         return <circle cx={0} cy={0} r={0} opacity={0} />;
     };
 };
 
 export function ChartAllData() {
     // État pour la vue temporelle actuelle
-    const [activeView, setActiveView] = useState<TimeView>("today");
-    
+    const [activeView, setActiveView] = useState<TimeView>("plus7days");
+
     // Utiliser le hook pour récupérer les données
-    const { 
-        attendanceValues: originalAttendanceValues, 
-        hazardLevels, 
-        dates, 
-        isLoading, 
-        error 
+    const {
+        attendanceValues: originalAttendanceValues,
+        hazardLevels,
+        dates,
+        isLoading,
+        error
     } = useBeachAttendanceData();
 
     // Si les données sont en cours de chargement, afficher un indicateur
@@ -180,7 +189,7 @@ export function ChartAllData() {
     const filterDataByTimeView = () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         // Dates limites pour chaque vue
         const limitDate = new Date(today);
         switch (activeView) {
@@ -193,8 +202,11 @@ export function ChartAllData() {
             case "plus5days":
                 limitDate.setDate(today.getDate() + 5); // +5 jours
                 break;
+            case "plus7days":
+                limitDate.setDate(today.getDate() + 7); // +7 jours
+                break;
         }
-        
+
         // Filtrer les données selon la limite de date
         return dates.map((date, index) => {
             // Ne garder que les données jusqu'à la date limite
@@ -210,36 +222,40 @@ export function ChartAllData() {
 
     // Filtrer les données selon la vue temporelle active
     const filteredDateIndices = filterDataByTimeView();
-    
+
     // Convertir les valeurs de fréquentation de visiteurs (0-500) en pourcentage (0-100)
-    const attendanceValues = originalAttendanceValues.map(value => 
+    const attendanceValues = originalAttendanceValues.map(value =>
         value !== null ? (value / 500) * 100 : null
     );
 
     // Préparer les données filtrées pour le graphique
     const chartData = filteredDateIndices.map(({ index }) => {
         const date = dates[index];
-        const attendancePercent = attendanceValues[index] !== undefined ? attendanceValues[index] : null;
+        // Si la valeur est 0 ou null, on la remplace par null pour couper la ligne
+        const rawAttendancePercent = attendanceValues[index];
+        const attendancePercent = (rawAttendancePercent !== undefined && rawAttendancePercent !== 0 && rawAttendancePercent !== null)
+            ? rawAttendancePercent
+            : null;
         const hazardLevel = hazardLevels[index] !== undefined ? hazardLevels[index] : null;
-        
+
         // Formater la date pour l'axe X
         const xAxisDate = date instanceof Date ? formatXAxisDate(date) : "";
-        
+
         return {
             xAxisDate,
-            beachAttendance: attendancePercent,
+            beachAttendance: attendancePercent, // null si 0 ou null
             hazardLevel: hazardLevel,
             // Stocker la date originale pour l'affichage dans le tooltip
             originalDate: date,
-            // Pour les séries scatter, on affiche un point à chaque niveau de danger
-            scatterPoint: attendancePercent  // Même valeur que beachAttendance pour le positionnement
+            // Pour les séries scatter, on n'affiche pas de point quand attendancePercent est null
+            scatterPoint: attendancePercent // Même comportement que beachAttendance
         };
     });
 
     return (
         <div className="flex flex-col gap-4 w-full h-full" style={{ minHeight: '600px' }}>
             <div className="flex flex-col mb-4 px-2">
-                <h2 className="text-xl font-semibold mb-2">Fréquentation des plages</h2>
+                <h2 className="text-xl font-semibold mb-2">Fréquentation des plages (points visibles 11h-20h)</h2>
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">Période :</span>
                     <Select
@@ -250,22 +266,23 @@ export function ChartAllData() {
                             <SelectValue placeholder="Sélectionner une période" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="today">Aujourd'hui</SelectItem>
-                            <SelectItem value="plus3days">+3 jours</SelectItem>
+                            <SelectItem value="plus7days">+7 jours</SelectItem>
                             <SelectItem value="plus5days">+5 jours</SelectItem>
+                            <SelectItem value="plus3days">+3 jours</SelectItem>
+                            <SelectItem value="today">Aujourd'hui</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
             </div>
-            
-            <ChartContainer config={chartConfig} className="h-[500px] w-full bg-white p-2 rounded-lg">
+
+            <ChartContainer config={chartConfig} className="h-[450px] md:h-[600px] w-full bg-white p-1 rounded-lg">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                         data={chartData}
                         margin={{
                             top: 20,
                             right: 30,
-                            left: 20,
+                            left: 0,
                             bottom: 50,
                         }}
                         style={{ backgroundColor: 'white' }}
@@ -287,7 +304,7 @@ export function ChartAllData() {
                                     );
                                 })}
                             </linearGradient>
-                            
+
                             {/* Gradients verticaux pour l'aire sous la courbe */}
                             {chartData.map((item, index) => (
                                 <linearGradient
@@ -302,7 +319,7 @@ export function ChartAllData() {
                                     <stop offset="100%" stopColor={getHazardLevelColor(item.hazardLevel)} stopOpacity={0.1} />
                                 </linearGradient>
                             ))}
-                            
+
                             {/* Pattern qui combine les gradients verticaux */}
                             <pattern id="attendancePattern" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
                                 {chartData.map((_, index, arr) => {
@@ -310,7 +327,7 @@ export function ChartAllData() {
                                     const width = index < arr.length - 1
                                         ? (1 / (arr.length - 1)) * 100
                                         : (1 / arr.length) * 100;
-                                    
+
                                     return (
                                         <rect
                                             key={index}
@@ -326,15 +343,15 @@ export function ChartAllData() {
                         </defs>
 
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
+                        <XAxis
                             dataKey="xAxisDate"
                             tickLine={false}
                             axisLine={true}
                             tickMargin={8}
+                            tickCount={6}
                             label={{ value: 'Date/Heure', position: 'insideBottom', offset: -5 }}
                             tick={{ fontSize: 11 }}
                             height={60}
-                            interval={0}
                             angle={-45}
                             textAnchor="end"
                         />
@@ -344,36 +361,42 @@ export function ChartAllData() {
                             tickLine={false}
                             axisLine={true}
                             tickMargin={8}
-                            label={{ value: 'Fréquentation (%)', angle: -90, position: 'insideLeft', dx: -5 }}
+                            label={{ value: 'Fréquentation (%)', angle: -90, position: 'insidemMidlle', dx: -15 }}
                             fontSize={12}
                         />
                         <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
                         <Legend align="right" verticalAlign="top" iconSize={12} wrapperStyle={{ paddingBottom: 10 }} />
-                        
+
                         {/* Ligne continue de fréquentation avec gradient de couleur */}
                         <Line
                             type="monotone"
                             dataKey="beachAttendance"
                             stroke="url(#attendanceGradient)"
                             fill="url(#attendancePattern)"
-                            strokeWidth={3}
+                            strokeWidth={4}
                             dot={{ r: 1 }}
+                            connectNulls={false} // Ne pas connecter les points où la valeur est null
                             activeDot={(props: any) => {
                                 const { cx, cy, payload } = props;
+                                // Au lieu de retourner null, retournons un élément vide invisible
+                                if (payload.beachAttendance === null) {
+                                    return <circle cx={0} cy={0} r={0} opacity={0} />;
+                                }
+                                
                                 // Obtenir la couleur en fonction du niveau de risque
                                 const color = getHazardLevelColor(payload.hazardLevel);
                                 return (
                                     <g>
                                         {/* Cercle extérieur blanc */}
-                                        <circle cx={cx} cy={cy} r={7} fill="white" />
+                                        <circle cx={cx} cy={cy} r={10} fill="white" />
                                         {/* Cercle intérieur coloré */}
-                                        <circle cx={cx} cy={cy} r={5} fill={color} />
+                                        <circle cx={cx} cy={cy} r={8} fill={color} />
                                     </g>
                                 );
                             }}
                             name="Prévision d'affluence"
                         />
-                        
+
                         {/* Points colorés par niveau de risque */}
                         {[0, 1, 2, 3, 4].map(level => {
                             const levelNames = [

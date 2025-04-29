@@ -42,6 +42,18 @@ const HeadBand = () => {
           />
         </a>
         <a 
+          href="https://www.inrae.fr/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="transition-transform hover:scale-105 focus:scale-105"
+        >
+          <img 
+            src={`${import.meta.env.BASE_URL}img/logoInrae.png`} 
+            alt="INRAE Logo" 
+            className="h-12 md:h-16 object-contain"
+          />
+        </a>
+        <a 
           href="https://www.smgbl.fr/" 
           target="_blank" 
           rel="noopener noreferrer"

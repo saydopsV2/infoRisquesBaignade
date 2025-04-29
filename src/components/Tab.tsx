@@ -1,17 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Table from "./Table";
 import Beach from "../interface/Beach";
-import { TemperatureChart } from "./TemperatureChart";
-import { ChartAllData } from "./ChartAllData";
+import { ChartAllData } from "./charts/BeachAttendanceLineChart";
 import Bilan from "./Bilan";
-import { ShoreBreakHazardChart } from "./ShoreBreakHazardChart";
-import { useWeather } from "../context/WeatherContext";
+import { ShoreBreakHazardChart } from "./charts/ShoreBreakHazardChart";
 import { useShoreBreakData } from "../hooks/useShoreBreakData";
-import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData"; // Import du nouveau hook
-import { BeachAttendanceBarChart } from "./BeachAttendanceBarChart";
-import Toggle from "./Toggle";
-import { RipCurrentHazardChart } from "./RipCurrentHazardChart"; // Import du composant RipCurrentHazardChart
-import { useRipCurrentData } from "../hooks/useRipCurrentData"; // Import du hook pour les données de courant d'arrachement
+import { useBeachAttendanceData } from "../hooks/useBeachAttendanceData";
+import { RipCurrentHazardChart } from "./charts/RipCurrentHazardChart";
+import { useRipCurrentData } from "../hooks/useRipCurrentData";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"; // Assurez-vous d'importer les composants Select
 
 interface TabProps {
     tabBeach: Beach;
@@ -39,6 +42,19 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
 
     // État pour les styles responsifs
     const [responsiveStyle, setResponsiveStyle] = useState<React.CSSProperties>(getResponsiveStyle());
+
+    // États pour gérer les onglets actifs
+    const [activeTab, setActiveTab] = useState<string>("tableau");
+
+    // État pour forcer le rendu des graphiques après changement d'onglet
+    const [_, setGraphTabActive] = useState<boolean>(false);
+
+    // État pour gérer la sélection de la période
+    const [activeView, setActiveView] = useState<string>("plus7days");
+
+    // Références pour les conteneurs de graphiques
+    const ripCurrentChartRef = useRef<HTMLDivElement>(null);
+    const shoreBreakChartRef = useRef<HTMLDivElement>(null);
 
     // Mettre à jour les styles lors du redimensionnement
     useEffect(() => {
@@ -75,27 +91,6 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
         error: attendanceError
     } = useBeachAttendanceData();
 
-    // Utiliser le contexte weather pour obtenir les heures
-    const { hours } = useWeather();
-
-    // États pour gérer les onglets actifs
-    const [activeTab, setActiveTab] = useState<string>("tableau");
-
-    // État pour gérer le type de graphique dans l'onglet Fréquentation
-    const [chartType, setChartType] = useState<'line' | 'bar'>('line');
-
-    // État pour gérer le type de graphique dans l'onglet Prévisions
-    const [previsionChartType, setPrevisionChartType] = useState<'line' | 'bar'>('bar');
-
-    // Fonction pour basculer entre les types de graphiques (fréquentation)
-    const toggleChartType = () => {
-        setChartType(prevType => prevType === 'line' ? 'bar' : 'line');
-    };
-
-    // Fonction pour basculer entre les types de graphiques (prévisions)
-    const togglePrevisionChartType = () => {
-        setPrevisionChartType(prevType => prevType === 'line' ? 'bar' : 'line');
-    };
 
     // Définition des classes pour les onglets basées sur l'état actif
     const getTabClass = (tabName: string) => {
@@ -109,6 +104,20 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
     // Gestionnaire d'événements pour le changement d'onglet
     const handleTabChange = (tabName: string) => {
         setActiveTab(tabName);
+
+        // Si l'onglet graphe est activé, marquer l'état et forcer un rerendu des graphiques
+        if (tabName === "graphe") {
+            setGraphTabActive(true);
+            // Délai pour assurer que l'onglet est visible avant de redimensionner
+            setTimeout(() => {
+                if (ripCurrentChartRef.current) {
+                    // Déclencher un événement de redimensionnement pour forcer la mise à jour des dimensions
+                    window.dispatchEvent(new Event('resize'));
+                }
+            }, 50);
+        } else {
+            setGraphTabActive(false);
+        }
     };
 
     // Initialiser l'onglet actif par défaut
@@ -116,9 +125,47 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
         setActiveTab("tableau");
     }, []);
 
-    // Pour la visualisation, utiliser soit les dates du shore break soit les heures du contexte météo
-    const displayHours = shoreBreakDates.length > 0 ? shoreBreakDates : hours;
+    // Fonction pour filtrer les données selon la vue temporelle sélectionnée
+    const filterDataByTimeView = (dates: Date[], data: any[]) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
+        // Dates limites pour chaque vue
+        const limitDate = new Date(today);
+        switch (activeView) {
+            case "today":
+                limitDate.setDate(today.getDate() + 1); // aujourd'hui seulement
+                break;
+            case "plus3days":
+                limitDate.setDate(today.getDate() + 3); // +3 jours
+                break;
+            case "plus5days":
+                limitDate.setDate(today.getDate() + 5); // +5 jours
+                break;
+            case "plus7days":
+                limitDate.setDate(today.getDate() + 7); // +7 jours
+                break;
+        }
+
+        // Filtrer les données selon la limite de date
+        return dates.map((date, index) => {
+            // Ne garder que les données jusqu'à la date limite
+            if (date <= limitDate) {
+                return {
+                    date,
+                    value: data[index]
+                };
+            }
+            return null;
+        }).filter(item => item !== null) as { date: Date; value: any }[];
+    };
+
+    // Filtrer les données selon la vue temporelle active
+    const filteredShoreBreakData = filterDataByTimeView(shoreBreakDates, shoreBreakIndices);
+    const filteredRipCurrentData = filterDataByTimeView(shoreBreakDates, ripCurrentVelocities);
+    const filteredRipCurrentHazardLevels = filterDataByTimeView(shoreBreakDates, ripCurrentHazardLevels);
+
+    
 
     return (
         <div className="tabs tabs-lift w-full max-w-full flex flex-wrap">
@@ -150,35 +197,54 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                 onChange={() => handleTabChange("graphe")}
             />
             <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <div className="flex items-center flex-wrap gap-2 mb-4">
+                <div className="flex flex-col items-start flex-wrap gap-2 mb-4">
                     <h2 className="text-xl font-bold text-slate-950">Previsions sous forme de graphe</h2>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold">Période :</span>
+                        <Select
+                            value={activeView}
+                            onValueChange={(value) => setActiveView(value)}
+                        >
+                            <SelectTrigger className="w-[180px] bg-slate-50">
+                                <SelectValue placeholder="Sélectionner une période" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="plus7days">+7 jours</SelectItem>
+                                <SelectItem value="plus5days">+5 jours</SelectItem>
+                                <SelectItem value="plus3days">+3 jours</SelectItem>
+                                <SelectItem value="today">Aujourd'hui</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 <div className="beach-data w-full overflow-hidden">
                     <div className="mt-4 flex flex-col space-y-8">
-                        <div className="w-full">
-                            <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
-                            <Toggle
-                                leftLabel="Courbes"
-                                rightLabel="Histogrammes"
-                                isChecked={previsionChartType === 'line'}
-                                onChange={togglePrevisionChartType}
-                                className="m-2 ml-2 w-53"
-                            />
-                            {attendanceLoading ? (
-                                <div className="h-[300px] flex items-center justify-center bg-slate-100 rounded">
-                                    <p>Chargement des données de fréquentation...</p>
+                        <div
+                            ref={ripCurrentChartRef}
+                            className="w-full bg-white rounded shadow-md p-4"
+                        >
+                            <h3 className="text-lg font-semibold mb-2">Risque Courant de Baïne</h3>
+                            {ripCurrentLoading ? (
+                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données de courant...</p>
                                 </div>
-                            ) : attendanceError ? (
-                                <div className="h-[300px] flex items-center justify-center bg-red-100 text-red-700 rounded">
-                                    <p>Erreur: {attendanceError}</p>
+                            ) : ripCurrentError ? (
+                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {ripCurrentError}</p>
                                 </div>
-                            ) : previsionChartType !== 'bar' ? (
-                                <BeachAttendanceBarChart/>
                             ) : (
-                                <ChartAllData />
+                                <RipCurrentHazardChart
+                                    hours={filteredRipCurrentData.map(item => item.date)}
+                                    velocities={filteredRipCurrentData.map(item => item.value)}
+                                    hazardLevels={filteredRipCurrentHazardLevels.map(item => item.value)}
+                                    showDayNightZones={false}
+                                />
                             )}
                         </div>
-                        <div className="w-full bg-white rounded shadow-md p-4">
+                        <div
+                            ref={shoreBreakChartRef}
+                            className="w-full bg-white rounded shadow-md p-4"
+                        >
                             <h3 className="text-lg font-semibold mb-2">Indice Risques Shore Break</h3>
                             {shoreBreakLoading ? (
                                 <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
@@ -189,73 +255,28 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
                                     <p>Erreur: {shoreBreakError}</p>
                                 </div>
                             ) : (
-                                <ShoreBreakHazardChart hours={displayHours} indices={shoreBreakIndices} />
-                            )}
-                        </div>
-
-                        <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Risque Courant d'Arrachement</h3>
-                            {ripCurrentLoading ? (
-                                <div className="h-[200px] flex items-center justify-center bg-slate-100 rounded">
-                                    <p>Chargement des données de courant...</p>
-                                </div>
-                            ) : ripCurrentError ? (
-                                <div className="h-[200px] flex items-center justify-center bg-red-100 text-red-700 rounded">
-                                    <p>Erreur: {ripCurrentError}</p>
-                                </div>
-                            ) : (
-                                <RipCurrentHazardChart 
-                                    hours={displayHours} 
-                                    velocities={ripCurrentVelocities} 
-                                    hazardLevels={ripCurrentHazardLevels} 
+                                <ShoreBreakHazardChart
+                                    hours={filteredShoreBreakData.map(item => item.date)}
+                                    indices={filteredShoreBreakData.map(item => item.value)}
+                                    showDayNightZones={false}
                                 />
                             )}
                         </div>
-                        
-                        <div className="w-full bg-white rounded shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-2">Températures</h3>
-                            <TemperatureChart />
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <input
-                type="radio"
-                name="my_tabs_3"
-                className={getTabClass("frequentation")}
-                style={responsiveStyle}
-                aria-label="Fréquentation des plages"
-                onChange={() => handleTabChange("frequentation")}
-            />
-            <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
-                <div className="flex items-center flex-wrap gap-2 mb-4">
-                    <h2 className="text-xl font-bold text-slate-950">Fréquentation des plages</h2>
-                    <Toggle
-                        leftLabel="Courbes"
-                        rightLabel="Histogrammes"
-                        isChecked={chartType === 'bar'}
-                        onChange={toggleChartType}
-                        className="ml-2"
-                    />
-                </div>
-                <div className="beach-data w-full overflow-hidden">
-                    <div className="mt-4 flex justify-center w-full">
-                        {attendanceLoading ? (
-                            <div className="h-[300px] w-full flex items-center justify-center bg-slate-100 rounded">
-                                <p>Chargement des données de fréquentation...</p>
-                            </div>
-                        ) : attendanceError ? (
-                            <div className="h-[300px] w-full flex items-center justify-center bg-red-100 text-red-700 rounded">
-                                <p>Erreur: {attendanceError}</p>
-                            </div>
-                        ) : chartType === 'line' ? (
-                            <ChartAllData />
-                        ) : (
-                            <div className="w-full">
-                                <BeachAttendanceBarChart/>
-                            </div>
-                        )}
+                        <div className="w-full">
+                            <h3 className="text-lg font-semibold mb-2">Prévisions de Fréquentation</h3>
+                            {attendanceLoading ? (
+                                <div className="h-[300px] flex items-center justify-center bg-slate-100 rounded">
+                                    <p>Chargement des données de fréquentation...</p>
+                                </div>
+                            ) : attendanceError ? (
+                                <div className="h-[300px] flex items-center justify-center bg-red-100 text-red-700 rounded">
+                                    <p>Erreur: {attendanceError}</p>
+                                </div>
+                            ) : (
+                                <ChartAllData />
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -279,4 +300,5 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
         </div>
     );
 };
+
 export default Tab;
