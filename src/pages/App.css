@@ -18,13 +18,13 @@
     border-radius: 10px;
 }
 
-/* Style pour la barre verticale (en rouge) */
+/* Style pour la barre verticale (en jaune) */
 ::-webkit-scrollbar-thumb:vertical {
     background: yellow;
     border-radius: 10px;
 }
 
-/* Style pour la barre horizontale (en jaune) */
+/* Style pour la barre horizontale (en rouge) */
 ::-webkit-scrollbar-thumb:horizontal {
     background: red;
     border-radius: 10px;
