@@ -423,7 +423,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                       {direction !== null ? (
                         <DirectionArrow
                           direction={direction}
-                          size={35}
+                          size={25}
                           color="#2563eb" // Blue color for wind
                           showLabel={false}
                         />
@@ -487,7 +487,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                       {direction !== null ? (
                         <DirectionArrow
                           direction={direction}
-                          size={35}
+                          size={25}
                           color="#6366f1" // Indigo color for waves
                           showLabel={false}
                         />

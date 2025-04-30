@@ -540,7 +540,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
             {maxValues && (
               <>
                 <div className="mt-2 pt-2 border-t border-cyan-200">
-                  <p className="text-md text-cyan-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
+                  <p className="text-md text-sky-800 font-medium mb-1">Maximum entre 11h et 20h:</p>
                   <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-red-700">
                     <span className="font-medium">Direction:</span>
                     <DirectionArrow
@@ -619,7 +619,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
 
             <div className="mt-2">
               <p className="flex justify-start text-sm sm:text-base">
-                <span className="font-medium mx-2">Coefficient:</span>
+                <span className="font-bold mx-2">Coefficient:</span>
                 <span>{tideData.coefficient}</span>
               </p>
 

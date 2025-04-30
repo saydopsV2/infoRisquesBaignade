@@ -278,7 +278,7 @@ export function RipCurrentHazardChart({
             {isChartReady && showDayNightZones && (
                 <DayNightZones
                     numberOfDays={numberOfDays}
-                    nightStartHour={20}
+                    nightStartHour={21}
                     nightEndHour={9}
                 />
             )}
