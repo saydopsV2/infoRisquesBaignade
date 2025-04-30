@@ -12,7 +12,7 @@ interface BilanProps {
   location: Beach;
 }
 
-// Interface pour les données de marées détaillées dans resultats.json
+// Interface pour les données de marées détaillées dans result_scraper_tide.json
 interface TideDetailData {
   type: string;
   coefficient: string;
@@ -26,19 +26,13 @@ interface TideDetailData {
   demi: string;
 }
 
-// Interface pour les données de marées dans resultats.json
-interface TideData {
-  details_jour_actuel: TideDetailData[];
-  previsions_semaine: any[]; // On peut détailler cette interface si besoin
-  temperature_eau?: string; // Ajout de la température de l'eau
-}
 
 const Bilan: React.FC<BilanProps> = ({ location }) => {
   // State pour les données de marées
   const [tideData, setTideData] = useState<TideDetailData | null>(null);
   const [isTideLoading, setIsTideLoading] = useState<boolean>(false);
   const [tideError, setTideError] = useState<string | null>(null);
-  const [waterTemperature, setWaterTemperature] = useState<string | null>(null); // Nouvelle variable d'état pour la température de l'eau
+  const [waterTemperature, setWaterTemperature] = useState<string | null>(null);
 
   // Récupération des données météo
   const {
@@ -297,8 +291,6 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
 
     // Calculer les maximums pour les niveaux de danger entre 11h et 20h
     // Utiliser la date actuelle déjà déclarée plutôt qu'en créer une nouvelle
-    // const currentDate = new Date(); - Supprimé cette ligne qui cause l'erreur
-    // Réinitialiser l'heure à minuit sans redéclarer la variable
     const midnightDate = new Date(currentDate);
     midnightDate.setHours(0, 0, 0, 0);
 
@@ -342,20 +334,21 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           throw new Error(`Erreur de chargement: ${response.status}`);
         }
 
-        const data: TideData[] = await response.json();
+        // Adapter le code pour la nouvelle structure JSON
+        const data = await response.json();
 
-        // Récupérer les détails du jour actuel
-        if (Array.isArray(data) && data.length > 0 && data[0].details_jour_actuel && data[0].details_jour_actuel.length > 0) {
-          setTideData(data[0].details_jour_actuel[0]);
-        } else {
-          setTideData(null);
-        }
-
-        // Récupérer la température de l'eau
-        if (Array.isArray(data) && data.length > 0 && data[0].temperature_eau) {
+        // Récupérer la température de l'eau (1er élément du tableau)
+        if (Array.isArray(data) && data.length > 0 && data[0]?.temperature_eau) {
           setWaterTemperature(data[0].temperature_eau);
         } else {
           setWaterTemperature(null);
+        }
+
+        // Récupérer les détails du jour actuel (2ème élément du tableau)
+        if (Array.isArray(data) && data.length > 1 && data[1]?.details_jour_actuel && data[1].details_jour_actuel.length > 0) {
+          setTideData(data[1].details_jour_actuel[0]);
+        } else {
+          setTideData(null);
         }
 
         setIsTideLoading(false);
@@ -641,29 +634,25 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
                 <table className="min-w-full bg-white rounded-md">
                   <thead>
                     <tr className="bg-teal-100">
-                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-md sm:text-sm font-medium text-teal-800">Type</th>
-                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-md sm:text-sm font-medium text-teal-800">Heure</th>
-                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-left text-md sm:text-sm font-medium text-teal-800">Hauteur</th>
+                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-center text-md sm:text-sm font-medium text-teal-800">Type</th>
+                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-center text-md sm:text-sm font-medium text-teal-800">Heure</th>
+                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-center text-md sm:text-sm font-medium text-teal-800">Hauteur</th>
                     </tr>
                   </thead>
                   <tbody>
                     {tideTypes.map((type, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'bg-teal-50' : 'bg-white'}>
-                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm">{type}</td>
-                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm">{tideHours[index] || '-'}</td>
-                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm">{tideHeights[index] || '-'}</td>
+                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm text-center">{type}</td>
+                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm text-center">{tideHours[index] || '-'}</td>
+                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm text-center">{tideHeights[index] || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-
-
             </div>
           </div>
         )}
-
-
       </div>
 
       <div className="mt-3 sm:mt-4 text-center text-md sm:text-sm text-gray-500">

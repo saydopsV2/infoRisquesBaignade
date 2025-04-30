@@ -1,3 +1,227 @@
 [
-{"details_jour_actuel": [{"type": "BMPMBMPM", "coefficient": "101 96", "heure": "00h3906h5912h5719h16", "duree": "06h2005h5806h19", "heure_maree": "01h0300h5901h03", "hauteur": "0,29m4,44m0,52m4,36m", "marnage": "4,15m3,92m3,84m", "un_douzieme": "0,35m0,33m0,32m", "un_quart": "1,04m0,98m0,96m", "demi": "2,08m1,96m1,92m"}], "previsions_semaine": [{"jour_semaine": "Mer.", "jour_num": "30", "marées": [{"type": "PM", "heure": "00h39", "hauteur": "0,29m", "coefficient": "101"}, {"type": "BM", "heure": "06h59", "hauteur": "4,44m", "coefficient": "96"}, {"type": "PM", "heure": "12h57", "hauteur": "0,52m", "coefficient": ""}, {"type": "BM", "heure": "19h16", "hauteur": "4,36m", "coefficient": ""}]}, {"jour_semaine": "Jeu.", "jour_num": "01", "marées": [{"type": "PM", "heure": "01h28", "hauteur": "0,48m", "coefficient": "89"}, {"type": "BM", "heure": "07h47", "hauteur": "4,14m", "coefficient": "82"}, {"type": "PM", "heure": "13h44", "hauteur": "0,82m", "coefficient": ""}, {"type": "BM", "heure": "20h05", "hauteur": "4,12m", "coefficient": ""}]}, {"jour_semaine": "Ven.", "jour_num": "02", "marées": [{"type": "PM", "heure": "02h21", "hauteur": "0,76m", "coefficient": "74"}, {"type": "BM", "heure": "08h40", "hauteur": "3,79m", "coefficient": "66"}, {"type": "PM", "heure": "14h36", "hauteur": "1,15m", "coefficient": ""}, {"type": "BM", "heure": "21h00", "hauteur": "3,84m", "coefficient": ""}]}, {"jour_semaine": "Sam.", "jour_num": "03", "marées": [{"type": "PM", "heure": "03h19", "hauteur": "1,07m", "coefficient": "58"}, {"type": "BM", "heure": "09h44", "hauteur": "3,46m", "coefficient": "51"}, {"type": "PM", "heure": "15h35", "hauteur": "1,45m", "coefficient": ""}, {"type": "BM", "heure": "22h07", "hauteur": "3,58m", "coefficient": ""}]}, {"jour_semaine": "Dim.", "jour_num": "04", "marées": [{"type": "PM", "heure": "04h28", "hauteur": "1,33m", "coefficient": "45"}, {"type": "BM", "heure": "11h05", "hauteur": "3,24m", "coefficient": "42"}, {"type": "PM", "heure": "16h47", "hauteur": "1,65m", "coefficient": ""}, {"type": "BM", "heure": "23h30", "hauteur": "3,43m", "coefficient": ""}]}, {"jour_semaine": "Lun.", "jour_num": "05", "marées": [{"type": "PM", "heure": "05h46", "hauteur": "1,47m", "coefficient": "40"}, {"type": "BM", "heure": "12h30", "hauteur": "3,19m", "coefficient": ""}, {"type": "PM", "heure": "18h07", "hauteur": "1,70m", "coefficient": ""}]}, {"jour_semaine": "Mar.", "jour_num": "06", "marées": [{"type": "PM", "heure": "00h51", "hauteur": "3,41m", "coefficient": "40"}, {"type": "BM", "heure": "07h03", "hauteur": "1,47m", "coefficient": "43"}, {"type": "PM", "heure": "13h38", "hauteur": "3,28m", "coefficient": ""}, {"type": "BM", "heure": "19h20", "hauteur": "1,61m", "coefficient": ""}]}]}
+    {
+        "temperature_eau": "15"
+    },
+    {
+        "details_jour_actuel": [
+            {
+                "type": "BMPMBMPM",
+                "coefficient": "101 96",
+                "heure": "00h3906h5912h5719h16",
+                "duree": "06h2005h5806h19",
+                "heure_maree": "01h0300h5901h03",
+                "hauteur": "0,29m4,44m0,52m4,36m",
+                "marnage": "4,15m3,92m3,84m",
+                "un_douzieme": "0,35m0,33m0,32m",
+                "un_quart": "1,04m0,98m0,96m",
+                "demi": "2,08m1,96m1,92m"
+            }
+        ],
+        "previsions_semaine": [
+            {
+                "jour_semaine": "Mer.",
+                "jour_num": "30",
+                "marées": [
+                    {
+                        "type": "PM",
+                        "heure": "00h39",
+                        "hauteur": "0,29m",
+                        "coefficient": "101"
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "06h59",
+                        "hauteur": "4,44m",
+                        "coefficient": "96"
+                    },
+                    {
+                        "type": "PM",
+                        "heure": "12h57",
+                        "hauteur": "0,52m",
+                        "coefficient": ""
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "19h16",
+                        "hauteur": "4,36m",
+                        "coefficient": ""
+                    }
+                ]
+            },
+            {
+                "jour_semaine": "Jeu.",
+                "jour_num": "01",
+                "marées": [
+                    {
+                        "type": "PM",
+                        "heure": "01h28",
+                        "hauteur": "0,48m",
+                        "coefficient": "89"
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "07h47",
+                        "hauteur": "4,14m",
+                        "coefficient": "82"
+                    },
+                    {
+                        "type": "PM",
+                        "heure": "13h44",
+                        "hauteur": "0,82m",
+                        "coefficient": ""
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "20h05",
+                        "hauteur": "4,12m",
+                        "coefficient": ""
+                    }
+                ]
+            },
+            {
+                "jour_semaine": "Ven.",
+                "jour_num": "02",
+                "marées": [
+                    {
+                        "type": "PM",
+                        "heure": "02h21",
+                        "hauteur": "0,76m",
+                        "coefficient": "74"
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "08h40",
+                        "hauteur": "3,79m",
+                        "coefficient": "66"
+                    },
+                    {
+                        "type": "PM",
+                        "heure": "14h36",
+                        "hauteur": "1,15m",
+                        "coefficient": ""
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "21h00",
+                        "hauteur": "3,84m",
+                        "coefficient": ""
+                    }
+                ]
+            },
+            {
+                "jour_semaine": "Sam.",
+                "jour_num": "03",
+                "marées": [
+                    {
+                        "type": "PM",
+                        "heure": "03h19",
+                        "hauteur": "1,07m",
+                        "coefficient": "58"
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "09h44",
+                        "hauteur": "3,46m",
+                        "coefficient": "51"
+                    },
+                    {
+                        "type": "PM",
+                        "heure": "15h35",
+                        "hauteur": "1,45m",
+                        "coefficient": ""
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "22h07",
+                        "hauteur": "3,58m",
+                        "coefficient": ""
+                    }
+                ]
+            },
+            {
+                "jour_semaine": "Dim.",
+                "jour_num": "04",
+                "marées": [
+                    {
+                        "type": "PM",
+                        "heure": "04h28",
+                        "hauteur": "1,33m",
+                        "coefficient": "45"
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "11h05",
+                        "hauteur": "3,24m",
+                        "coefficient": "42"
+                    },
+                    {
+                        "type": "PM",
+                        "heure": "16h47",
+                        "hauteur": "1,65m",
+                        "coefficient": ""
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "23h30",
+                        "hauteur": "3,43m",
+                        "coefficient": ""
+                    }
+                ]
+            },
+            {
+                "jour_semaine": "Lun.",
+                "jour_num": "05",
+                "marées": [
+                    {
+                        "type": "PM",
+                        "heure": "05h46",
+                        "hauteur": "1,47m",
+                        "coefficient": "40"
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "12h30",
+                        "hauteur": "3,19m",
+                        "coefficient": ""
+                    },
+                    {
+                        "type": "PM",
+                        "heure": "18h07",
+                        "hauteur": "1,70m",
+                        "coefficient": ""
+                    }
+                ]
+            },
+            {
+                "jour_semaine": "Mar.",
+                "jour_num": "06",
+                "marées": [
+                    {
+                        "type": "PM",
+                        "heure": "00h51",
+                        "hauteur": "3,41m",
+                        "coefficient": "40"
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "07h03",
+                        "hauteur": "1,47m",
+                        "coefficient": "43"
+                    },
+                    {
+                        "type": "PM",
+                        "heure": "13h38",
+                        "hauteur": "3,28m",
+                        "coefficient": ""
+                    },
+                    {
+                        "type": "BM",
+                        "heure": "19h20",
+                        "hauteur": "1,61m",
+                        "coefficient": ""
+                    }
+                ]
+            }
+        ]
+    }
 ]
