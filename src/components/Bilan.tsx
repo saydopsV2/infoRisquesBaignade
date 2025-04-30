@@ -30,6 +30,7 @@ interface TideDetailData {
 interface TideData {
   details_jour_actuel: TideDetailData[];
   previsions_semaine: any[]; // On peut détailler cette interface si besoin
+  temperature_eau?: string; // Ajout de la température de l'eau
 }
 
 const Bilan: React.FC<BilanProps> = ({ location }) => {
@@ -37,6 +38,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
   const [tideData, setTideData] = useState<TideDetailData | null>(null);
   const [isTideLoading, setIsTideLoading] = useState<boolean>(false);
   const [tideError, setTideError] = useState<string | null>(null);
+  const [waterTemperature, setWaterTemperature] = useState<string | null>(null); // Nouvelle variable d'état pour la température de l'eau
 
   // Récupération des données météo
   const {
@@ -165,10 +167,10 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     const currentDate = new Date();
     const currentHour11AM = new Date(currentDate);
     currentHour11AM.setHours(11, 0, 0, 0);
-    
+
     // Calculer l'index pour 11h00 dans le tableau des heures
     const hoursSinceMidnight = Math.floor((currentHour11AM.getTime() - new Date(currentDate.setHours(0, 0, 0, 0)).getTime()) / (1000 * 60 * 60));
-    
+
     const attendanceHazardLevel = hoursSinceMidnight < attendanceHazardLevels.length ? attendanceHazardLevels[hoursSinceMidnight] : null;
     const ripCurrentHazardLevel = hoursSinceMidnight < ripCurrentHazardLevels.length ? ripCurrentHazardLevels[hoursSinceMidnight] : null;
     const shoreBreakHazardLevel = hoursSinceMidnight < shoreBreakHazardLevels.length ? shoreBreakHazardLevels[hoursSinceMidnight] : null;
@@ -205,7 +207,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
         hour.getDate() === currentDay &&
         hour.getMonth() === currentMonth &&
         hour.getFullYear() === currentYear &&
-        hour.getHours() >= 11 && 
+        hour.getHours() >= 11 &&
         hour.getHours() <= 20
       ) {
         indices.push(index);
@@ -235,7 +237,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           apiDate.getDate() === currentDay &&
           apiDate.getMonth() === currentMonth &&
           apiDate.getFullYear() === currentYear &&
-          apiDate.getHours() >= 11 && 
+          apiDate.getHours() >= 11 &&
           apiDate.getHours() <= 20
         ) {
           indices.push(index);
@@ -271,7 +273,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           apiDate.getDate() === currentDay &&
           apiDate.getMonth() === currentMonth &&
           apiDate.getFullYear() === currentYear &&
-          apiDate.getHours() >= 11 && 
+          apiDate.getHours() >= 11 &&
           apiDate.getHours() <= 20
         ) {
           indices.push(index);
@@ -299,16 +301,16 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     // Réinitialiser l'heure à minuit sans redéclarer la variable
     const midnightDate = new Date(currentDate);
     midnightDate.setHours(0, 0, 0, 0);
-    
+
     // Index pour 11h00 et 20h00
     const startIndex = 11;
     const endIndex = 20;
-    
+
     // Extraire les valeurs de niveau de danger pour l'intervalle 11h-20h
     const afternoonAttendanceHazardLevels = attendanceHazardLevels.slice(startIndex, endIndex + 1);
     const afternoonRipCurrentHazardLevels = ripCurrentHazardLevels.slice(startIndex, endIndex + 1);
     const afternoonShoreBreakHazardLevels = shoreBreakHazardLevels.slice(startIndex, endIndex + 1);
-    
+
     // Calculer les maximums
     const maxAttendanceHazardLevel = Math.max(...afternoonAttendanceHazardLevels.filter(level => level !== null && level !== undefined));
     const maxRipCurrentHazardLevel = Math.max(...afternoonRipCurrentHazardLevels.filter(level => level !== null && level !== undefined));
@@ -347,6 +349,13 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           setTideData(data[0].details_jour_actuel[0]);
         } else {
           setTideData(null);
+        }
+
+        // Récupérer la température de l'eau
+        if (Array.isArray(data) && data.length > 0 && data[0].temperature_eau) {
+          setWaterTemperature(data[0].temperature_eau);
+        } else {
+          setWaterTemperature(null);
         }
 
         setIsTideLoading(false);
@@ -568,6 +577,10 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
         <div id="waves" className="bg-sky-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
           <h3 className="text-base sm:text-lg font-semibold text-sky-800">Vagues</h3>
           <div className="mt-2">
+            <p className="flex justify-between mt-1 text-sm sm:text-base">
+              <span className="font-medium">Température eau:</span>
+              <span>{waterTemperature !== null ? `${waterTemperature}°C` : "-"}</span>
+            </p>
             <p className="flex justify-between items-center text-sm sm:text-base">
               <span className="font-medium">Direction:</span>
               <DirectionArrow
@@ -645,12 +658,12 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
                 </table>
               </div>
 
-              
+
             </div>
           </div>
         )}
 
-        
+
       </div>
 
       <div className="mt-3 sm:mt-4 text-center text-md sm:text-sm text-gray-500">
