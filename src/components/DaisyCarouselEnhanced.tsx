@@ -59,10 +59,10 @@ const DaisyCarouselEnhanced: React.FC<DaisyCarouselProps> = ({
     }, [items.length]);
 
     return (
-        <div className="flex flex-col items-center justify-center w-full">
+        <div className="flex flex-col items-center justify-center w-full overflow-hidden">
             {/* Wrapper pour centrer le carousel */}
-            <div className="w-full max-w-4xl mx-auto">
-                <div className="carousel w-full">
+            <div className="w-full max-w-4xl mx-auto overflow-hidden">
+                <div className="carousel w-full overflow-hidden">
                     {items.map((item, index) => (
                         <div
                             id={`slide${index + 1}`}
