@@ -5,27 +5,15 @@ import { useWaveForecast } from '../context/WaveForecastContext';
 import { useBeachAttendanceData } from '../hooks/useBeachAttendanceData';
 import { useRipCurrentData } from '../hooks/useRipCurrentData';
 import { useShoreBreakData } from '../hooks/useShoreBreakData';
-import Beach from '../interface/Beach';
-import DirectionArrow from './DirectionArrow';
+import { BilanProps, TideDetailData } from '../interfaces/BilanTypes';
+import { extractTideTypes, formatTideHeights, formatTideHours } from './bilan/BilanUtils';
 
-interface BilanProps {
-  location: Beach;
-}
-
-// Interface pour les données de marées détaillées dans result_scraper_tide.json
-interface TideDetailData {
-  type: string;
-  coefficient: string;
-  heure: string;
-  duree: string;
-  heure_maree: string;
-  hauteur: string;
-  marnage: string;
-  un_douzieme: string;
-  un_quart: string;
-  demi: string;
-}
-
+// Import des composants
+import HazardSection from './bilan/HazardSection';
+import WeatherSection from './bilan/WeatherSection';
+import WindSection from './bilan/WindSection';
+import WaveSection from './bilan/WaveSection';
+import TideSection from './bilan/TideSection';
 
 const Bilan: React.FC<BilanProps> = ({ location }) => {
   // State pour les données de marées
@@ -361,40 +349,6 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     fetchTideData();
   }, []);
 
-  // Fonction pour extraire les types de marées (BM/PM)
-  const extractTideTypes = (typeString: string): string[] => {
-    const types: string[] = [];
-    for (let i = 0; i < typeString.length; i += 2) {
-      if (i + 2 <= typeString.length) {
-        const type = typeString.substring(i, i + 2);
-        types.push(type);
-      }
-    }
-    return types;
-  };
-
-  // Fonction pour formater les heures de marées
-  const formatTideHours = (hoursString: string): string[] => {
-    const result: string[] = [];
-    for (let i = 0; i < hoursString.length; i += 5) {
-      if (i + 5 <= hoursString.length) {
-        result.push(hoursString.substring(i, i + 5));
-      }
-    }
-    return result;
-  };
-
-  // Fonction pour formater les hauteurs de marées
-  const formatTideHeights = (heightsString: string): string[] => {
-    const result: string[] = [];
-    for (let i = 0; i < heightsString.length; i += 5) {
-      if (i + 5 <= heightsString.length) {
-        result.push(heightsString.substring(i, i + 5));
-      }
-    }
-    return result;
-  };
-
   // Obtenir les données pour 11h00
   const data11AM = getDataAt11AM();
 
@@ -422,17 +376,6 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
   const tideHours = tideData?.heure ? formatTideHours(tideData.heure) : [];
   const tideHeights = tideData?.hauteur ? formatTideHeights(tideData.hauteur) : [];
 
-  // Fonction pour obtenir la couleur basée sur le niveau de danger
-  const getHazardLevelColor = (level: number | null): string => {
-    if (level === null) return "text-gray-500";
-    if (level === 0) return "text-green-600"; // Vert foncé - Sécurité optimale
-    if (level === 1) return "text-green-400"; // Vert clair - Faible risque
-    if (level === 2) return "text-yellow-500"; // Jaune - Risque modéré
-    if (level === 3) return "text-orange-500"; // Orange - Risque élevé
-    if (level >= 4) return "text-red-600"; // Rouge - Danger important
-    return "text-gray-500"; // Couleur par défaut
-  };
-
   return (
     <div className="bg-white shadow-md rounded-lg p-4 sm:p-5 w-full max-w-6xl mx-auto">
       <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center border-b pb-2">
@@ -440,219 +383,12 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
       </h2>
 
       <div className="flex flex-wrap justify-between gap-4">
-        {/* Div pour les niveaux de risque */}
-        <div id="hazards" className="bg-rose-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
-          <h3 className="text-base sm:text-lg font-semibold text-rose-800">Niveaux de Risque</h3>
-          <div className="mt-2">
-            <p className="flex justify-between text-sm sm:text-base">
-              <span className="font-medium">Fréquentation:</span>
-              <span className={getHazardLevelColor(data11AM.attendanceHazardLevel)}>
-                {data11AM.attendanceHazardLevel !== null ? data11AM.attendanceHazardLevel : "-"}
-              </span>
-            </p>
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Courant de Baïne:</span>
-              <span className={getHazardLevelColor(data11AM.ripCurrentHazardLevel)}>
-                {data11AM.ripCurrentHazardLevel !== null ? data11AM.ripCurrentHazardLevel : "-"}
-              </span>
-            </p>
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Shore Break:</span>
-              <span className={getHazardLevelColor(data11AM.shoreBreakHazardLevel)}>
-                {data11AM.shoreBreakHazardLevel !== null ? data11AM.shoreBreakHazardLevel : "-"}
-              </span>
-            </p>
-            {maxValues && (
-              <>
-                <div className="mt-2 pt-2 border-t border-rose-200">
-                  <p className="text-md text-sky-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Fréquentation max:</span>
-                    <span>
-                      {maxValues.maxAttendanceHazardLevel !== null ? maxValues.maxAttendanceHazardLevel : "-"}
-                    </span>
-                  </p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Courant max:</span>
-                    <span>
-                      {maxValues.maxRipCurrentHazardLevel !== null ? maxValues.maxRipCurrentHazardLevel : "-"}
-                    </span>
-                  </p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Shore Break max:</span>
-                    <span>
-                      {maxValues.maxShoreBreakHazardLevel !== null ? maxValues.maxShoreBreakHazardLevel : "-"}
-                    </span>
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-        {/* Div pour la météo */}
-        <div id="weather" className="bg-sky-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
-          <h3 className="text-base sm:text-lg font-semibold text-sky-800">Météo</h3>
-          <div className="mt-2">
-            <p className="flex justify-between text-sm sm:text-base">
-              <span className="font-medium">Température:</span>
-              <span>{data11AM.temperature !== null ? `${data11AM.temperature}${tempUnit}` : "-"}</span>
-            </p>
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Indice UV:</span>
-              <span>{data11AM.uvIndex !== null ? data11AM.uvIndex.toFixed(1) : "-"}</span>
-            </p>
-            {maxValues && (
-              <>
-                <div className="mt-2 pt-2 border-t border-sky-200">
-                  <p className="text-md text-sky-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Temp. max:</span>
-                    <span>{maxValues.maxTemperature !== null ? `${maxValues.maxTemperature}${tempUnit}` : "-"}</span>
-                  </p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">UV max:</span>
-                    <span>{maxValues.maxUvIndex !== null ? maxValues.maxUvIndex.toFixed(1) : "-"}</span>
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-        {/* Div pour le vent */}
-        <div id="wind" className="bg-cyan-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
-          <h3 className="text-base sm:text-lg font-semibold text-cyan-800">Vent</h3>
-          <div className="mt-2">
-            <p className="flex justify-between items-center text-sm sm:text-base">
-              <span className="font-medium">Direction:</span>
-              <DirectionArrow
-                direction={data11AM.windDirection}
-                size={24}
-                color="#2563eb"
-                showLabel={true}
-              />
-            </p>
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Vitesse:</span>
-              <span>{data11AM.windSpeed !== null ? `${data11AM.windSpeed} nds` : "-"}</span>
-            </p>
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Rafales:</span>
-              <span>{data11AM.windGusts !== null ? `${data11AM.windGusts} nds` : "-"}</span>
-            </p>
-            {maxValues && (
-              <>
-                <div className="mt-2 pt-2 border-t border-cyan-200">
-                  <p className="text-md text-sky-800 font-medium mb-1">Maximum entre 11h et 20h:</p>
-                  <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Direction:</span>
-                    <DirectionArrow
-                      direction={maxValues.directionAtMaxSpeed}
-                      size={24}
-                      color="#dc2626"
-                      showLabel={true}
-                    />
-                  </p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Vitesse max:</span>
-                    <span>{maxValues.maxWindSpeed !== null ? `${maxValues.maxWindSpeed} nds` : "-"}</span>
-                  </p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Rafales max:</span>
-                    <span>{maxValues.maxWindGusts !== null ? `${maxValues.maxWindGusts} nds` : "-"}</span>
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Div pour les vagues */}
-        <div id="waves" className="bg-sky-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
-          <h3 className="text-base sm:text-lg font-semibold text-sky-800">Vagues</h3>
-          <div className="mt-2">
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Température eau:</span>
-              <span>{waterTemperature !== null ? `${waterTemperature}°C` : "-"}</span>
-            </p>
-            <p className="flex justify-between items-center text-sm sm:text-base">
-              <span className="font-medium">Direction:</span>
-              <DirectionArrow
-                direction={data11AM.waveDirection}
-                size={24}
-                color="#4f46e5"
-                showLabel={true}
-              />
-            </p>
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Hauteur:</span>
-              <span>{data11AM.waveHeight !== null ? `${data11AM.waveHeight.toFixed(1)} m` : "-"}</span>
-            </p>
-            <p className="flex justify-between mt-1 text-sm sm:text-base">
-              <span className="font-medium">Période:</span>
-              <span>{data11AM.wavePeriod !== null ? `${data11AM.wavePeriod.toFixed(1)} s` : "-"}</span>
-            </p>
-            {maxValues && (
-              <>
-                <div className="mt-2 pt-2 border-t border-sky-200">
-                  <p className="text-md text-sky-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
-                  <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Direction:</span>
-                    <DirectionArrow
-                      direction={maxValues.directionAtMaxWave}
-                      size={24}
-                      color="#dc2626"
-                      showLabel={true}
-                    />
-                  </p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Hauteur max:</span>
-                    <span>{maxValues.maxWaveHeight !== null ? `${maxValues.maxWaveHeight.toFixed(1)} m` : "-"}</span>
-                  </p>
-                  <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                    <span className="font-medium">Période:</span>
-                    <span>{maxValues.periodAtMaxWave !== null ? `${maxValues.periodAtMaxWave.toFixed(1)} s` : "-"}</span>
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Affichage des données de marées */}
-        {tideData && (
-          <div id="tide" className="bg-teal-50 p-3 rounded-md border border-gray-300 flex-grow basis-0 min-w-[250px]">
-            <h3 className="text-base sm:text-lg font-semibold text-teal-800">Marées aujourd'hui</h3>
-
-            <div className="mt-2">
-              <p className="flex justify-start text-sm sm:text-base">
-                <span className="font-bold mx-2">Coefficient:</span>
-                <span>{tideData.coefficient}</span>
-              </p>
-
-              {/* Tableau des marées */}
-              <div className="mt-2 sm:mt-3 overflow-x-auto">
-                <table className="min-w-full bg-white rounded-md">
-                  <thead>
-                    <tr className="bg-teal-100">
-                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-center text-md sm:text-sm font-medium text-teal-800">Type</th>
-                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-center text-md sm:text-sm font-medium text-teal-800">Heure</th>
-                      <th className="py-1 sm:py-2 px-2 sm:px-3 text-center text-md sm:text-sm font-medium text-teal-800">Hauteur</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tideTypes.map((type, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-teal-50' : 'bg-white'}>
-                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm text-center">{type}</td>
-                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm text-center">{tideHours[index] || '-'}</td>
-                        <td className="py-1 sm:py-2 px-2 sm:px-3 text-md sm:text-sm text-center">{tideHeights[index] || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Composants de section */}
+        <HazardSection data11AM={data11AM} maxValues={maxValues} />
+        <WeatherSection data11AM={data11AM} maxValues={maxValues} tempUnit={tempUnit} />
+        <WindSection data11AM={data11AM} maxValues={maxValues} />
+        <WaveSection data11AM={data11AM} maxValues={maxValues} waterTemperature={waterTemperature} />
+        <TideSection tideData={tideData} tideTypes={tideTypes} tideHours={tideHours} tideHeights={tideHeights} />
       </div>
 
       <div className="mt-3 sm:mt-4 text-center text-md sm:text-sm text-gray-500">

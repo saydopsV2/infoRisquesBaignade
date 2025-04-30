@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import Beach from '../interface/Beach';
+import Beach from '../interfaces/Beach';
 
 // Constante pour le nombre de jours à afficher
 const DAYS_TO_DISPLAY = 7;

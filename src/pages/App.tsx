@@ -4,7 +4,7 @@ import NavBar from '../components/NavBar';
 import BeachForecast from '../components/BeachForecast';
 import Home from '../components/Home';
 import Footer from '../components/Footer';
-import Beach from '../interface/Beach';
+import Beach from '../interfaces/Beach';
 import { WindForecastProvider } from '../context/WindForecastContext';
 import { WaveForecastProvider } from '../context/WaveForecastContext';
 import ScrollToTop from '@/components/ScrollToTop';

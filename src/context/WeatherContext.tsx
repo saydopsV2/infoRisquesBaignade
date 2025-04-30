@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import Beach from '../interface/Beach';
+import Beach from '../interfaces/Beach';
 
 // Types
 interface WeatherData {

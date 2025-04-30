@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import Table from "./Table";
-import Beach from "../interface/Beach";
+import Beach from "../interfaces/Beach";
 import { ChartAllData } from "./charts/BeachAttendanceLineChart";
 import Bilan from "./Bilan";
 import { ShoreBreakHazardChart } from "./charts/ShoreBreakHazardChart";
