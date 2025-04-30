@@ -1,6 +1,6 @@
 import React from 'react';
 import Tab from './Tab';
-import Beach from '../interface/Beach';
+import Beach from '../interfaces/Beach';
 import { WeatherProvider } from '../context/WeatherContext';
 
 interface BeachForecastProps {

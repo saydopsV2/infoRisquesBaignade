@@ -137,7 +137,7 @@ export function ShoreBreakHazardChart({
                         margin={{
                             top: 10,
                             right: 30,
-                            left: inTable ? -45 : -55, // Marge gauche négative si dans tableau
+                            left: inTable ? -45 : 5, // Marge gauche négative si dans tableau
                             bottom: 0,
                         }}
                     >
@@ -271,7 +271,7 @@ export function ShoreBreakHazardChart({
             {isChartReady && showDayNightZones && (
                 <DayNightZones 
                     numberOfDays={numberOfDays}
-                    nightStartHour={20}
+                    nightStartHour={21}
                     nightEndHour={9}
                 />
             )}

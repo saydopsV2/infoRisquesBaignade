@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Beach from '../interface/Beach';
+import Beach from '../interfaces/Beach';
 import { ShoreBreakHazardChart } from './charts/ShoreBreakHazardChart';
 import { RipCurrentHazardChart } from './charts/RipCurrentHazardChart';
 import { useWeather } from '../context/WeatherContext';
@@ -10,6 +10,7 @@ import { useShoreBreakData } from '../hooks/useShoreBreakData';
 import { useRipCurrentData } from '../hooks/useRipCurrentData';
 import { useBeachAttendanceData } from '../hooks/useBeachAttendanceData';
 import { ChartAllDataWeek } from './charts/BeachAttendanceWeekChart';
+import TableLegend from './Legend';
 
 // Types
 interface TableProps {
@@ -17,48 +18,13 @@ interface TableProps {
   location: Beach;
 }
 
-interface LegendItem {
-  value: number;
-  class: string;
-  label: string;
-}
+
 
 // Constante pour le nombre de jours à afficher
 const DAYS_TO_DISPLAY = 7;
 const DAYS_TO_DISPLAY_FORECAST = 4; // Nouveau : pour les graphiques des indices
 const HOURS_PER_DAY = 24;
 const TOTAL_HOURS = DAYS_TO_DISPLAY * HOURS_PER_DAY;
-
-// Components
-const LegendItem: React.FC<{ item: LegendItem }> = ({ item }) => (
-  <div className="flex items-center">
-    <div className={`w-5 h-5 sm:w-6 sm:h-6 ${item.class} rounded-lg`}></div>
-    <span className="ml-1 text-xs sm:text-sm px-2 py-1 bg-slate-50 rounded-md shadow-sm">
-      {item.label}
-    </span>
-  </div>
-);
-
-const TableLegend: React.FC = () => {
-  const legendItems: LegendItem[] = [
-    { value: 0, class: "bg-green-600", label: "0 - Sécurité optimale" },
-    { value: 1, class: "bg-green-400", label: "1 - Faible risque" },
-    { value: 2, class: "bg-yellow-300", label: "2 - Risque modéré" },
-    { value: 3, class: "bg-orange-500", label: "3 - Risque élevé" },
-    { value: 4, class: "bg-red-600", label: "4 - Danger important" },
-  ];
-
-  return (
-    <div className="mt-4 p-2 bg-slate-100 text-black">
-      <h3 className="font-bold mb-2">Légende indice Sécurité:</h3>
-      <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-center justify-center">
-        {legendItems.map((item) => (
-          <LegendItem key={item.value} item={item} />
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // Fonction utilitaire pour formater la date
 const formatDate = (date: Date): string => {
@@ -457,7 +423,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                       {direction !== null ? (
                         <DirectionArrow
                           direction={direction}
-                          size={35}
+                          size={25}
                           color="#2563eb" // Blue color for wind
                           showLabel={false}
                         />
@@ -521,7 +487,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                       {direction !== null ? (
                         <DirectionArrow
                           direction={direction}
-                          size={35}
+                          size={25}
                           color="#6366f1" // Indigo color for waves
                           showLabel={false}
                         />

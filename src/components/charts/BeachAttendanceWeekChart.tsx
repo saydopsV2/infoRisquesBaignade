@@ -1,4 +1,4 @@
-import { ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Line, Scatter } from "recharts";
+import { ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, Scatter } from "recharts";
 import {
     ChartConfig,
     ChartContainer,
@@ -239,7 +239,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                         margin={{
                             top: 10,
                             right: 30,
-                            left: inTable ? -45 : 10, // Marge gauche négative si dans tableau
+                            left: inTable ? -45 : 5, // Marge gauche négative si dans tableau
                             bottom: 0,
                         }}
                     >
@@ -303,12 +303,11 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                             tickLine={false}
                             axisLine={true}
                             tickMargin={8}
-                            label={{ value: 'Date/Heure', position: 'insideBottom', offset: -5 }}
                             tick={{ fontSize: 11 }}
                             height={60}
                             interval={Math.floor(chartData.length / 12)} // Adapter l'intervalle pour 4 jours
-                            angle={-45}
-                            textAnchor="end"
+                            angle={0}
+                            textAnchor="start"
                         />
                         <YAxis
                             domain={[0, 100]} // Domaine en pourcentage (0-100%)
@@ -319,7 +318,6 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
                             fontSize={12}
                         />
                         <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
-                        <Legend align="right" verticalAlign="top" iconSize={12} wrapperStyle={{ paddingBottom: 10 }} />
 
                         {/* Ligne continue de fréquentation avec gradient de couleur */}
                         <Line
@@ -377,7 +375,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
             {/* Zones grisées avec les nouvelles heures [20h-9h] */}
             <DayNightZones
                 numberOfDays={7}
-                nightStartHour={20}
+                nightStartHour={21}
                 nightEndHour={9}
             />
         </div>

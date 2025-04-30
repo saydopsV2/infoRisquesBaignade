@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import Table from "./Table";
-import Beach from "../interface/Beach";
+import Beach from "../interfaces/Beach";
 import { ChartAllData } from "./charts/BeachAttendanceLineChart";
 import Bilan from "./Bilan";
 import { ShoreBreakHazardChart } from "./charts/ShoreBreakHazardChart";
@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"; // Assurez-vous d'importer les composants Select
+import TableLegend from "./Legend";
 
 interface TabProps {
     tabBeach: Beach;
@@ -199,6 +200,7 @@ const Tab: React.FC<TabProps> = ({ tabBeach }) => {
             <div className="tab-content bg-red-200 border-red-300 p-4 sm:p-6 text-slate-950 w-full max-w-full overflow-x-hidden">
                 <div className="flex flex-col items-start flex-wrap gap-2 mb-4">
                     <h2 className="text-xl font-bold text-slate-950">Previsions sous forme de graphe</h2>
+                    <TableLegend/>
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-bold">Période :</span>
                         <Select

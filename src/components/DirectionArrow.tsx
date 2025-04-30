@@ -13,9 +13,9 @@ const getDirectionLabel = (direction: number): string => {
   if (direction >= 67.5 && direction < 112.5) return "E";
   if (direction >= 112.5 && direction < 157.5) return "SE";
   if (direction >= 157.5 && direction < 202.5) return "S";
-  if (direction >= 202.5 && direction < 247.5) return "SO";
-  if (direction >= 247.5 && direction < 292.5) return "O";
-  if (direction >= 292.5 && direction < 337.5) return "NO";
+  if (direction >= 202.5 && direction < 247.5) return "SW";
+  if (direction >= 247.5 && direction < 292.5) return "W";
+  if (direction >= 292.5 && direction < 337.5) return "NW";
   return "";
 };
 
@@ -29,10 +29,8 @@ const DirectionArrow: React.FC<DirectionArrowProps> = ({
     return <span>-</span>;
   }
 
-  // En météorologie, la direction indique d'où vient le vent/les vagues
-  // Nous devons donc pointer la flèche dans la direction opposée (+ 180°)
-  // et ajuster par rapport à la rotation SVG (-90°)
-  const rotation = direction + 180 - 90;
+  // Nous devons ajuster la rotation pour que la flèche pointe VERS la direction correcte
+  const rotation = direction - 90; // Rotation avec uniquement l'ajustement pour le SVG
   
   const svgSize = size;
   const label = getDirectionLabel(direction);
@@ -45,17 +43,16 @@ const DirectionArrow: React.FC<DirectionArrowProps> = ({
         viewBox="0 0 100 100" 
         style={{ transform: `rotate(${rotation}deg)` }}
       >
-        <line 
-          x1="10" 
-          y1="50" 
-          x2="80" 
-          y2="50" 
-          stroke={color} 
-          strokeWidth="8" 
-        />
-        <polygon 
-          points="80,40 80,60 95,50" 
+        {/* Flèche principale */}
+        <path 
+          d="M85,10 L15,50 L85,90 L65,50 Z" 
           fill={color} 
+        />
+        
+        {/* Ombre pour la profondeur */}
+        <path 
+          d="M75,25 L25,50 L75,75 L60,50 Z" 
+          fill={`rgba(30,30,30,0.3)`} 
         />
       </svg>
       {showLabel && (
