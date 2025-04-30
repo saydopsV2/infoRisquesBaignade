@@ -2,7 +2,7 @@ const HeadBand = () => {
   return (
     <div className="bg-yellow-50 shadow-md py-4 px-6 rounded-lg my-4 mx-auto max-w-7xl">
       <div className="text-center mb-2 text-lg text-slate-600 font-bold">
-        Projet soutenu par :
+        Projet soutenu par:
       </div>
       <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
         <a 
@@ -79,7 +79,7 @@ const HeadBand = () => {
         </a>
       </div>
       <div className="text-center mt-6 text-lg text-slate-600 font-bold">
-        Projet Réalisé par :
+        Réalisé par:
       </div>
       <div className="flex flex-wrap items-center justify-center ">
         <a 

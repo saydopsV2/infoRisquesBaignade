@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { Line, Scatter, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Line, Scatter, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
     ChartConfig,
     ChartContainer,
@@ -365,7 +365,6 @@ export function ChartAllData() {
                             fontSize={12}
                         />
                         <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
-                        <Legend align="right" verticalAlign="top" iconSize={12} wrapperStyle={{ paddingBottom: 10 }} />
 
                         {/* Ligne continue de fréquentation avec gradient de couleur */}
                         <Line

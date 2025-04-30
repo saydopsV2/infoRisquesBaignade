@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import Beach from '../interface/Beach';
 import { WindForecastProvider } from '../context/WindForecastContext';
 import { WaveForecastProvider } from '../context/WaveForecastContext';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const letteBlanche: Beach = {
   nom: 'La lette Blanche',
@@ -25,10 +26,11 @@ function App() {
     <WindForecastProvider>
       <WaveForecastProvider>
         <Router basename="/infoRisquesBaignade">
+          <ScrollToTop />
           <NavBar />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche}   />} />
+            <Route path="/lette-blanche" element={<BeachForecast beach={letteBlanche} />} />
             <Route path="/biscarrosse" element={<BeachForecast beach={biscarosse} />} />
           </Routes>
           <Footer />
