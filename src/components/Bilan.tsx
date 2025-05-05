@@ -172,7 +172,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     };
   };
 
-  // Fonction pour obtenir les valeurs maximales durant l'après-midi (11h-20h)
+  // Fonction pour obtenir les valeurs maximales et minimales durant l'après-midi (11h-20h)
   const getAfternoonMaxValues = () => {
     if (weatherLoading || windLoading || waveLoading || attendanceLoading || ripCurrentLoading || shoreBreakLoading) return null;
     if (weatherError || windError || waveError || attendanceError || ripCurrentError || shoreBreakError) return null;
@@ -199,27 +199,46 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
 
     if (afternoonIndices.length === 0) return null;
 
-    // Calculer les maximums pour la météo (seulement entre 11h et 20h)
+    // Calculer les maximums et minimums pour la météo (seulement entre 11h et 20h)
     const afternoonTemperatures = afternoonIndices.map(index => temperatures[index]);
     const afternoonUvIndices = afternoonIndices.map(index => uvIndices[index]);
 
-    const maxTemperature = Math.max(...afternoonTemperatures.filter(t => t !== null) as number[]);
-    const maxUvIndex = Math.max(...afternoonUvIndices.filter(uv => uv !== null) as number[]);
+    // Filtrer les valeurs nulles avant de chercher min et max
+    const validTemperatures = afternoonTemperatures.filter(t => t !== null) as number[];
+    const validUvIndices = afternoonUvIndices.filter(uv => uv !== null) as number[];
+
+    const maxTemperature = Math.max(...validTemperatures);
+    const minTemperature = Math.min(...validTemperatures);
+    const maxUvIndex = Math.max(...validUvIndices);
+    const minUvIndex = Math.min(...validUvIndices);
     
     // Trouver l'heure du maximum pour la température
     const tempMaxIndex = afternoonTemperatures.indexOf(maxTemperature);
     const tempMaxHour = tempMaxIndex !== -1 ? hours[afternoonIndices[tempMaxIndex]].getHours() : null;
     
+    // Trouver l'heure du minimum pour la température
+    const tempMinIndex = afternoonTemperatures.indexOf(minTemperature);
+    const tempMinHour = tempMinIndex !== -1 ? hours[afternoonIndices[tempMinIndex]].getHours() : null;
+    
     // Trouver l'heure du maximum pour l'indice UV
     const uvMaxIndex = afternoonUvIndices.indexOf(maxUvIndex);
     const uvMaxHour = uvMaxIndex !== -1 ? hours[afternoonIndices[uvMaxIndex]].getHours() : null;
+    
+    // Trouver l'heure du minimum pour l'indice UV
+    const uvMinIndex = afternoonUvIndices.indexOf(minUvIndex);
+    const uvMinHour = uvMinIndex !== -1 ? hours[afternoonIndices[uvMinIndex]].getHours() : null;
 
-    // Calculer les maximums pour le vent (seulement entre 11h et 20h)
+    // Calculer les maximums et minimums pour le vent (seulement entre 11h et 20h)
     let maxWindSpeed = null;
+    let minWindSpeed = null;
     let maxWindGusts = null;
+    let minWindGusts = null;
     let directionAtMaxSpeed = null;
+    let directionAtMinSpeed = null;
     let maxWindSpeedHour = null;
+    let minWindSpeedHour = null;
     let maxWindGustsHour = null;
+    let minWindGustsHour = null;
 
     if (windForecast?.hourly?.time) {
       // Filtrer les indices de temps pour aujourd'hui entre 11h et 20h
@@ -242,11 +261,13 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
         const afternoonWindSpeeds = afternoonWindIndices.map(index => windForecast.hourly.wind_speed_10m[index]);
         const afternoonWindGusts = afternoonWindIndices.map(index => windForecast.hourly.wind_gusts_10m[index]);
 
-        // Trouver les maximums
+        // Trouver les maximums et minimums
         maxWindSpeed = Math.max(...afternoonWindSpeeds);
+        minWindSpeed = Math.min(...afternoonWindSpeeds);
         maxWindGusts = Math.max(...afternoonWindGusts);
+        minWindGusts = Math.min(...afternoonWindGusts);
 
-        // Trouver la direction au moment de la vitesse maximale
+        // Trouver la direction et l'heure au moment de la vitesse maximale
         const maxSpeedIndex = afternoonWindSpeeds.indexOf(maxWindSpeed);
         if (maxSpeedIndex !== -1) {
           const maxWindIndex = afternoonWindIndices[maxSpeedIndex];
@@ -256,6 +277,16 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           maxWindSpeedHour = maxWindTime.getHours();
         }
         
+        // Trouver la direction et l'heure au moment de la vitesse minimale
+        const minSpeedIndex = afternoonWindSpeeds.indexOf(minWindSpeed);
+        if (minSpeedIndex !== -1) {
+          const minWindIndex = afternoonWindIndices[minSpeedIndex];
+          directionAtMinSpeed = windForecast.hourly.wind_direction_10m[minWindIndex];
+          // Récupérer l'heure du minimum
+          const minWindTime = new Date(windForecast.hourly.time[minWindIndex]);
+          minWindSpeedHour = minWindTime.getHours();
+        }
+        
         // Trouver l'heure des rafales maximales
         const maxGustsIndex = afternoonWindGusts.indexOf(maxWindGusts);
         if (maxGustsIndex !== -1) {
@@ -263,14 +294,26 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           const maxGustsTime = new Date(windForecast.hourly.time[maxGustsWindIndex]);
           maxWindGustsHour = maxGustsTime.getHours();
         }
+        
+        // Trouver l'heure des rafales minimales
+        const minGustsIndex = afternoonWindGusts.indexOf(minWindGusts);
+        if (minGustsIndex !== -1) {
+          const minGustsWindIndex = afternoonWindIndices[minGustsIndex];
+          const minGustsTime = new Date(windForecast.hourly.time[minGustsWindIndex]);
+          minWindGustsHour = minGustsTime.getHours();
+        }
       }
     }
 
-    // Calculer les maximums pour les vagues pendant l'après-midi (11h-20h)
+    // Calculer les maximums et minimums pour les vagues pendant l'après-midi (11h-20h)
     let maxWaveHeight = null;
+    let minWaveHeight = null;
     let directionAtMaxWave = null;
+    let directionAtMinWave = null;
     let periodAtMaxWave = null;
+    let periodAtMinWave = null;
     let maxWaveHeightHour = null;
+    let minWaveHeightHour = null;
 
     if (waveForecast?.hourly?.time) {
       // Filtrer les indices de temps pour aujourd'hui entre 11h et 20h
@@ -292,8 +335,9 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
         // Extraire les hauteurs de vagues pour l'après-midi
         const afternoonWaveHeights = afternoonWaveIndices.map(index => waveForecast.hourly.wave_height[index]);
 
-        // Trouver le maximum
+        // Trouver le maximum et le minimum
         maxWaveHeight = Math.max(...afternoonWaveHeights);
+        minWaveHeight = Math.min(...afternoonWaveHeights);
 
         // Trouver la direction et la période au moment de la hauteur maximale
         const maxHeightIndex = afternoonWaveHeights.indexOf(maxWaveHeight);
@@ -305,10 +349,21 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
           const maxWaveTime = new Date(waveForecast.hourly.time[maxWaveIndex]);
           maxWaveHeightHour = maxWaveTime.getHours();
         }
+        
+        // Trouver la direction et la période au moment de la hauteur minimale
+        const minHeightIndex = afternoonWaveHeights.indexOf(minWaveHeight);
+        if (minHeightIndex !== -1) {
+          const minWaveIndex = afternoonWaveIndices[minHeightIndex];
+          directionAtMinWave = waveForecast.hourly.wave_direction[minWaveIndex];
+          periodAtMinWave = waveForecast.hourly.wave_period[minWaveIndex];
+          // Récupérer l'heure du minimum
+          const minWaveTime = new Date(waveForecast.hourly.time[minWaveIndex]);
+          minWaveHeightHour = minWaveTime.getHours();
+        }
       }
     }
 
-    // Calculer les maximums pour les niveaux de danger entre 11h et 20h
+    // Calculer les maximums et minimums pour les niveaux de danger entre 11h et 20h
     // Utiliser la date actuelle déjà déclarée plutôt qu'en créer une nouvelle
     const midnightDate = new Date(currentDate);
     midnightDate.setHours(0, 0, 0, 0);
@@ -322,17 +377,35 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
     const afternoonRipCurrentHazardLevels = ripCurrentHazardLevels.slice(startIndex, endIndex + 1);
     const afternoonShoreBreakHazardLevels = shoreBreakHazardLevels.slice(startIndex, endIndex + 1);
 
+    // Filtrer les valeurs nulles ou undefined
+    const validAttendanceHazardLevels = afternoonAttendanceHazardLevels.filter(level => level !== null && level !== undefined);
+    const validRipCurrentHazardLevels = afternoonRipCurrentHazardLevels.filter(level => level !== null && level !== undefined);
+    const validShoreBreakHazardLevels = afternoonShoreBreakHazardLevels.filter(level => level !== null && level !== undefined);
+
     // Calculer les maximums et leurs heures
-    const maxAttendanceHazardLevel = Math.max(...afternoonAttendanceHazardLevels.filter(level => level !== null && level !== undefined));
-    const maxRipCurrentHazardLevel = Math.max(...afternoonRipCurrentHazardLevels.filter(level => level !== null && level !== undefined));
-    const maxShoreBreakHazardLevel = Math.max(...afternoonShoreBreakHazardLevels.filter(level => level !== null && level !== undefined));
+    const maxAttendanceHazardLevel = validAttendanceHazardLevels.length > 0 ? Math.max(...validAttendanceHazardLevels) : null;
+    const minAttendanceHazardLevel = validAttendanceHazardLevels.length > 0 ? Math.min(...validAttendanceHazardLevels) : null;
+    const maxRipCurrentHazardLevel = validRipCurrentHazardLevels.length > 0 ? Math.max(...validRipCurrentHazardLevels) : null;
+    const minRipCurrentHazardLevel = validRipCurrentHazardLevels.length > 0 ? Math.min(...validRipCurrentHazardLevels) : null;
+    const maxShoreBreakHazardLevel = validShoreBreakHazardLevels.length > 0 ? Math.max(...validShoreBreakHazardLevels) : null;
+    const minShoreBreakHazardLevel = validShoreBreakHazardLevels.length > 0 ? Math.min(...validShoreBreakHazardLevels) : null;
     
-    // Trouver les heures correspondant aux maximums
-    const maxAttendanceHazardHour = startIndex + afternoonAttendanceHazardLevels.indexOf(maxAttendanceHazardLevel);
-    const maxRipCurrentHazardHour = startIndex + afternoonRipCurrentHazardLevels.indexOf(maxRipCurrentHazardLevel);
-    const maxShoreBreakHazardHour = startIndex + afternoonShoreBreakHazardLevels.indexOf(maxShoreBreakHazardLevel);
+    // Trouver les heures correspondant aux maximums et minimums
+    const maxAttendanceHazardHour = maxAttendanceHazardLevel !== null ? 
+      startIndex + afternoonAttendanceHazardLevels.indexOf(maxAttendanceHazardLevel) : null;
+    const minAttendanceHazardHour = minAttendanceHazardLevel !== null ? 
+      startIndex + afternoonAttendanceHazardLevels.indexOf(minAttendanceHazardLevel) : null;
+    const maxRipCurrentHazardHour = maxRipCurrentHazardLevel !== null ? 
+      startIndex + afternoonRipCurrentHazardLevels.indexOf(maxRipCurrentHazardLevel) : null;
+    const minRipCurrentHazardHour = minRipCurrentHazardLevel !== null ? 
+      startIndex + afternoonRipCurrentHazardLevels.indexOf(minRipCurrentHazardLevel) : null;
+    const maxShoreBreakHazardHour = maxShoreBreakHazardLevel !== null ? 
+      startIndex + afternoonShoreBreakHazardLevels.indexOf(maxShoreBreakHazardLevel) : null;
+    const minShoreBreakHazardHour = minShoreBreakHazardLevel !== null ? 
+      startIndex + afternoonShoreBreakHazardLevels.indexOf(minShoreBreakHazardLevel) : null;
 
     return {
+      // Maximums
       maxTemperature: isNaN(maxTemperature) ? null : maxTemperature,
       maxUvIndex: isNaN(maxUvIndex) ? null : maxUvIndex,
       maxWindSpeed,
@@ -344,7 +417,21 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
       maxAttendanceHazardLevel: isNaN(maxAttendanceHazardLevel) ? null : maxAttendanceHazardLevel,
       maxRipCurrentHazardLevel: isNaN(maxRipCurrentHazardLevel) ? null : maxRipCurrentHazardLevel,
       maxShoreBreakHazardLevel: isNaN(maxShoreBreakHazardLevel) ? null : maxShoreBreakHazardLevel,
-      // Ajouter les heures des maximums
+      
+      // Minimums
+      minTemperature: isNaN(minTemperature) ? null : minTemperature,
+      minUvIndex: isNaN(minUvIndex) ? null : minUvIndex,
+      minWindSpeed,
+      minWindGusts,
+      directionAtMinSpeed,
+      minWaveHeight,
+      directionAtMinWave,
+      periodAtMinWave,
+      minAttendanceHazardLevel: isNaN(minAttendanceHazardLevel) ? null : minAttendanceHazardLevel,
+      minRipCurrentHazardLevel: isNaN(minRipCurrentHazardLevel) ? null : minRipCurrentHazardLevel,
+      minShoreBreakHazardLevel: isNaN(minShoreBreakHazardLevel) ? null : minShoreBreakHazardLevel,
+      
+      // Heures des maximums
       tempMaxHour,
       uvMaxHour,
       maxWindSpeedHour,
@@ -352,7 +439,17 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
       maxWaveHeightHour,
       maxAttendanceHazardHour,
       maxRipCurrentHazardHour,
-      maxShoreBreakHazardHour
+      maxShoreBreakHazardHour,
+      
+      // Heures des minimums
+      tempMinHour,
+      uvMinHour,
+      minWindSpeedHour,
+      minWindGustsHour,
+      minWaveHeightHour,
+      minAttendanceHazardHour,
+      minRipCurrentHazardHour,
+      minShoreBreakHazardHour
     };
   };
 
@@ -397,7 +494,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
   // Obtenir les données pour 11h00
   const data11AM = getDataAt11AM();
 
-  // Obtenir les valeurs maximales de l'après-midi
+  // Obtenir les valeurs maximales et minimales de l'après-midi
   const maxValues = getAfternoonMaxValues();
 
   if (weatherLoading || windLoading || waveLoading || isTideLoading || attendanceLoading || ripCurrentLoading || shoreBreakLoading) {

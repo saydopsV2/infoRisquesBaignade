@@ -19,6 +19,7 @@ export interface SectionProps {
     shoreBreakHazardLevel: number | null;
   };
   maxValues: {
+    // Maximums
     maxTemperature: number | null;
     maxUvIndex: number | null;
     maxWindSpeed: number | null;
@@ -30,7 +31,21 @@ export interface SectionProps {
     maxAttendanceHazardLevel: number | null;
     maxRipCurrentHazardLevel: number | null;
     maxShoreBreakHazardLevel: number | null;
-    // Ajouter les heures des maximums
+    
+    // Minimums
+    minTemperature: number | null;
+    minUvIndex: number | null;
+    minWindSpeed: number | null;
+    minWindGusts: number | null;
+    directionAtMinSpeed: number | null;
+    minWaveHeight: number | null;
+    directionAtMinWave: number | null;
+    periodAtMinWave: number | null;
+    minAttendanceHazardLevel: number | null;
+    minRipCurrentHazardLevel: number | null;
+    minShoreBreakHazardLevel: number | null;
+    
+    // Heures des maximums
     tempMaxHour: number | null;
     uvMaxHour: number | null;
     maxWindSpeedHour: number | null;
@@ -39,15 +54,32 @@ export interface SectionProps {
     maxAttendanceHazardHour: number | null;
     maxRipCurrentHazardHour: number | null;
     maxShoreBreakHazardHour: number | null;
+    
+    // Heures des minimums
+    tempMinHour: number | null;
+    uvMinHour: number | null;
+    minWindSpeedHour: number | null;
+    minWindGustsHour: number | null;
+    minWaveHeightHour: number | null;
+    minAttendanceHazardHour: number | null;
+    minRipCurrentHazardHour: number | null;
+    minShoreBreakHazardHour: number | null;
   } | null;
 }
 
 export interface WaveSectionProps extends Omit<SectionProps, 'maxValues'> {
   maxValues: {
+    // Maximum
     maxWaveHeight: number | null;
     directionAtMaxWave: number | null;
     periodAtMaxWave: number | null;
     maxWaveHeightHour: number | null;
+    
+    // Minimum
+    minWaveHeight: number | null;
+    directionAtMinWave: number | null;
+    periodAtMinWave: number | null;
+    minWaveHeightHour: number | null;
   } | null;
   waterTemperature: string | null;
 }

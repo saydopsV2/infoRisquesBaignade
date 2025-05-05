@@ -38,23 +38,47 @@ const HazardSection: React.FC<SectionProps> = ({ data11AM, maxValues }) => {
         {maxValues && (
           <>
             <div className="mt-2 pt-2 border-t border-rose-200">
-              <p className="text-md text-sky-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
+              <p className="text-md text-sky-700 font-medium mb-1">Entre 11h et 20h:</p>
+              
+              {/* Fréquentation max et min */}
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
                 <span className="font-medium">Fréquentation max {maxValues.maxAttendanceHazardHour !== null ? `(${maxValues.maxAttendanceHazardHour}h00)` : ""}:</span>
                 <span>
                   {maxValues.maxAttendanceHazardLevel !== null ? maxValues.maxAttendanceHazardLevel : "-"}
                 </span>
               </p>
+              <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
+                <span className="font-medium">Fréquentation min {maxValues.minAttendanceHazardHour !== null ? `(${maxValues.minAttendanceHazardHour}h00)` : ""}:</span>
+                <span>
+                  {maxValues.minAttendanceHazardLevel !== null ? maxValues.minAttendanceHazardLevel : "-"}
+                </span>
+              </p>
+              
+              {/* Courant max et min */}
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
                 <span className="font-medium">Courant max {maxValues.maxRipCurrentHazardHour !== null ? `(${maxValues.maxRipCurrentHazardHour}h00)` : ""}:</span>
                 <span>
                   {maxValues.maxRipCurrentHazardLevel !== null ? maxValues.maxRipCurrentHazardLevel : "-"}
                 </span>
               </p>
+              <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
+                <span className="font-medium">Courant min {maxValues.minRipCurrentHazardHour !== null ? `(${maxValues.minRipCurrentHazardHour}h00)` : ""}:</span>
+                <span>
+                  {maxValues.minRipCurrentHazardLevel !== null ? maxValues.minRipCurrentHazardLevel : "-"}
+                </span>
+              </p>
+              
+              {/* Shore Break max et min */}
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
                 <span className="font-medium">Shore Break max {maxValues.maxShoreBreakHazardHour !== null ? `(${maxValues.maxShoreBreakHazardHour}h00)` : ""}:</span>
                 <span>
                   {maxValues.maxShoreBreakHazardLevel !== null ? maxValues.maxShoreBreakHazardLevel : "-"}
+                </span>
+              </p>
+              <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
+                <span className="font-medium">Shore Break min {maxValues.minShoreBreakHazardHour !== null ? `(${maxValues.minShoreBreakHazardHour}h00)` : ""}:</span>
+                <span>
+                  {maxValues.minShoreBreakHazardLevel !== null ? maxValues.minShoreBreakHazardLevel : "-"}
                 </span>
               </p>
             </div>
