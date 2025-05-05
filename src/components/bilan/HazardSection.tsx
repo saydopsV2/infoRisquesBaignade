@@ -40,19 +40,19 @@ const HazardSection: React.FC<SectionProps> = ({ data11AM, maxValues }) => {
             <div className="mt-2 pt-2 border-t border-rose-200">
               <p className="text-md text-sky-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Fréquentation max:</span>
+                <span className="font-medium">Fréquentation max {maxValues.maxAttendanceHazardHour !== null ? `(${maxValues.maxAttendanceHazardHour}h00)` : ""}:</span>
                 <span>
                   {maxValues.maxAttendanceHazardLevel !== null ? maxValues.maxAttendanceHazardLevel : "-"}
                 </span>
               </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Courant max:</span>
+                <span className="font-medium">Courant max {maxValues.maxRipCurrentHazardHour !== null ? `(${maxValues.maxRipCurrentHazardHour}h00)` : ""}:</span>
                 <span>
                   {maxValues.maxRipCurrentHazardLevel !== null ? maxValues.maxRipCurrentHazardLevel : "-"}
                 </span>
               </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Shore Break max:</span>
+                <span className="font-medium">Shore Break max {maxValues.maxShoreBreakHazardHour !== null ? `(${maxValues.maxShoreBreakHazardHour}h00)` : ""}:</span>
                 <span>
                   {maxValues.maxShoreBreakHazardLevel !== null ? maxValues.maxShoreBreakHazardLevel : "-"}
                 </span>

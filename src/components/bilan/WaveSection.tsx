@@ -42,7 +42,7 @@ const WaveSection: React.FC<WaveSectionProps> = ({ data11AM, maxValues, waterTem
                 />
               </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Hauteur max:</span>
+                <span className="font-medium">Hauteur max {maxValues.maxWaveHeightHour !== null ? `(${maxValues.maxWaveHeightHour}h00)` : ""}:</span>
                 <span>{maxValues.maxWaveHeight !== null ? `${maxValues.maxWaveHeight.toFixed(1)} m` : "-"}</span>
               </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">

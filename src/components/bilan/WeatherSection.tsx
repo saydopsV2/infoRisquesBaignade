@@ -23,11 +23,11 @@ const WeatherSection: React.FC<WeatherSectionProps> = ({ data11AM, maxValues, te
             <div className="mt-2 pt-2 border-t border-sky-200">
               <p className="text-md text-sky-700 font-medium mb-1">Maximum entre 11h et 20h:</p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Temp. max:</span>
+                <span className="font-medium">Temp. max {maxValues.tempMaxHour !== null ? `(${maxValues.tempMaxHour}h00)` : ""}:</span>
                 <span>{maxValues.maxTemperature !== null ? `${maxValues.maxTemperature}${tempUnit}` : "-"}</span>
               </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">UV max:</span>
+                <span className="font-medium">UV max {maxValues.uvMaxHour !== null ? `(${maxValues.uvMaxHour}h00)` : ""}:</span>
                 <span>{maxValues.maxUvIndex !== null ? maxValues.maxUvIndex.toFixed(1) : "-"}</span>
               </p>
             </div>
