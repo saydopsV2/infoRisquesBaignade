@@ -8,6 +8,7 @@ import Beach from '../interfaces/Beach';
 import { WindForecastProvider } from '../context/WindForecastContext';
 import { WaveForecastProvider } from '../context/WaveForecastContext';
 import ScrollToTop from '@/components/ScrollToTop';
+import InstallPWA from '../components/InstallPWA';
 
 const letteBlanche: Beach = {
   nom: 'La lette Blanche',
@@ -34,6 +35,7 @@ function App() {
             <Route path="/biscarrosse" element={<BeachForecast beach={biscarosse} />} />
           </Routes>
           <Footer />
+          <InstallPWA />
         </Router>
       </WaveForecastProvider>
     </WindForecastProvider>
