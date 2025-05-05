@@ -13,7 +13,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       manifest: {
         name: 'Info Risques Baignade',
-        short_name: 'IRB',
+        short_name: 'Info Risques Baignade',
         start_url: '/infoRisquesBaignade',
         display: 'standalone',
         background_color: '#ffffff',
