@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Beach from '../interfaces/Beach';
 import { ShoreBreakHazardChart } from './charts/ShoreBreakHazardChart';
 import { RipCurrentHazardChart } from './charts/RipCurrentHazardChart';
@@ -17,8 +17,6 @@ interface TableProps {
   tableBeach: string;
   location: Beach;
 }
-
-
 
 // Constante pour le nombre de jours à afficher
 const DAYS_TO_DISPLAY = 7;
@@ -39,6 +37,12 @@ const Table: React.FC<TableProps> = ({ location }) => {
   const [currentDate] = useState(new Date());
   const [displayDays, setDisplayDays] = useState<Date[]>([]);
   const [_, setForecastDays] = useState<Date[]>([]);
+  
+  // Référence à l'élément de conteneur du tableau pour le défilement par glisser-déposer
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   // Utilisation du hook pour obtenir les données shore break
   const {
@@ -116,6 +120,49 @@ const Table: React.FC<TableProps> = ({ location }) => {
     fetchWaveForecast(location);
   }, [location]);
 
+  // Fonctions pour gérer le défilement par glisser-déposer
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+    
+    // Changer le curseur pour indiquer que le glisser-déposer est actif
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grabbing';
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    
+    // Restaurer le curseur
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grab';
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Multiplicateur de vitesse de défilement
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      
+      // Restaurer le curseur
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.style.cursor = 'grab';
+      }
+    }
+  };
+
   // Fonction pour obtenir la couleur basée sur le niveau de danger
   const getHazardLevelColor = (level: number): string => {
     if (level === 0) return "bg-green-600"; // Vert foncé - Sécurité optimale
@@ -167,7 +214,6 @@ const Table: React.FC<TableProps> = ({ location }) => {
   // Obtenir toutes les heures pour les 7 jours
   const allDisplayHours = generateHoursForDays(displayDays);
   
-
   // Ensure we have data for all days
   const extendDataArray = (dataArray: number[], defaultValue: number | null = 0): (number | null)[] => {
     if (dataArray.length >= TOTAL_HOURS) {
@@ -241,7 +287,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
   );
 
   const displayWavePeriods = alignDataWithHours(
-    waveForecast?.hourly?.swell_wave_peak_period,
+    waveForecast?.hourly?.wave_period,
     waveForecast?.hourly?.time
   );
 
@@ -257,262 +303,273 @@ const Table: React.FC<TableProps> = ({ location }) => {
           Erreur: {weatherError || windError || waveError || shoreBreakError || ripCurrentError || attendanceError}
         </div>
       ) : (
-        <div className="overflow-x-auto w-full">
+        <div>
           <TableLegend />
           <div className="w-full text-center py-2 bg-blue-100">
             <p className="font-medium">Faites défiler horizontalement pour voir les 7 prochains jours</p>
+            <p className="text-sm text-gray-600">Vous pouvez aussi maintenir le clic gauche et déplacer la souris pour défiler</p>
           </div>
-          <table className="w-full border-collapse bg-slate-100 text-black">
-            <thead>
-              <tr className="bg-blue-500">
-                <th className="p-1 text-left whitespace-nowrap sticky left-0 z-20 bg-blue-500 w-20 max-w-20" colSpan={1}>
-                  {currentDate.toLocaleDateString()}
-                </th>
-                {/* Colonnes pour les jours */}
-                {displayDays.map((day, dayIndex) => (
-                  <th key={`day-${dayIndex}`} className="p-1 text-center bg-blue-500 text-white font-bold" colSpan={24}>
-                    {formatDate(day)}
+          <div 
+            className="overflow-x-auto w-full" 
+            ref={scrollContainerRef}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ cursor: 'grab', userSelect: 'none' }}
+          >
+            <table className="w-full border-collapse bg-slate-100 text-black">
+              <thead>
+                <tr className="bg-blue-500">
+                  <th className="p-1 text-left whitespace-nowrap sticky left-0 z-20 bg-blue-500 w-20 max-w-20" colSpan={1}>
+                    {currentDate.toLocaleDateString()}
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b">
-                <td className={titleCellClass}>Heures</td>
-                {allDisplayHours.map((hour, index) => (
-                  <td key={`hour-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
-                    {hour.getHours()}:00
+                  {/* Colonnes pour les jours */}
+                  {displayDays.map((day, dayIndex) => (
+                    <th key={`day-${dayIndex}`} className="p-1 text-center bg-blue-500 text-white font-bold" colSpan={24}>
+                      {formatDate(day)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className={titleCellClass}>Heures</td>
+                  {allDisplayHours.map((hour, index) => (
+                    <td key={`hour-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
+                      {hour.getHours()}:00
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Rip Current Hazard Level - Sur tous les jours */}
+                <tr className="bg-blue-50">
+                  <td className={titleCellClass}>Danger Courant</td>
+                  {safeRipCurrentHazardLevels.map((level, index) => (
+                    <td
+                      key={`rip-hazard-${index}`}
+                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                    >
+                      {level}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className={titleCellClass}>Graph. Courant</td>
+                  {/* Graphique sur tous les jours */}
+                  <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
+                    <RipCurrentHazardChart
+                      hours={allDisplayHours}
+                      velocities={safeVelocities.map(v => v === null ? 0 : v)}
+                      hazardLevels={safeRipCurrentHazardLevels.map(h => h === null ? 0 : h)}
+                      inTable={true}
+                    />
                   </td>
-                ))}
-              </tr>
+                </tr>
+                <tr className="h-2">
+                  <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                  {allDisplayHours.map((_, index) => (
+                    <td key={`spacer-sb-rip-${index}`} className="border-r bg-gray-300"></td>
+                  ))}
+                </tr>
 
-              {/* Rip Current Hazard Level - Sur tous les jours */}
-              <tr className="bg-blue-50">
-                <td className={titleCellClass}>Danger Courant</td>
-                {safeRipCurrentHazardLevels.map((level, index) => (
-                  <td
-                    key={`rip-hazard-${index}`}
-                    className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
-                  >
-                    {level}
+                {/* Shore Break Hazard Level - Affichage sur tous les jours */}
+                <tr className="bg-blue-100">
+                  <td className={titleCellClass}>Danger Shore Break</td>
+                  {safeShoreBreakHazardLevels.map((level, index) => (
+                    <td
+                      key={`shore-hazard-${index}`}
+                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                    >
+                      {level}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className={titleCellClass}>Graph. Shore Break</td>
+                  {/* Graphique sur tous les jours */}
+                  <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
+                    <ShoreBreakHazardChart
+                      hours={allDisplayHours}
+                      indices={safeIndices.map(index => index === null ? 0 : index)}
+                      inTable={true}
+                    />
                   </td>
-                ))}
-              </tr>
-              <tr>
-                <td className={titleCellClass}>Graph. Courant</td>
-                {/* Graphique sur tous les jours */}
-                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
-                  <RipCurrentHazardChart
-                    hours={allDisplayHours}
-                    velocities={safeVelocities.map(v => v === null ? 0 : v)}
-                    hazardLevels={safeRipCurrentHazardLevels.map(h => h === null ? 0 : h)}
-                    inTable={true}
-                  />
-                </td>
-              </tr>
-              <tr className="h-2">
-                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {allDisplayHours.map((_, index) => (
-                  <td key={`spacer-sb-rip-${index}`} className="border-r bg-gray-300"></td>
-                ))}
-              </tr>
+                </tr>
+                <tr className="h-2">
+                  <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                  {allDisplayHours.map((_, index) => (
+                    <td key={`spacer-sb-att-${index}`} className="border-r bg-gray-300"></td>
+                  ))}
+                </tr>
 
-              {/* Shore Break Hazard Level - Affichage sur tous les jours */}
-              <tr className="bg-blue-100">
-                <td className={titleCellClass}>Danger Shore Break</td>
-                {safeShoreBreakHazardLevels.map((level, index) => (
-                  <td
-                    key={`shore-hazard-${index}`}
-                    className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
-                  >
-                    {level}
+                {/* Fréquentation - Sur tous les jours */}
+                <tr className="bg-blue-50">
+                  <td className={titleCellClass}>Indice Fréquentation</td>
+                  {safeAttendanceHazardLevels.map((level, index) => (
+                    <td
+                      key={`attendance-hazard-${index}`}
+                      className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
+                    >
+                      {level}
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Ajout du graphique de fréquentation des plages sur tous les jours */}
+                <tr>
+                  <td className={titleCellClass}>Graph. Fréquentation</td>
+                  <td colSpan={TOTAL_HOURS} className="p-0 border-r h-64">
+                    {attendanceLoading ? (
+                      <div className="h-full flex items-center justify-center bg-slate-100">
+                        <p>Chargement des données de fréquentation...</p>
+                      </div>
+                    ) : attendanceError ? (
+                      <div className="h-full flex items-center justify-center bg-red-100 text-red-700">
+                        <p>Erreur: {attendanceError}</p>
+                      </div>
+                    ) : (
+                      <ChartAllDataWeek inTable={true} />
+                    )}
                   </td>
-                ))}
-              </tr>
-              <tr>
-                <td className={titleCellClass}>Graph. Shore Break</td>
-                {/* Graphique sur tous les jours */}
-                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-24">
-                  <ShoreBreakHazardChart
-                    hours={allDisplayHours}
-                    indices={safeIndices.map(index => index === null ? 0 : index)}
-                    inTable={true}
-                  />
-                </td>
-              </tr>
-              <tr className="h-2">
-                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {allDisplayHours.map((_, index) => (
-                  <td key={`spacer-sb-att-${index}`} className="border-r bg-gray-300"></td>
-                ))}
-              </tr>
+                </tr>
 
-              {/* Fréquentation - Sur tous les jours */}
-              <tr className="bg-blue-50">
-                <td className={titleCellClass}>Indice Fréquentation</td>
-                {safeAttendanceHazardLevels.map((level, index) => (
-                  <td
-                    key={`attendance-hazard-${index}`}
-                    className={`p-1 text-center border-r ${level !== null ? getHazardLevelColor(level) : "bg-gray-200"} min-w-[40px] text-xs`}
-                  >
-                    {level}
-                  </td>
-                ))}
-              </tr>
+                <tr className="h-2">
+                  <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                  {allDisplayHours.map((_, index) => (
+                    <td key={`spacer-current-temp-${index}`} className="border-r bg-gray-300"></td>
+                  ))}
+                </tr>
 
-              {/* Ajout du graphique de fréquentation des plages sur tous les jours */}
-              <tr>
-                <td className={titleCellClass}>Graph. Fréquentation</td>
-                <td colSpan={TOTAL_HOURS} className="p-0 border-r h-64">
-                  {attendanceLoading ? (
-                    <div className="h-full flex items-center justify-center bg-slate-100">
-                      <p>Chargement des données de fréquentation...</p>
-                    </div>
-                  ) : attendanceError ? (
-                    <div className="h-full flex items-center justify-center bg-red-100 text-red-700">
-                      <p>Erreur: {attendanceError}</p>
-                    </div>
-                  ) : (
-                    <ChartAllDataWeek inTable={true} />
-                  )}
-                </td>
-              </tr>
-
-              <tr className="h-2">
-                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {allDisplayHours.map((_, index) => (
-                  <td key={`spacer-current-temp-${index}`} className="border-r bg-gray-300"></td>
-                ))}
-              </tr>
-
-              {/* Température - Affichage complet sur 7 jours */}
-              <tr className="bg-white">
-                <td className={titleCellClass}>Température</td>
-                {safeTemperatures.map((temp, index) => (
-                  index < allDisplayHours.length && (
-                    <td key={`temp-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
-                      {temp !== null ? `${temp}${tempUnit}` : "-"}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr className="bg-blue-50">
-                <td className={titleCellClass}>Indice UV</td>
-                {safeUvIndices.map((uv, index) => (
-                  index < allDisplayHours.length && (
-                    <td
-                      key={`uv-${index}`}
-                      className={`p-1 text-center border-r ${uv !== null ? getUvIndexColor(uv) : ""} min-w-[40px] text-xs`}
-                    >
-                      {uv !== null ? uv.toFixed(1) : "-"}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr className="h-2">
-                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {allDisplayHours.map((_, index) => (
-                  <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className={titleCellClass}>Direction vent</td>
-                {displayWindDirections.map((direction, index) => (
-                  index < allDisplayHours.length && (
-                    <td key={`windDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
-                      {direction !== null ? (
-                        <DirectionArrow
-                          direction={direction}
-                          size={25}
-                          color="#2563eb" // Blue color for wind
-                          showLabel={false}
-                        />
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr className="bg-white">
-                <td className={titleCellClass}>Vitesse vent</td>
-                {displayWindSpeeds.map((speed, index) => (
-                  index < allDisplayHours.length && (
-                    <td
-                      key={`windSpeed-${index}`}
-                      className={`p-1 text-center border-r min-w-[40px] text-xs ${getWindSpeedColor(speed)}`}
-                    >
-                      {speed !== null ? `${speed}` : "-"}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className={titleCellClass}>Rafales vent</td>
-                {displayWindGusts.map((gust, index) => (
-                  index < allDisplayHours.length && (
-                    <td
-                      key={`windGust-${index}`}
-                      className={`p-1 text-center border-r min-w-[40px] text-xs ${getWindSpeedColor(gust)}`}
-                    >
-                      {gust !== null ? `${gust}` : "-"}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr className="h-2">
-                <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
-                {allDisplayHours.map((_, index) => (
-                  <td key={`spacer-${index}`} className="border-r bg-gray-300"></td>
-                ))}
-              </tr>
-              <tr className="bg-white">
-                <td className={titleCellClass}>Hauteur vagues</td>
-                {displayWaveHeights.map((height, index) => (
-                  index < allDisplayHours.length && (
-                    <td
-                      key={`waveHeight-${index}`}
-                      className="p-1 text-center border-r min-w-[40px] text-xs"
-                    >
-                      {height !== null ? `${height.toFixed(1)}` : "-"}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className={titleCellClass}>Direction vagues</td>
-                {displayWaveDirections.map((direction, index) => (
-                  index < allDisplayHours.length && (
-                    <td key={`waveDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
-                      {direction !== null ? (
-                        <DirectionArrow
-                          direction={direction}
-                          size={25}
-                          color="#6366f1" // Indigo color for waves
-                          showLabel={false}
-                        />
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                  )
-                ))}
-              </tr>
-              <tr className="bg-white">
-                <td className={titleCellClass}>Période vagues</td>
-                {displayWavePeriods.map((period, index) => (
-                  index < allDisplayHours.length && (
-                    <td
-                      key={`wavePeriod-${index}`}
-                      className="p-1 text-center border-r min-w-[40px] text-xs"
-                    >
-                      {period !== null ? `${period.toFixed(1)}` : "-"}
-                    </td>
-                  )
-                ))}
-              </tr>
-            </tbody>
-          </table>
+                {/* Température - Affichage complet sur 7 jours */}
+                <tr className="bg-white">
+                  <td className={titleCellClass}>Température</td>
+                  {safeTemperatures.map((temp, index) => (
+                    index < allDisplayHours.length && (
+                      <td key={`temp-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
+                        {temp !== null ? `${temp}${tempUnit}` : "-"}
+                      </td>
+                    )
+                  ))}
+                </tr>
+                <tr className="bg-blue-50">
+                  <td className={titleCellClass}>Indice UV</td>
+                  {safeUvIndices.map((uv, index) => (
+                    index < allDisplayHours.length && (
+                      <td
+                        key={`uv-${index}`}
+                        className={`p-1 text-center border-r ${uv !== null ? getUvIndexColor(uv) : ""} min-w-[40px] text-xs`}
+                      >
+                        {uv !== null ? uv.toFixed(1) : "-"}
+                      </td>
+                    )
+                  ))}
+                </tr>
+                <tr className="h-2">
+                  <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                  {allDisplayHours.map((_, index) => (
+                    <td key={`spacer-uv-wind-${index}`} className="border-r bg-gray-300"></td>
+                  ))}
+                </tr>
+                <tr className="bg-gray-50">
+                  <td className={titleCellClass}>Direction vent</td>
+                  {displayWindDirections.map((direction, index) => (
+                    index < allDisplayHours.length && (
+                      <td key={`windDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
+                        {direction !== null ? (
+                          <DirectionArrow
+                            direction={direction}
+                            size={25}
+                            color="#2563eb" // Blue color for wind
+                            showLabel={false}
+                          />
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    )
+                  ))}
+                </tr>
+                <tr className="bg-white">
+                  <td className={titleCellClass}>Vitesse vent</td>
+                  {displayWindSpeeds.map((speed, index) => (
+                    index < allDisplayHours.length && (
+                      <td
+                        key={`windSpeed-${index}`}
+                        className={`p-1 text-center border-r min-w-[40px] text-xs ${getWindSpeedColor(speed)}`}
+                      >
+                        {speed !== null ? `${speed}` : "-"}
+                      </td>
+                    )
+                  ))}
+                </tr>
+                <tr className="bg-gray-50">
+                  <td className={titleCellClass}>Rafales vent</td>
+                  {displayWindGusts.map((gust, index) => (
+                    index < allDisplayHours.length && (
+                      <td
+                        key={`windGust-${index}`}
+                        className={`p-1 text-center border-r min-w-[40px] text-xs ${getWindSpeedColor(gust)}`}
+                      >
+                        {gust !== null ? `${gust}` : "-"}
+                      </td>
+                    )
+                  ))}
+                </tr>
+                <tr className="h-2">
+                  <td className="border-r bg-gray-200 sticky left-0 z-10"></td>
+                  {allDisplayHours.map((_, index) => (
+                    <td key={`spacer-${index}`} className="border-r bg-gray-300"></td>
+                  ))}
+                </tr>
+                <tr className="bg-white">
+                  <td className={titleCellClass}>Hauteur vagues</td>
+                  {displayWaveHeights.map((height, index) => (
+                    index < allDisplayHours.length && (
+                      <td
+                        key={`waveHeight-${index}`}
+                        className="p-1 text-center border-r min-w-[40px] text-xs"
+                      >
+                        {height !== null ? `${height.toFixed(1)}` : "-"}
+                      </td>
+                    )
+                  ))}
+                </tr>
+                <tr className="bg-gray-50">
+                  <td className={titleCellClass}>Direction vagues</td>
+                  {displayWaveDirections.map((direction, index) => (
+                    index < allDisplayHours.length && (
+                      <td key={`waveDir-${index}`} className="p-1 text-center border-r min-w-[40px] text-xs">
+                        {direction !== null ? (
+                          <DirectionArrow
+                            direction={direction}
+                            size={25}
+                            color="#6366f1" // Indigo color for waves
+                            showLabel={false}
+                          />
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    )
+                  ))}
+                </tr>
+                <tr className="bg-white">
+                  <td className={titleCellClass}>Période vagues</td>
+                  {displayWavePeriods.map((period, index) => (
+                    index < allDisplayHours.length && (
+                      <td
+                        key={`wavePeriod-${index}`}
+                        className="p-1 text-center border-r min-w-[40px] text-xs"
+                      >
+                        {period !== null ? `${period.toFixed(1)}` : "-"}
+                      </td>
+                    )
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

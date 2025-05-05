@@ -141,7 +141,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
       if (waveIndex !== -1) {
         waveHeight = waveForecast.hourly.wave_height[waveIndex];
         waveDirection = waveForecast.hourly.wave_direction[waveIndex];
-        wavePeriod = waveForecast.hourly.swell_wave_peak_period[waveIndex];
+        wavePeriod = waveForecast.hourly.wave_period[waveIndex];
       }
     }
 
@@ -273,7 +273,7 @@ const Bilan: React.FC<BilanProps> = ({ location }) => {
         // Trouver la direction et la période au moment de la hauteur maximale
         const maxHeightIndex = afternoonWaveIndices[afternoonWaveHeights.indexOf(maxWaveHeight)];
         directionAtMaxWave = waveForecast.hourly.wave_direction[maxHeightIndex];
-        periodAtMaxWave = waveForecast.hourly.swell_wave_peak_period[maxHeightIndex];
+        periodAtMaxWave = waveForecast.hourly.wave_period[maxHeightIndex];
       }
     }
 
