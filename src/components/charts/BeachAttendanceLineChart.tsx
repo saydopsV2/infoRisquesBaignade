@@ -34,6 +34,10 @@ interface ShapeProps {
 // Type pour les vues temporelles
 type TimeView = "today" | "plus3days" | "plus5days" | "plus7days";
 
+// Constantes pour filtrer les heures
+const START_HOUR = 11;
+const END_HOUR = 20;
+
 // Fonction pour obtenir la couleur basée sur le niveau de risque
 const getHazardLevelColor = (level: number | null): string => {
     if (level === null) return "#94a3b8"; // Gris par défaut
@@ -46,6 +50,13 @@ const getHazardLevelColor = (level: number | null): string => {
         case 4: return "#b91c1c"; // Rouge foncé - Niveau 4
         default: return "#94a3b8"; // Gris par défaut
     }
+};
+
+// Fonction pour vérifier si une heure est dans la plage autorisée
+const isTimeInRange = (date: Date | null | undefined): boolean => {
+    if (!date || !(date instanceof Date)) return false;
+    const hour = date.getHours();
+    return hour >= START_HOUR && hour <= END_HOUR;
 };
 
 // Fonction pour formater la date pour l'axe des abscisses
@@ -126,8 +137,7 @@ const createLevelShape = (level: number) => {
         }
 
         // Vérifier si l'heure est comprise entre 11h et 20h
-        const hour = payload?.originalDate instanceof Date ? payload.originalDate.getHours() : -1;
-        const isInTimeRange = hour >= 11 && hour <= 20;
+        const isInTimeRange = isTimeInRange(payload?.originalDate);
 
         // Si le niveau de risque correspond ET l'heure est dans la plage demandée, afficher le point
         if (payload?.hazardLevel === level && isInTimeRange) {
@@ -231,11 +241,25 @@ export function ChartAllData() {
     // Préparer les données filtrées pour le graphique
     const chartData = filteredDateIndices.map(({ index }) => {
         const date = dates[index];
-        // Si la valeur est 0 ou null, on la remplace par null pour couper la ligne
+        const isVisible = isTimeInRange(date);
+        
+        // Pour la ligne, on affiche toujours la valeur (continue), mais pour les points, on filtre par heure
         const rawAttendancePercent = attendanceValues[index];
-        const attendancePercent = (rawAttendancePercent !== undefined && rawAttendancePercent !== 0 && rawAttendancePercent !== null)
-            ? rawAttendancePercent
-            : null;
+        // Ne rendre null que si la valeur est null ou 0, mais pas pour filtrer l'heure
+        const lineAttendancePercent = (
+            rawAttendancePercent !== undefined && 
+            rawAttendancePercent !== 0 && 
+            rawAttendancePercent !== null
+        ) ? rawAttendancePercent : null;
+        
+        // Pour les points, on applique également le filtre horaire
+        const pointAttendancePercent = (
+            rawAttendancePercent !== undefined && 
+            rawAttendancePercent !== 0 && 
+            rawAttendancePercent !== null && 
+            isVisible
+        ) ? rawAttendancePercent : null;
+        
         const hazardLevel = hazardLevels[index] !== undefined ? hazardLevels[index] : null;
 
         // Formater la date pour l'axe X
@@ -243,12 +267,13 @@ export function ChartAllData() {
 
         return {
             xAxisDate,
-            beachAttendance: attendancePercent, // null si 0 ou null
+            beachAttendance: lineAttendancePercent, // Ligne continue
+            visibleBeachAttendance: pointAttendancePercent, // Points uniquement entre 11h-20h
             hazardLevel: hazardLevel,
             // Stocker la date originale pour l'affichage dans le tooltip
             originalDate: date,
             // Pour les séries scatter, on n'affiche pas de point quand attendancePercent est null
-            scatterPoint: attendancePercent // Même comportement que beachAttendance
+            scatterPoint: pointAttendancePercent // Filtré par heure
         };
     });
 
@@ -373,12 +398,44 @@ export function ChartAllData() {
                             stroke="url(#attendanceGradient)"
                             fill="url(#attendancePattern)"
                             strokeWidth={4}
-                            dot={{ r: 1 }}
+                            dot={false} // Pas de points sur la ligne continue
                             connectNulls={false} // Ne pas connecter les points où la valeur est null
+                            activeDot={false} // Désactiver les points actifs sur la ligne continue
+                            name="Prévision d'affluence"
+                        />
+                        
+                        {/* Ligne invisible avec points uniquement entre 11h et 20h */}
+                        <Line
+                            type="monotone"
+                            dataKey="visibleBeachAttendance"
+                            stroke="none" // Ligne invisible
+                            fill="none"
+                            strokeWidth={0}
+                            dot={(props: any) => {
+                                const { cx, cy, payload } = props;
+                                // Ne pas afficher si la valeur est null
+                                if (payload.visibleBeachAttendance === null) {
+                                    return <circle cx={0} cy={0} r={0} opacity={0} />;
+                                }
+                                
+                                // Obtenir la couleur en fonction du niveau de risque
+                                const color = getHazardLevelColor(payload.hazardLevel);
+                                // Afficher un point de taille standard
+                                return (
+                                    <circle
+                                        cx={cx}
+                                        cy={cy}
+                                        r={5}
+                                        fill={color}
+                                        stroke="#fff"
+                                        strokeWidth={1}
+                                    />
+                                );
+                            }}
                             activeDot={(props: any) => {
                                 const { cx, cy, payload } = props;
                                 // Au lieu de retourner null, retournons un élément vide invisible
-                                if (payload.beachAttendance === null) {
+                                if (payload.visibleBeachAttendance === null) {
                                     return <circle cx={0} cy={0} r={0} opacity={0} />;
                                 }
                                 
@@ -393,10 +450,10 @@ export function ChartAllData() {
                                     </g>
                                 );
                             }}
-                            name="Prévision d'affluence"
+                            name="Points (11h-20h)"
                         />
 
-                        {/* Points colorés par niveau de risque */}
+                        {/* Points colorés par niveau de risque - uniquement utilisés pour la légende */}
                         {[0, 1, 2, 3, 4].map(level => {
                             const levelNames = [
                                 "Risque très faible",
@@ -413,6 +470,7 @@ export function ChartAllData() {
                                     fill={getHazardLevelColor(level)}
                                     shape={createLevelShape(level)}
                                     legendType="circle"
+                                    hide={true} // Masquer les séries scatter pour éviter les doublons
                                 />
                             );
                         })}
