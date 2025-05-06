@@ -60,16 +60,16 @@ const WaveSection: React.FC<WaveSectionProps> = ({ data11AM, maxValues, waterTem
                 <span className="font-medium">Hauteur max {maxValues.maxWaveHeightHour !== null ? `(${maxValues.maxWaveHeightHour}h00)` : ""}:</span>
                 <span>{maxValues.maxWaveHeight !== null ? `${maxValues.maxWaveHeight.toFixed(1)} m` : "-"}</span>
               </p>
+              <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
+                <span className="font-medium">Période max:</span>
+                <span>{maxValues.periodAtMaxWave !== null ? `${maxValues.periodAtMaxWave.toFixed(1)} s` : "-"}</span>
+              </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
                 <span className="font-medium">Hauteur min {maxValues.minWaveHeightHour !== null ? `(${maxValues.minWaveHeightHour}h00)` : ""}:</span>
                 <span>{maxValues.minWaveHeight !== null ? `${maxValues.minWaveHeight.toFixed(1)} m` : "-"}</span>
               </p>
               
               {/* Période max et min */}
-              <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Période max:</span>
-                <span>{maxValues.periodAtMaxWave !== null ? `${maxValues.periodAtMaxWave.toFixed(1)} s` : "-"}</span>
-              </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
                 <span className="font-medium">Période min:</span>
                 <span>{maxValues.periodAtMinWave !== null ? `${maxValues.periodAtMinWave.toFixed(1)} s` : "-"}</span>
