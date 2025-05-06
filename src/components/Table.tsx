@@ -20,7 +20,7 @@ interface TableProps {
 
 // Constante pour le nombre de jours à afficher
 const DAYS_TO_DISPLAY = 7;
-const DAYS_TO_DISPLAY_FORECAST = 4; // Nouveau : pour les graphiques des indices
+const DAYS_TO_DISPLAY_FORECAST = 7; // Nouveau : pour les graphiques des indices
 const HOURS_PER_DAY = 24;
 const TOTAL_HOURS = DAYS_TO_DISPLAY * HOURS_PER_DAY;
 
@@ -108,7 +108,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
     
     setDisplayDays(days);
     
-    // Générer les dates pour les 4 jours de prévision
+    // Générer les dates pour les 7 jours de prévision
     const forecastDaysArray: Date[] = days.slice(0, DAYS_TO_DISPLAY_FORECAST);
     setForecastDays(forecastDaysArray);
 
