@@ -232,7 +232,7 @@ export function ChartAllDataWeek({ inTable = false }: ChartAllDataWeekProps) {
 
     return (
         <div className="relative">
-            <ChartContainer config={chartConfig} className="h-[250px] w-full bg-white p-1 rounded-lg">
+            <ChartContainer config={chartConfig} className="h-[150px] md:h-[250px] w-full bg-white p-1 rounded-lg">
                 <ResponsiveContainer width="100%" height={400}>
                     <ComposedChart
                         data={chartData}

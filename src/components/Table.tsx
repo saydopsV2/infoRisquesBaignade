@@ -419,7 +419,7 @@ const Table: React.FC<TableProps> = ({ location }) => {
                 {/* Ajout du graphique de fréquentation des plages sur tous les jours */}
                 <tr>
                   <td className={titleCellClass}>Graph. Fréquentation</td>
-                  <td colSpan={TOTAL_HOURS} className="p-0 border-r h-64">
+                  <td colSpan={TOTAL_HOURS} className="p-0 border-r h-35">
                     {attendanceLoading ? (
                       <div className="h-full flex items-center justify-center bg-slate-100">
                         <p>Chargement des données de fréquentation...</p>
