@@ -29,9 +29,9 @@ const WindSection: React.FC<SectionProps> = ({ data11AM, maxValues }) => {
             <div className="mt-2 pt-2 border-t border-cyan-200">
               <p className="text-md text-sky-800 font-medium mb-1">Entre 11h et 20h:</p>
               
-              {/* Direction max */}
+              {/* Vent max */}
               <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Direction max:</span>
+                <span className="font-medium">Direction:</span>
                 <DirectionArrow
                   direction={maxValues.directionAtMaxSpeed}
                   size={24}
@@ -39,10 +39,17 @@ const WindSection: React.FC<SectionProps> = ({ data11AM, maxValues }) => {
                   showLabel={true}
                 />
               </p>
-              
-              {/* Direction min */}
+              <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
+                <span className="font-medium">Vitesse max {maxValues.maxWindSpeedHour !== null ? `(${maxValues.maxWindSpeedHour}h00)` : ""}:</span>
+                <span>{maxValues.maxWindSpeed !== null ? `${maxValues.maxWindSpeed} nds` : "-"}</span>
+              </p>
+              <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
+                <span className="font-medium">Rafales max {maxValues.maxWindGustsHour !== null ? `(${maxValues.maxWindGustsHour}h00)` : ""}:</span>
+                <span>{maxValues.maxWindGusts !== null ? `${maxValues.maxWindGusts} nds` : "-"}</span>
+              </p>
+              {/* Vent min */}
               <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-green-700">
-                <span className="font-medium">Direction min:</span>
+                <span className="font-medium">Direction:</span>
                 <DirectionArrow
                   direction={maxValues.directionAtMinSpeed}
                   size={24}
@@ -52,20 +59,14 @@ const WindSection: React.FC<SectionProps> = ({ data11AM, maxValues }) => {
               </p>
               
               {/* Vitesse max et min */}
-              <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Vitesse max {maxValues.maxWindSpeedHour !== null ? `(${maxValues.maxWindSpeedHour}h00)` : ""}:</span>
-                <span>{maxValues.maxWindSpeed !== null ? `${maxValues.maxWindSpeed} nds` : "-"}</span>
-              </p>
+              
               <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
                 <span className="font-medium">Vitesse min {maxValues.minWindSpeedHour !== null ? `(${maxValues.minWindSpeedHour}h00)` : ""}:</span>
                 <span>{maxValues.minWindSpeed !== null ? `${maxValues.minWindSpeed} nds` : "-"}</span>
               </p>
               
               {/* Rafales max et min */}
-              <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Rafales max {maxValues.maxWindGustsHour !== null ? `(${maxValues.maxWindGustsHour}h00)` : ""}:</span>
-                <span>{maxValues.maxWindGusts !== null ? `${maxValues.maxWindGusts} nds` : "-"}</span>
-              </p>
+              
               <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
                 <span className="font-medium">Rafales min {maxValues.minWindGustsHour !== null ? `(${maxValues.minWindGustsHour}h00)` : ""}:</span>
                 <span>{maxValues.minWindGusts !== null ? `${maxValues.minWindGusts} nds` : "-"}</span>

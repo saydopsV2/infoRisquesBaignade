@@ -33,24 +33,13 @@ const WaveSection: React.FC<WaveSectionProps> = ({ data11AM, maxValues, waterTem
             <div className="mt-2 pt-2 border-t border-sky-200">
               <p className="text-md text-sky-700 font-medium mb-1">Entre 11h et 20h:</p>
               
-              {/* Direction max */}
+              {/* Vague max */}
               <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Direction max:</span>
+                <span className="font-medium">Direction:</span>
                 <DirectionArrow
                   direction={maxValues.directionAtMaxWave}
                   size={24}
                   color="#dc2626"
-                  showLabel={true}
-                />
-              </p>
-              
-              {/* Direction min */}
-              <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-green-700">
-                <span className="font-medium">Direction min:</span>
-                <DirectionArrow
-                  direction={maxValues.directionAtMinWave}
-                  size={24}
-                  color="#16a34a"
                   showLabel={true}
                 />
               </p>
@@ -61,17 +50,28 @@ const WaveSection: React.FC<WaveSectionProps> = ({ data11AM, maxValues, waterTem
                 <span>{maxValues.maxWaveHeight !== null ? `${maxValues.maxWaveHeight.toFixed(1)} m` : "-"}</span>
               </p>
               <p className="flex justify-between mt-1 text-sm sm:text-base text-red-700">
-                <span className="font-medium">Période max:</span>
+                <span className="font-medium">Période:</span>
                 <span>{maxValues.periodAtMaxWave !== null ? `${maxValues.periodAtMaxWave.toFixed(1)} s` : "-"}</span>
               </p>
+
+              {/* Vague min */}
+              <p className="flex justify-between items-center mt-1 text-sm sm:text-base text-green-700">
+                <span className="font-medium">Direction:</span>
+                <DirectionArrow
+                  direction={maxValues.directionAtMinWave}
+                  size={24}
+                  color="#16a34a"
+                  showLabel={true}
+                />
+              </p>
+              
+              {/* Période min */}
               <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
                 <span className="font-medium">Hauteur min {maxValues.minWaveHeightHour !== null ? `(${maxValues.minWaveHeightHour}h00)` : ""}:</span>
                 <span>{maxValues.minWaveHeight !== null ? `${maxValues.minWaveHeight.toFixed(1)} m` : "-"}</span>
-              </p>
-              
-              {/* Période max et min */}
+              </p>              
               <p className="flex justify-between mt-1 text-sm sm:text-base text-green-700">
-                <span className="font-medium">Période min:</span>
+                <span className="font-medium">Période:</span>
                 <span>{maxValues.periodAtMinWave !== null ? `${maxValues.periodAtMinWave.toFixed(1)} s` : "-"}</span>
               </p>
             </div>
