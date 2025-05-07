@@ -7,7 +7,7 @@ const HazardSection: React.FC<SectionProps> = ({ data11AM, maxValues }) => {
     if (level === null) return "text-gray-500";
     if (level === 0) return "text-green-600"; // Vert foncé - Sécurité optimale
     if (level === 1) return "text-green-400"; // Vert clair - Faible risque
-    if (level === 2) return "text-yellow-500"; // Jaune - Risque modéré
+    if (level === 2) return "text-yellow-300"; // Jaune - Risque modéré
     if (level === 3) return "text-orange-500"; // Orange - Risque élevé
     if (level >= 4) return "text-red-600"; // Rouge - Danger important
     return "text-gray-500"; // Couleur par défaut
